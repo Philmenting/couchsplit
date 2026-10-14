@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+source_dir="$project_dir/.cache/project-pm"
+build_dir="$project_dir/build"
+commit=4d9785468bbefc8d08002f16df4d85a12f9611f7
+jobs="${COOP_BUILD_JOBS:-4}"
+mkdir -p "$project_dir/.cache"
+if [[ ! -d "$source_dir/.git" ]]; then
+  git clone --no-checkout https://github.com/ComicartOlie/melonDS-Project-PM.git "$source_dir"
+fi
+if [[ "$(git -C "$source_dir" rev-parse HEAD 2>/dev/null || true)" != "$commit" ]]; then
+  git -C "$source_dir" fetch origin "$commit"
+  git -C "$source_dir" checkout --detach "$commit"
+fi
+if git -C "$source_dir" apply --check "$project_dir/patches/project-pm-linux-coop.patch"; then
+  git -C "$source_dir" apply "$project_dir/patches/project-pm-linux-coop.patch"
+elif ! git -C "$source_dir" apply --reverse --check "$project_dir/patches/project-pm-linux-coop.patch"; then
+  echo 'Patch passt nicht. Eigene Änderungen in .cache/project-pm prüfen; nichts wird überschrieben.' >&2
+  exit 1
+fi
+cp "$project_dir/multiplayer/SocketCompat.h" "$source_dir/src/frontend/qt_sdl/"
+cp "$project_dir/display/CoopIPC.h" "$source_dir/src/frontend/qt_sdl/"
+cmake -S "$source_dir" -B "$build_dir/emulator" -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_LTO_RELEASE=OFF
+cmake --build "$build_dir/emulator" --parallel "$jobs"
+cmake -S "$project_dir" -B "$build_dir/launcher" -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build "$build_dir/launcher" --parallel "$jobs"
+mkdir -p "$build_dir/bin"
+cp "$build_dir/emulator/melonDS" "$build_dir/bin/melonDS-coop"
+cp "$build_dir/launcher/platinum-coop" "$build_dir/bin/"
+ctest --test-dir "$build_dir/launcher" --output-on-failure
+python3 "$project_dir/tests/test_transport.py" --source "$source_dir"
+"$build_dir/bin/melonDS-coop" --coop-capabilities

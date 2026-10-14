@@ -1,0 +1,11 @@
+/build/
+/.cache/
+/dist/
+*.nds
+*.srl
+*.sav
+*.dsv
+*.bin
+*.rom
+*.bios
+__pycache__/

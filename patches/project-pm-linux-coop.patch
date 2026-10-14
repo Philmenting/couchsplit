@@ -1,0 +1,222 @@
+diff --git a/src/frontend/qt_sdl/EmuThread.cpp b/src/frontend/qt_sdl/EmuThread.cpp
+index 84192d0..b6b2eb9 100755
+--- a/src/frontend/qt_sdl/EmuThread.cpp
++++ b/src/frontend/qt_sdl/EmuThread.cpp
+@@ -69,6 +69,8 @@
+ 
+ #include "EmuInstance.h"
+ #include "MpOnline.h"
++#include "SocketCompat.h"
++#include "CoopIPC.h"
+ 
+ using namespace melonDS;
+ 
+@@ -636,7 +638,12 @@ namespace
+ // ---------------------------------------------------------------------------
+ namespace mpnet
+ {
+-const int PORT = 7820;
++int bridgePort() {
++    const char* p = getenv("PMCOOP_PORT");
++    if (!p) return 7820;
++    char* end = nullptr; long n = strtol(p, &end, 10);
++    return end != p && !*end && n > 1024 && n <= 65535 ? (int)n : 7820;
++}
+ const melonDS::u32 MAXFRAME = 8192;
+ 
+ // Bridge wire protocol version.  Advertised by the LAN discovery beacon (the
+@@ -754,14 +761,14 @@ struct RelayLink
+             fd_set wr, ex; FD_ZERO(&wr); FD_ZERO(&ex);
+             FD_SET(s, &wr); FD_SET(s, &ex);
+             timeval tv = {0, 0};
+-            int r = select(0, NULL, &wr, &ex, &tv);
++            int r = bridgeSelect(s, &wr, &ex, &tv);
+             if (r > 0 && FD_ISSET(s, &ex)) return false;
+-            if (r > 0 && FD_ISSET(s, &wr)) st = RL_HANDSHAKE;
++            if (r > 0 && FD_ISSET(s, &wr)) { if (!bridgeConnectOK(s)) return false; st = RL_HANDSHAKE; }
+             else return true;
+         }
+         if (!out.empty())
+         {
+-            int r = ::send(s, out.data(), (int)out.size(), 0);
++            int r = bridgeSend(s, out.data(), (int)out.size(), 0);
+             if (r > 0) out.erase(0, r);
+             else if (r == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) return false;
+         }
+@@ -1154,13 +1161,13 @@ struct Net
+         BOOL yes = TRUE;
+         setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, (const char*)&yes, sizeof(yes));
+         sockaddr_in a; memset(&a, 0, sizeof(a));
+-        a.sin_family = AF_INET; a.sin_addr.s_addr = INADDR_ANY; a.sin_port = htons(PORT);
++        a.sin_family = AF_INET; a.sin_addr.s_addr = getenv("PMCOOP_ROLE") ? htonl(INADDR_LOOPBACK) : INADDR_ANY; a.sin_port = htons(bridgePort());
+         if (bind(listener, (sockaddr*)&a, sizeof(a)) != 0 || listen(listener, 3) != 0)
+         {
+             closesocket(listener); listener = INVALID_SOCKET; mode = 0; return;
+         }
+         setNonBlock(listener);
+-        printf("[BR] hosting on :%d\n", PORT);
++        printf("[BR] hosting on :%d\n", bridgePort()); fflush(stdout);
+     }
+ 
+     void startJoin(const char* ip)
+@@ -1221,7 +1228,7 @@ struct Net
+     melonDS::u32 lastBeacon = 0;
+     void beaconTick(melonDS::u32 frame, melonDS::u8 players)
+     {
+-        if (mode != 1) return;
++        if (mode != 1 || getenv("PMCOOP_ROLE")) return;
+         if (online) return;     // relayed room: no LAN peer could use this advert
+         if (beaconTx == INVALID_SOCKET)
+         {
+@@ -1243,12 +1250,13 @@ struct Net
+     void startFromEnv()
+     {
+         started = true;
+-        const char* e = getenv("MELONDS_AP");
++        const char* e = getenv("PMCOOP_ROLE");
++        if (!e) e = getenv("MELONDS_AP");
+         if (!e) { mode = 0; return; }
+ 
+         // MELONDS_AP_RELAY turns the harness roles into an online session.
+         // Absent, everything below behaves exactly as it always has.
+-        const char* relay = getenv("MELONDS_AP_RELAY");
++        const char* relay = getenv("PMCOOP_ROLE") ? nullptr : getenv("MELONDS_AP_RELAY");
+         if (relay && relay[0])
+         {
+             setStr(codeFile, getenv("MELONDS_AP_CODEFILE"));
+@@ -1656,8 +1664,8 @@ struct Net
+                 fd_set wr, ex; FD_ZERO(&wr); FD_ZERO(&ex);
+                 FD_SET(h.s, &wr); FD_SET(h.s, &ex);
+                 timeval tv = {0,0};
+-                int r = select(0, NULL, &wr, &ex, &tv);
+-                if (r > 0 && FD_ISSET(h.s, &wr)) { h.up = true; connecting = false; freshPeer = true; printf("[BR] connected to %s\n", joinIP); }
++                int r = bridgeSelect(h.s, &wr, &ex, &tv);
++                if (r > 0 && FD_ISSET(h.s, &wr)) { if (!bridgeConnectOK(h.s)) { dropPeer(0); retryAt = frame + 120; return; } h.up = true; connecting = false; freshPeer = true; printf("[BR] connected to %s\n", joinIP); }
+                 else if (r > 0 && FD_ISSET(h.s, &ex)) { dropPeer(0); retryAt = frame + 120; }
+             }
+             else if (frame >= retryAt)
+@@ -1666,7 +1674,7 @@ struct Net
+                 if (h.s == INVALID_SOCKET) { retryAt = frame + 120; return; }
+                 setNonBlock(h.s);
+                 sockaddr_in a; memset(&a, 0, sizeof(a));
+-                a.sin_family = AF_INET; a.sin_port = htons(PORT);
++                a.sin_family = AF_INET; a.sin_port = htons(bridgePort());
+                 inet_pton(AF_INET, joinIP, &a.sin_addr);
+                 int r = ::connect(h.s, (sockaddr*)&a, sizeof(a));
+                 if (r == 0) { h.up = true; freshPeer = true; printf("[BR] connected to %s\n", joinIP); }
+@@ -1694,7 +1702,7 @@ struct Net
+     {
+         Peer& p = peers[i];
+         if (!p.up || p.tx.empty()) return;
+-        int r = ::send(p.s, (const char*)p.tx.data(), (int)p.tx.size(), 0);
++        int r = bridgeSend(p.s, (const char*)p.tx.data(), (int)p.tx.size(), 0);
+         if (r > 0) p.tx.erase(p.tx.begin(), p.tx.begin() + r);
+         else if (r == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) dropPeer(i);
+     }
+@@ -2205,6 +2213,11 @@ void MpOnlineGetStatus(MpOnlineStatus* out)
+ 
+ void EmuThread::run()
+ {
++    coop::Mapping couch;
++    if (const char* path = getenv("PMCOOP_IPC")) {
++        try { couch.open(path, false); }
++        catch (const std::exception& e) { fprintf(stderr, "[COOP] %s\n", e.what()); return; }
++    }
+     {
+         const char* ap = getenv("MELONDS_AP");
+         if (ap) MpWatchdogStart(ap);
+@@ -2357,12 +2370,22 @@ void EmuThread::run()
+ 
+             // process input and hotkeys
+             BridgePump(emuInstance->nds);
++            if (couch.data) {
++                uint32_t t = couch.data->touch.load();
++                emuInstance->nds->SetKeyMask(couch.data->keys.load() & 0xFFF);
++                if (t & 0x80000000u) emuInstance->nds->TouchScreen(t & 255, (t >> 8) & 255);
++                else emuInstance->nds->ReleaseScreen();
++                couch.data->peers.store(mpnet::gNet.anyUp() ? 1 : 0);
++                couch.data->role.store(mpnet::gNet.myRole());
++                couch.data->bridgeActive.store(gBr.ctl && apRd8(emuInstance->nds, gBr.ctl + 4) ? 1 : 0);
++            } else {
+             emuInstance->nds->SetKeyMask(apApply(emuInstance->nds, emuInstance->inputMask));
+ 
+             if (emuInstance->isTouching)
+                 emuInstance->nds->TouchScreen(emuInstance->touchX, emuInstance->touchY);
+             else
+                 emuInstance->nds->ReleaseScreen();
++            }
+ 
+             if (emuInstance->hotkeyPressed(HK_Lid))
+             {
+@@ -2425,6 +2448,10 @@ void EmuThread::run()
+             if (emuInstance->firmwareSave)
+                 emuInstance->firmwareSave->CheckFlush();
+ 
++            if (couch.data) {
++                void* top = nullptr; void* bottom = nullptr;
++                if (emuInstance->nds->GPU.GetFramebuffers(&top, &bottom)) couch.publish(top, bottom);
++            }
+             emuInstance->drawScreen();
+ 
+ #ifdef MELONCAP
+diff --git a/src/frontend/qt_sdl/main.cpp b/src/frontend/qt_sdl/main.cpp
+index 9f2acea..e3b36ec 100644
+--- a/src/frontend/qt_sdl/main.cpp
++++ b/src/frontend/qt_sdl/main.cpp
+@@ -45,6 +45,7 @@
+ #endif
+ 
+ #include <SDL2/SDL.h>
++#include <QTimer>
+ 
+ #include "OpenGLSupport.h"
+ #include "duckstation/gl/context.h"
+@@ -179,6 +180,12 @@ void broadcastInstanceCommand(int cmd, QVariant& param, int sourceinst)
+ 
+ void pathInit()
+ {
++    // Explicit path takes precedence over portable and XDG defaults.
++    if (const char* profile = getenv("PMCOOP_PROFILE")) {
++        emuDirectory = QString::fromUtf8(profile);
++        QDir().mkpath(emuDirectory);
++        return;
++    }
+     // First, check for the portable directory next to the executable.
+     QString appdirpath = QCoreApplication::applicationDirPath();
+     QString portablepath = appdirpath + QDir::separator() + "portable";
+@@ -268,15 +275,16 @@ bool MelonApplication::event(QEvent *event)
+ }
+ 
+ #ifndef _WIN32
+-static void signalHandler(int signal)
++static volatile sig_atomic_t quitRequested = 0;
++static void signalHandler(int)
+ {
+-    std::signal(signal, SIG_DFL);
+-    qApp->quit();
++    quitRequested = 1;
+ }
+ #endif
+ 
+ int main(int argc, char** argv)
+ {
++    if (argc == 2 && !strcmp(argv[1], "--coop-capabilities")) { puts("PMCOOP_ABI=1;BRIDGE_WIRE=2;POSIX=1"); return 0; }
+     sysTimer.start();
+     srand(time(nullptr));
+ 
+@@ -425,6 +433,15 @@ int main(int argc, char** argv)
+             win->toggleFullscreen();
+     }
+ 
++    if (getenv("PMCOOP_IPC")) {
++        emuInstances[0]->getMainWindow()->hide();
++        melon.setQuitOnLastWindowClosed(false);
++    }
++    #ifndef _WIN32
++    QTimer quitTimer;
++    QObject::connect(&quitTimer, &QTimer::timeout, &melon, [&melon] { if (quitRequested) melon.quit(); });
++    quitTimer.start(100);
++#endif
+     int ret = melon.exec();
+ 
+     delete options;
