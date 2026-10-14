@@ -17,7 +17,7 @@
 
 ## Automatisiert getestet
 
-Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Entwicklungsbibliotheken wurden lokal aus Ubuntu-Paketen bereitgestellt; keine Bazzite-Umgebung. Qt-GUI-Tests offscreen, Audio im Smoke-Test dummy. Tests liefen hier, der GitHub-Actions-Workflow ist vorbereitet, wurde aber noch nicht auf GitHub ausgeführt.
+Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Entwicklungsbibliotheken wurden lokal aus Ubuntu-Paketen bereitgestellt; keine Bazzite-Umgebung. Qt-GUI-Tests offscreen, Audio im Smoke-Test dummy. Tests liefen hier. Der GitHub-Actions-Workflow wurde nach der Veröffentlichung am 14.10.2026 gestartet; bei dieser Aktualisierung lief der erneute Build noch.
 
 | Test | Tatsächliches Ergebnis |
 |---|---|
@@ -48,23 +48,23 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 6. 4K/60-Hz-Ausgabe und Performance/Thermik auf RTX 4060; Bildgeometrie und 4K-Menürendering sind geprüft, tatsächliche TV-Ausgabe nicht.
 7. Mehrstündiges Spielen, Kämpfe/Tausch und Verbindungsunterbrechungen während des Pokémon-Gameplays.
 8. Hochauflösendes DS-3D-Rendering, Rumble, ROM-Patcher und umfangreiche Spielebibliothek: nicht implementiert. Direkter Start einer vorbereiteten ROM ist vorhanden.
-9. GitHub-Repository noch nicht erstellt/gepusht: die verbundene GitHub-App stellt hier keine Repo-Erstellungsfunktion bereit; CLI-Credentials stehen nicht zur Verfügung. Lokale Commits und ein explizit ausführbares gh-Publish-Skript sind vorbereitet. Browser-Fallback benötigt nach Werkzeugvorgabe eine zusätzliche Zustimmung.
+9. GitHub-Repository am 14.10.2026 nach Zustimmung über die Weboberfläche privat erstellt: https://github.com/Philmenting/pokemon-platinum-local-coop. Quellcode und Testnachweise sind vollständig übertragen; die Git-Trees der drei Entwicklungsstände stimmen exakt mit den lokal geprüften Ständen überein.
 
 ## Priorisierte nächste Aufgaben
 
 - [x] Project-PM-Linux-Build und tatsächlichen TCP-Transport ermöglichen.
 - [x] Profile, Prozessverwaltung, Eingaben, Darstellung und Launcher implementieren.
 - [x] Verfügbare ROM-freie Tests und echte DS-Homebrew-Starts durchführen.
-- [ ] Repository auf GitHub anlegen und lokalen Commitstand veröffentlichen.
+- [x] Repository auf GitHub anlegen und lokalen Commitstand veröffentlichen.
 - [ ] Passende, rechtmäßig bereitgestellte ROM/Project-PM-Patchversion testen.
 - [ ] Gemeinsame Sinnoh-Welt nach docs/acceptance-tests.md nachweisen; erst dann spielbare Koop-Version behaupten.
 - [ ] Bazzite-/Controller-/TV-Abnahme und Dauerbetrieb.
 
 ## GitHub-Veröffentlichung
 
-Die Zustimmung zum Schreiben/Pushen ist durch den Auftrag vorhanden; es fehlt die API-Funktion zur Repository-Erstellung. Kein fremdes Upstream-Repository wurde verändert.
+Das private Repository wurde über die GitHub-Weboberfläche erstellt. Die unterstützten Datei-/Git-Operationen wurden anschließend über die verbundene GitHub-App ausgeführt. Kein fremdes Upstream-Repository wurde verändert. Die ursprünglichen drei lokalen Commits bleiben zusätzlich im lokalen Branch local-implementation erhalten; main folgt der veröffentlichten GitHub-Historie.
 
-Mit eigener angemeldeter GitHub CLI kann der vollständige lokale Commitstand veröffentlicht werden:
+Das folgende Skript dient ausschließlich der erstmaligen Veröffentlichung einer unabhängigen Kopie ohne bestehendes origin; für dieses bereits veröffentlichte Repository ist es nicht mehr erforderlich:
 
 ```bash
 ./scripts/publish-github.sh            # privat
