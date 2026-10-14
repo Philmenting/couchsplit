@@ -17,7 +17,7 @@
 
 ## Automatisiert getestet
 
-Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Entwicklungsbibliotheken wurden lokal aus Ubuntu-Paketen bereitgestellt; keine Bazzite-Umgebung. Qt-GUI-Tests offscreen, Audio im Smoke-Test dummy. Tests liefen hier. Der GitHub-Actions-Workflow wurde nach der Veröffentlichung am 14.10.2026 gestartet; bei dieser Aktualisierung lief der erneute Build noch.
+Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Entwicklungsbibliotheken wurden lokal aus Ubuntu-Paketen bereitgestellt; keine Bazzite-Umgebung. Qt-GUI-Tests offscreen, Audio im Smoke-Test dummy. Tests liefen hier. Der GitHub-Actions-Workflow nach der Veröffentlichung am 14.10.2026 bestand ebenfalls: vollständiger Neubau, native Komponentensuite, Produktions-TCP-Bridge, Python-Tests, Qt-Launcher-Start und zwei echte Homebrew-Emulatorprozesse. Erfolgreicher Lauf: https://github.com/Philmenting/pokemon-platinum-local-coop/actions/runs/38607299933 (4 Minuten 43 Sekunden).
 
 | Test | Tatsächliches Ergebnis |
 |---|---|
@@ -31,6 +31,7 @@ Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Ent
 | Installer | Zwei Python-Tests: Pfade mit Leerzeichen, Argumentquoting, fehlendes Binary; keine Steamkonfigurationsänderung |
 | GUI-Erzeugung | Qt offscreen gestartet, Screenshots bei 1280 × 1000 und 3840 × 2160 erzeugt |
 | Buildpatch | Gegen den gepinnten Quellstand reversibel anwendbar geprüft |
+| GitHub Actions | Vollständiger Neubau und alle ROM-freien Tests erfolgreich (Run 38607299933) |
 
 Der Homebrew-Test enthält keine Nintendo-Spiel-/Logo-/BIOS-/Firmwarebytes. Er prüft **nicht** ROM-Mailbox-Synchronisation oder Pokémon-Gameplay. Die separate TCP-Prüfung extrahiert den echten Bridgecode; das ist kein Ersatztransport.
 
@@ -48,7 +49,6 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 6. 4K/60-Hz-Ausgabe und Performance/Thermik auf RTX 4060; Bildgeometrie und 4K-Menürendering sind geprüft, tatsächliche TV-Ausgabe nicht.
 7. Mehrstündiges Spielen, Kämpfe/Tausch und Verbindungsunterbrechungen während des Pokémon-Gameplays.
 8. Hochauflösendes DS-3D-Rendering, Rumble, ROM-Patcher und umfangreiche Spielebibliothek: nicht implementiert. Direkter Start einer vorbereiteten ROM ist vorhanden.
-9. GitHub-Repository am 14.10.2026 nach Zustimmung über die Weboberfläche privat erstellt: https://github.com/Philmenting/pokemon-platinum-local-coop. Quellcode und Testnachweise sind vollständig übertragen; die Git-Trees der drei Entwicklungsstände stimmen exakt mit den lokal geprüften Ständen überein.
 
 ## Priorisierte nächste Aufgaben
 
@@ -61,6 +61,8 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 - [ ] Bazzite-/Controller-/TV-Abnahme und Dauerbetrieb.
 
 ## GitHub-Veröffentlichung
+
+GitHub-Repository am 14.10.2026 nach Zustimmung über die Weboberfläche privat erstellt: https://github.com/Philmenting/pokemon-platinum-local-coop. Quellcode und Testnachweise sind vollständig übertragen; die Git-Trees der drei Entwicklungsstände stimmen exakt mit den lokal geprüften Ständen überein.
 
 Das private Repository wurde über die GitHub-Weboberfläche erstellt. Die unterstützten Datei-/Git-Operationen wurden anschließend über die verbundene GitHub-App ausgeführt. Kein fremdes Upstream-Repository wurde verändert. Die ursprünglichen drei lokalen Commits bleiben zusätzlich im lokalen Branch local-implementation erhalten; main folgt der veröffentlichten GitHub-Historie.
 
