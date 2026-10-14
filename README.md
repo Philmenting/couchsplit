@@ -6,7 +6,7 @@ Ein Linux-Launcher für zwei **getrennte Project-PM/melonDS-Prozesse**, zwei Con
 
 Eine bereitgestellte deutsche Original-ROM wurde inzwischen in zwei echten Emulatorprozessen gestartet und geprüft: [ROM-Startprüfung](docs/rom-boot-check.md). Sie ist ungepatcht; ihre Multiplayer-Bridge bleibt inaktiv. Die App erklärt bei diesem bekannten Original-Fingerabdruck ausdrücklich den fehlenden Patch.
 
-[Deutsche Kompatibilität und Patchbeschaffung](docs/german-compatibility.md): öffentliche Quellen erneut geprüft, lokale xdelta-Patchvorbereitung implementiert. Die erforderliche Project-PM-ROM-Patchdatei/Mod-Quelle ist weiterhin nicht verfügbar; deutsche Koop-Unterstützung ist noch nicht hergestellt.
+[Deutsche Kompatibilität und Patchbeschaffung](docs/german-compatibility.md): Patch 0.4.5 wurde inzwischen bereitgestellt und geprüft. Er verlangt **USA Revision 1**; der echte Patchversuch auf der deutschen ROM scheitert. [Paketprüfung und Basisanforderungen](docs/project-pm-045.md). Deutsche Koop-Unterstützung ist noch nicht hergestellt.
 
 ## Start auf Bazzite
 

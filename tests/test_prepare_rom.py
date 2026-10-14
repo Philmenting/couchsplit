@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import importlib.util
+import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import unittest
+import sys
+import zipfile
 
 spec = importlib.util.spec_from_file_location('prepare_rom', Path(__file__).resolve().parents[1] / 'scripts/prepare-rom.py')
 patcher = importlib.util.module_from_spec(spec); spec.loader.exec_module(patcher)
@@ -75,3 +78,28 @@ class PatchTests(unittest.TestCase):
         self.encode()
         with self.assertRaises(FileNotFoundError): self.apply(decoder=str(self.root / 'missing decoder'))
         self.assertFalse(self.output.exists())
+
+    def test_inspect_unknown_zip_is_explicit_and_read_only(self):
+        archive = self.root / 'own build package.zip'
+        with zipfile.ZipFile(archive, 'w') as package:
+            package.write(self.delta, 'Build/own.xdelta')
+            package.writestr('Build/ignored.exe', b'not a program')
+        before = set(self.root.iterdir())
+        result = subprocess.run([sys.executable, str(Path(patcher.__file__)), '--inspect',
+                                 '--rom', str(self.source), '--patch', str(archive)],
+                                capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 2)
+        report = json.loads(result.stdout)
+        self.assertEqual(report['patch_sha256'], patcher.sha256(self.delta))
+        self.assertIsNone(report['expected_base'])
+        self.assertFalse(report['matches_documented_base'])
+        self.assertEqual(set(self.root.iterdir()), before)
+
+    def test_ambiguous_package_and_short_rom_are_rejected(self):
+        archive = self.root / 'ambiguous.zip'
+        with zipfile.ZipFile(archive, 'w') as package:
+            package.writestr('first.xdelta', b'one')
+            package.writestr('second.xdelta', b'two')
+        with self.assertRaises(ValueError): patcher.inspect_patch(self.source, archive)
+        self.source.write_bytes(b'bad header')
+        with self.assertRaises(ValueError): patcher.inspect_patch(self.source, self.delta)

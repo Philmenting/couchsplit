@@ -1,0 +1,15 @@
+[
+  {
+    "version": "0.4.5",
+    "patch_sha256": "70c0808f2400e3fb2cbaa0624364b0ac1ae9ace1177043cae8a74a5b616349a0",
+    "patch_size": 2519982,
+    "source_game_code": "CPUE",
+    "source_revision": 1,
+    "source_size": 134217728,
+    "source_sha1": "0862ec35b24de5c7e2dcb88c9eea0873110d755c",
+    "source_label": "Pokémon Platinum (USA), Revision 1",
+    "evidence": "User-supplied Build V0.4.5/SETUP_GUIDE.md, section 1; No-Intro USA Rev 1 fingerprint",
+    "german_port": "not_provided",
+    "emulator_bridge_test": "not_run_without_matching_base_rom"
+  }
+]

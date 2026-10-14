@@ -84,7 +84,7 @@ public:
             }
             const bool connected=maps[0]->data->peers.load()&&maps[1]->data->peers.load();
             const bool activated=maps[0]->data->bridgeActive.load()&&maps[1]->data->bridgeActive.load();
-            if(status) status(connected?(activated?"TCP verbunden · ROM-Bridge aktiviert (Welt-Synchronisation im Spiel prüfen)":"TCP verbunden · Multiplayer im ROM-Menü aktivieren"):(elapsed.elapsed()>10000?"Verbindung ausstehend · Logs prüfen":"Lokale Verbindung wird aufgebaut …"));
+            if(status) status(connected?(activated?"TCP verbunden · ROM-Bridge aktiviert (Welt-Synchronisation im Spiel prüfen)":"TCP verbunden · Nach dem Pokédex: Wireless Play im Beutel aktivieren"):(elapsed.elapsed()>10000?"Verbindung ausstehend · Logs prüfen":"Lokale Verbindung wird aufgebaut …"));
         });
     }
     ~Session() { stop(); }
