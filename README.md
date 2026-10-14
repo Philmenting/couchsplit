@@ -4,6 +4,8 @@ Ein Linux-Launcher für zwei **getrennte Project-PM/melonDS-Prozesse**, zwei Con
 
 **Entwicklungsstand:** implementierter Prototyp mit reproduzierbaren ROM-freien Tests. Ein passender Project-PM-Multiplayer-Patch und eine eigene Platin-ROM werden für das gewünschte Spielerlebnis benötigt. Gemeinsames Sinnoh-Gameplay wurde hier nicht geprüft. Ein normales Pokémon Platin erhält durch diesen Launcher keinen freien Welt-Koop.
 
+Eine bereitgestellte deutsche Original-ROM wurde inzwischen in zwei echten Emulatorprozessen gestartet und geprüft: [ROM-Startprüfung](docs/rom-boot-check.md). Sie ist ungepatcht; ihre Multiplayer-Bridge bleibt inaktiv. Die App erklärt bei diesem bekannten Original-Fingerabdruck ausdrücklich den fehlenden Patch.
+
 ## Start auf Bazzite
 
 ```bash

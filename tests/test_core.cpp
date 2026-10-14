@@ -65,6 +65,8 @@ void validationTest() {
     QByteArray header(1024,0);header.replace(12,4,"CPUE");atomicWrite(rom,header);assert(validateRom(rom).size()==64);
     rejects([&]{validateRom(temp.path()+"/missing.nds");});header.replace(12,4,"ADAE");atomicWrite(rom,header);rejects([&]{validateRom(rom);});
     Settings s;validateFirmware(s);s.bios9="missing";rejects([&]{validateFirmware(s);});
+    rejects([&]{requireMultiplayerPatch("9ffc28ff2b2d8fab60454548f92e60dd5d44f0dcc456e6e00e756424b3259217");});
+    requireMultiplayerPatch(QString(64,'a')); // Unknown hash still needs explicit user confirmation.
     assert(quoted("a\"b\\c")=="\"a\\\"b\\\\c\"");
 }
 void processTest(const QString& fixture) {

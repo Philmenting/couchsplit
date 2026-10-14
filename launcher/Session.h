@@ -31,6 +31,12 @@ inline QString validateRom(const QString& path) {
     if(header.size()<16 || header.mid(12,3)!="CPU") fail("Die ROM muss auf Pokémon Platin basieren (CPU*-Kennung).");
     return hashFile(path);
 }
+inline void requireMultiplayerPatch(const QString& sha256) {
+    // Exact known-original fingerprint, checked against No-Intro metadata.
+    // An unknown fingerprint is NOT proof of a compatible multiplayer patch.
+    if(sha256=="9ffc28ff2b2d8fab60454548f92e60dd5d44f0dcc456e6e00e756424b3259217")
+        fail("Unveränderte deutsche Platin-ROM erkannt. Für Koop wird eine mit dem passenden Project-PM-Patch vorbereitete ROM benötigt. Ob dieser Patch die deutsche Ausgabe unterstützt, muss anhand seiner Anleitung geprüft werden.");
+}
 inline void validateFirmware(const Settings& s) {
     bool any=!s.bios9.isEmpty()||!s.bios7.isEmpty()||!s.firmware.isEmpty();
     if(!any) return; // upstream's built-in free BIOS + generated firmware, direct boot
@@ -93,6 +99,7 @@ public:
     void start(const Settings& s) {
         if(active) fail("Sitzung läuft bereits.");
         if(!s.patchedConfirmed) fail("Die vorbereitete Project-PM-ROM muss bestätigt werden. Eine normale Platin-ROM bietet keine gemeinsame Spielwelt.");
+        game=validateRom(s.rom); requireMultiplayerPatch(game); validateFirmware(s);
         QFileInfo binary(s.emulator);
         if(!binary.isFile()||!binary.isExecutable()) fail("Gepatchtes Emulator-Binary fehlt: "+s.emulator);
         // Reject unrelated binaries before acquiring locks or launching sessions.
@@ -100,7 +107,7 @@ public:
         if(!capability.waitForFinished(5000) || capability.exitCode()!=0 || !capability.readAllStandardOutput().contains("PMCOOP_ABI=1")) {
             capability.kill(); capability.waitForFinished(1000); fail("Emulator unterstützt die Co-op-Schnittstelle nicht. scripts/build.sh ausführen.");
         }
-        game=validateRom(s.rom); validateFirmware(s); saves.acquire();
+        saves.acquire();
         failed=false; stopping=false; elapsed.start(); lastFrame={{0,0}}; lastProgress={{0,0}};
         try {
             runtime=std::make_unique<QTemporaryDir>(saves.root()+"/run-XXXXXX");

@@ -204,7 +204,7 @@ class Launcher : public QWidget {
     }
     void chooseRom() {
         auto rom=QFileDialog::getOpenFileName(this,"Vorbereitete Project-PM-ROM wählen",settings.rom,"Nintendo DS (*.nds *.srl)");if(rom.isEmpty())return;
-        validateRom(rom);
+        requireMultiplayerPatch(validateRom(rom));
         bool confirmed=QMessageBox::question(this,"Project PM ROM","Ist diese Platin-ROM mit dem passenden Project-PM-Multiplayer-Patch vorbereitet? Der Launcher kann Patchversion und Welt-Synchronisation nicht anhand des ROM-Headers bestätigen.") == QMessageBox::Yes;
         if(!confirmed)return;
         settings.rom=rom;settings.patchedConfirmed=true;romLabel->setText(QFileInfo(rom).fileName());saveSettings();

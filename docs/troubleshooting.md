@@ -4,6 +4,7 @@
 |---|---|
 | Emulator nicht gefunden / falsche Schnittstelle | scripts/build.sh wiederholen; Einstellungen müssen auf melonDS-coop zeigen, nicht den unveränderten Fork oder Upstream. `--coop-capabilities` muss PMCOOP_ABI=1 ausgeben. |
 | ROM wird abgelehnt | Eigene DS-ROM mit CPU*-Platin-Kennung und geeigneter Dateigröße wählen; komprimierte Archive zunächst selbst entpacken. |
+| Unveränderte deutsche Platin-ROM erkannt | Passenden Project-PM-Patch samt Basis-ROM-Vorgabe beschaffen. Unterstützung der deutschen Sprachversion ist nicht bestätigt. [ROM-Prüfung und Patch-Abhängigkeit](rom-boot-check.md). |
 | TCP verbunden, keine zweite Figur | ROM-Patch/Bridge-Version und Aktivierung im Spiel prüfen. Eine unveränderte Platin-ROM reicht nicht. |
 | Keine Verbindung | Beide Logs öffnen. Host-bind/Socketfehler oder anderer Prozess auf dem gewählten Port möglich; sauber beenden und neu starten. Keine Portweiterleitung nötig. |
 | 15 Sekunden kein Bild | ROM-/Firmwarefehler, blockierender Upstream-Dialog oder Emulator-Hänger; Logs prüfen, gegebenenfalls vollständige eigene Dumps testen. |
