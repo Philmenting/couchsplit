@@ -2,3 +2,15 @@
 /tmp/tmpcpuzpncd/transport.cpp:426:76: warning: unused parameter ‘role’ [-Wunused-parameter]
   426 |     bool handleCtlFrame(int pi, const melonDS::u8* rx, melonDS::u32 n, int role)
       |                                                                        ~~~~^~~~
+[BR] hosting on :32831
+[BR] peer accepted -> role 2
+[BR] connected to 127.0.0.1
+[BR] host assigned role 2
+[BR] lobby name: role 2 = "83e26d13c17c" (ping 0 ms)
+[BR] lobby name: role 1 = "83e26d13c17c" (ping 0 ms)
+[BR] peer accepted -> role 2
+[BR] connected to 127.0.0.1
+[BR] hosting on :32831
+[BR] peer accepted -> role 2
+[BR] connected to 127.0.0.1
+PASS: production bridge localhost, roles, bidirectional framing, fragmentation, malformed frame, reconnect, refused connect, SIGPIPE

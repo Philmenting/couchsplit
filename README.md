@@ -33,6 +33,8 @@ ROMs, Nintendo-BIOS und proprietäre Firmware sind nicht enthalten. Der Direktst
 
 Auf einer Entwicklungsdistribution: [Abhängigkeiten installieren](docs/bazzite-installation.md), danach `scripts/build.sh`. Ausgabe: `build/bin/platinum-coop` und `build/bin/melonDS-coop`. Eine generische, verifizierte AppImage ist noch nicht verfügbar; die Distrobox-Ausführung hält Laufzeitbibliotheken konsistent.
 
+Ein Übergabepaket kann außerdem die hier kompilierten Linux-Binaries und den dazugehörigen GPL-Quellcode enthalten. Diese Binaries sind keine verifizierte portable Bazzite-Version; auf Bazzite den Distrobox-Build verwenden.
+
 [Architektur](docs/architecture.md) · [Machbarkeit und Upstream-Prüfung](docs/technical-feasibility.md) · [Teststatus](docs/development-status.md) · [Fehlerbehebung](docs/troubleshooting.md) · [Manuelle Abnahme](docs/acceptance-tests.md)
 
 ## Herkunft und Lizenz
