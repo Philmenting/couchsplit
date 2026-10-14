@@ -27,6 +27,7 @@ QT_QPA_PLATFORM=offscreen SDL_AUDIODRIVER=dummy build/bin/platinum-coop --data-d
 python3 tests/smoke_emulator.py build/bin/melonDS-coop
 ```
 No commercial ROM is needed for these checks. worker_fixture.cpp is TEST ONLY; never substitute it for the emulator in a release.
+Install xdelta3 (Fedora package xdelta) to run tests/test_prepare_rom.py against the real decoder. scripts/prepare-rom.py requires publisher-verified source/patch/target SHA-256 values and CPUD inputs/outputs. Never disable these checks to force an English patch onto German bytes. A successful decode or CPUD header is not proof of German text or world co-op; the actual Project-PM ROM mod remains a required external dependency. See docs/german-compatibility.md.
 
 ## Coding rules
 C++17, Qt6 >= 6.4, SDL2 >= 2.24; stdlib/Qt existing features before new dependencies. Use small modules already here. Validate file/process boundaries, report actionable German UI errors, use QSaveFile for owned metadata. No hardcoded home directories or shell concatenation of user paths. Keep IPC ABI synchronized with both processes. Do not use asserts as production validation. Test targets must keep asserts enabled in Release.

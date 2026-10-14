@@ -14,6 +14,7 @@
 - Sitzungssperre, SHA-256-Backupmanifeste, atomare Metadaten, gemeinsame Beendigung, Prozessfehlerbehandlung, Parent-death-Signal.
 - Distrobox-Build/Run-Wrapper, Desktop-Eintrag und manuelle Steam-Verknüpfung ohne Umschreiben vorhandener Konfigurationen.
 - GPL-Lizenz, AGENTS.md, gepinnter Upstream, CI-Workflow, dokumentierte Installation und Abnahme.
+- Lokale xdelta-Patchvorbereitung mit CPUD-Kennung, drei SHA-256-Prüfungen, unveränderter Originaldatei und atomarer Ausgabe. Enthält keinen Project-PM-ROM-Patch; [deutsche Kompatibilität und Beschaffungsblocker](german-compatibility.md).
 
 ## Automatisiert getestet
 
@@ -30,9 +31,12 @@ Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Ent
 | Zwei echte Emulatorprozesse | Eigenes ARM-Homebrew auf beiden DS-Kernen ausgeführt, RAM-Framebuffer ausgegeben, TCP verbunden, Rollen vergeben, SIGTERM-Aufräumen mit Exitcode 0 |
 | Bereitgestellte Original-Platin-ROM | 35 Sekunden in zwei realen Prozessen, >2000 Frames je Spieler, TCP-Rollen 1/2, Eingaben nur an Spieler 1, beide Exitcode 0; ROM-Bridge blieb inaktiv. Opt-in-Test außerhalb CI. |
 | Installer | Zwei Python-Tests: Pfade mit Leerzeichen, Argumentquoting, fehlendes Binary; keine Steamkonfigurationsänderung |
+| Patchvorbereitung | Echte xdelta3-Testpatches auf eigenen synthetischen Daten: Rekonstruktion, Originalerhalt, Zielschutz, Prüfsummenfehler, englische Kennungen, kaputter Patch und fehlender Decoder |
 | GUI-Erzeugung | Qt offscreen gestartet, Screenshots bei 1280 × 1000 und 3840 × 2160 erzeugt |
 | Buildpatch | Gegen den gepinnten Quellstand reversibel anwendbar geprüft |
 | GitHub Actions | Vollständiger Neubau und alle ROM-freien Tests erfolgreich (Run 38607299933) |
+
+Auch der Folgecommit zur Original-ROM-Erkennung bestand den vollständigen GitHub-Neubau und alle damaligen ROM-freien Tests: https://github.com/Philmenting/pokemon-platinum-local-coop/actions/runs/38610385288. Die anschließend ergänzte Patchvorbereitung wurde lokal mit xdelta3 3.0.11 getestet: sieben Python-Testfälle (einschließlich der zwei Installertests), alle erfolgreich. Dabei wurde kein Project-PM-ROM-Patch verwendet; dessen Beschaffung und deutscher Port bleiben blockiert.
 
 Der Homebrew-Test enthält keine Nintendo-Spiel-/Logo-/BIOS-/Firmwarebytes. Er prüft **nicht** ROM-Mailbox-Synchronisation oder Pokémon-Gameplay. Die separate TCP-Prüfung extrahiert den echten Bridgecode; das ist kein Ersatztransport.
 
@@ -49,7 +53,7 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 5. KDE Plasma Wayland, Steam Gamescope, Distrobox-GUI/Audio/Gerätezugriff auf Bazzite, Desktop/Gaming-Mode-Wechsel.
 6. 4K/60-Hz-Ausgabe und Performance/Thermik auf RTX 4060; Bildgeometrie und 4K-Menürendering sind geprüft, tatsächliche TV-Ausgabe nicht.
 7. Mehrstündiges Spielen, Kämpfe/Tausch und Verbindungsunterbrechungen während des Pokémon-Gameplays.
-8. Hochauflösendes DS-3D-Rendering, Rumble, ROM-Patcher und umfangreiche Spielebibliothek: nicht implementiert. Direkter Start einer vorbereiteten ROM ist vorhanden.
+8. Hochauflösendes DS-3D-Rendering, Rumble und umfangreiche Spielebibliothek: nicht implementiert. Direkter Start einer vorbereiteten ROM und geprüfte lokale xdelta-Patchvorbereitung sind vorhanden; ein deutscher Project-PM-Patch und automatische ROM-Mod-Portierung sind nicht vorhanden.
 
 ## Priorisierte nächste Aufgaben
 
