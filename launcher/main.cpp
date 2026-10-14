@@ -95,6 +95,7 @@ class Launcher : public QWidget {
     QLabel *statusLabel,*romLabel,*padLabel;
     QTimer uiTimer;
         bool menuHeld=false;
+    bool largeUi=false;
     QJsonObject stored;
     void report(QString msg) { QMessageBox::warning(this,"Pokémon Platinum Local Co-op",msg); }
     void saveSettings() {
@@ -175,18 +176,38 @@ class Launcher : public QWidget {
         QString content;for(int p=1;p<=2;p++){QFile f(path+"/player"+QString::number(p)+".log");if(f.open(QIODevice::ReadOnly)){f.seek(qMax(qint64(0),f.size()-262144));content+="Spieler "+QString::number(p)+"\n"+QString::fromUtf8(f.readAll())+"\n";}}
         text.setPlainText(content.isEmpty()?"Noch keine Sitzungslogs vorhanden.":content);layout.addWidget(&text);dialog.resize(1100,700);dialog.exec();
     }
+    bool autoAssign() {
+        auto pads=controllers.list();
+        if(pads.size()!=2) return false;
+        int chosen[2]={0,1};
+        bool saved=stored.contains("pad1")||stored.contains("pad2");
+        if(saved) {
+            for(int p=0;p<2;p++) {
+                auto pref=stored.value(p?"pad2":"pad1").toObject();int matches=0;
+                for(int i=0;i<2;i++) if(pads[i].guid==pref["guid"].toString() && (pref["serial"].toString().isEmpty()||pads[i].serial==pref["serial"].toString())) {chosen[p]=i;matches++;}
+                if(matches!=1)return false;
+            }
+            if(chosen[0]==chosen[1])return false;
+        }
+        controllers.assign(pads[chosen[0]].id,pads[chosen[1]].id);
+        for(int p=0;p<2;p++) {auto pad=pads[chosen[p]];stored[p?"pad2":"pad1"]=QJsonObject{{"guid",pad.guid},{"serial",pad.serial},{"name",pad.name}};}
+        padLabel->setText("Spieler 1: "+pads[chosen[0]].name+" · Instanz "+QString::number(pads[chosen[0]].id)+"\nSpieler 2: "+pads[chosen[1]].name+" · Instanz "+QString::number(pads[chosen[1]].id));
+        saveSettings();return true;
+    }
     void startGame() {
         if(session.running()) {pages->setCurrentWidget(play);play->setFocus();return;}
-        if(!controllers.connected(0)||!controllers.connected(1)) assignPads();
+        if((!controllers.connected(0)||!controllers.connected(1)) && !autoAssign()) assignPads();
         if(!controllers.connected(0)||!controllers.connected(1))return;
-        if(settings.rom.isEmpty()) chooseRom();if(settings.rom.isEmpty())return;
+        if(settings.rom.isEmpty()) chooseRom();
+        if(settings.rom.isEmpty())return;
         saveSettings();session.start(settings);play->reset();pages->setCurrentWidget(play);play->setFocus();
     }
     void chooseRom() {
         auto rom=QFileDialog::getOpenFileName(this,"Vorbereitete Project-PM-ROM wählen",settings.rom,"Nintendo DS (*.nds *.srl)");if(rom.isEmpty())return;
         validateRom(rom);
         bool confirmed=QMessageBox::question(this,"Project PM ROM","Ist diese Platin-ROM mit dem passenden Project-PM-Multiplayer-Patch vorbereitet? Der Launcher kann Patchversion und Welt-Synchronisation nicht anhand des ROM-Headers bestätigen.") == QMessageBox::Yes;
-        if(!confirmed)return;settings.rom=rom;settings.patchedConfirmed=true;romLabel->setText(QFileInfo(rom).fileName());saveSettings();
+        if(!confirmed)return;
+        settings.rom=rom;settings.patchedConfirmed=true;romLabel->setText(QFileInfo(rom).fileName());saveSettings();
     }
 public:
     Launcher(QString data):root(std::move(data)),saves(root),session(saves) {
@@ -197,7 +218,7 @@ public:
         auto mapping=stored["buttons"].toArray();if(mapping.size()==12)for(int i=0;i<12;i++){int n=mapping[i].toInt(-1);controllers.buttons[i]=(n>=-1&&n<SDL_CONTROLLER_BUTTON_MAX)?n:-1;}
         auto* outer=new QVBoxLayout(this);pages=new QStackedWidget(this);outer->addWidget(pages);
         auto* menu=new QWidget;auto* layout=new QVBoxLayout(menu);layout->setContentsMargins(60,30,60,30);
-        auto* title=new QLabel("Pokémon Platinum\nLocal Co-op");title->setStyleSheet("font-size: 42px; font-weight: bold; color: #9ff4d8;");layout->addWidget(title);
+        auto* title=new QLabel("Pokémon Platinum\nLocal Co-op");title->setObjectName("title");title->setStyleSheet("font-size: 42px; font-weight: bold; color: #9ff4d8;");layout->addWidget(title);
         romLabel=new QLabel(settings.rom.isEmpty()?"Noch keine Project-PM-ROM ausgewählt":QFileInfo(settings.rom).fileName());layout->addWidget(romLabel);
         padLabel=new QLabel("Controller noch nicht zugeordnet");layout->addWidget(padLabel);
         auto button=[&](QString name,std::function<void()> fn){auto* b=new QPushButton(name);b->setMinimumHeight(66);layout->addWidget(b);connect(b,&QPushButton::clicked,this,[this,fn]{guarded(fn);});return b;};
@@ -230,6 +251,14 @@ public:
         });uiTimer.start();
     }
 protected:
+    void resizeEvent(QResizeEvent* e) override {
+        QWidget::resizeEvent(e);
+        bool large=width()>=2800 && height()>=1600;
+        if(large==largeUi)return;
+        largeUi=large;
+        setStyleSheet(QString("QWidget {background:#111b2b; color:#e8efff; font-size:%1px;} QPushButton {background:#24354e; border:2px solid #526b91; border-radius:8px; padding:10px; min-height:%2px;} QPushButton:focus {border-color:#9ff4d8; background:#345470;} QComboBox,QLineEdit {padding:8px; background:#24354e;}").arg(large?40:24).arg(large?106:44));
+        if(auto* title=findChild<QLabel*>("title"))title->setStyleSheet(QString("font-size:%1px;font-weight:bold;color:#9ff4d8;").arg(large?72:42));
+    }
     void closeEvent(QCloseEvent* e) override {session.stop();e->accept();}
 };
 int main(int argc,char** argv) {
@@ -244,6 +273,11 @@ int main(int argc,char** argv) {
         int smoke=args.indexOf("--smoke-test");
         if(smoke>=0) {
             if(smoke+1>=args.size())return 2;
+            int sizeIndex=args.indexOf("--smoke-size");
+            if(sizeIndex>=0 && sizeIndex+1<args.size()) {
+                auto parts=args[sizeIndex+1].split('x');
+                if(parts.size()==2 && parts[0].toInt()>=800 && parts[1].toInt()>=800)launcher.resize(parts[0].toInt(),parts[1].toInt());
+            }
             QTimer::singleShot(300,&app,[&]{bool ok=launcher.grab().save(args[smoke+1]);app.exit(ok?0:1);});
         }
         return app.exec(); }

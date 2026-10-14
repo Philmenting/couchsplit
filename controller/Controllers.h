@@ -27,10 +27,10 @@ public:
         SDL_CONTROLLER_BUTTON_Y,SDL_CONTROLLER_BUTTON_X}};
     Controllers() {
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,"1");
-        if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0)
+        if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0)
             throw std::runtime_error(SDL_GetError());
     }
-    ~Controllers() { clear(); SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC); }
+    ~Controllers() { clear(); SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER); }
     void clear() {
         for (auto& h: handles) { if(h) SDL_GameControllerClose(h); h=nullptr; }
         assigned={{-1,-1}}; toggleHeld={{false,false}}; exitSince={{0,0}};
@@ -49,7 +49,7 @@ public:
     }
     void assign(SDL_JoystickID a, SDL_JoystickID b) {
         if(a<0 || b<0 || a==b) throw std::runtime_error("Zwei unterschiedliche Controller auswählen.");
-        clear(); auto pads=list();
+        clear(); 
         for(int p=0;p<2;p++) {
             const auto wanted=p?b:a;
             for(int i=0;i<SDL_NumJoysticks();i++) if(SDL_JoystickGetDeviceInstanceID(i)==wanted && SDL_IsGameController(i)) handles[p]=SDL_GameControllerOpen(i);
@@ -69,8 +69,10 @@ public:
         auto down=[&](SDL_GameControllerButton b){ return SDL_GameControllerGetButton(h,b)!=0; };
         float ax=SDL_GameControllerGetAxis(h,SDL_CONTROLLER_AXIS_LEFTX)/32768.0f;
         float ay=SDL_GameControllerGetAxis(h,SDL_CONTROLLER_AXIS_LEFTY)/32768.0f;
-        if(ax>0.35f) out.keys &= ~(1u<<4); if(ax < -0.35f) out.keys &= ~(1u<<5);
-        if(ay>0.35f) out.keys &= ~(1u<<7); if(ay < -0.35f) out.keys &= ~(1u<<6);
+        if(ax>0.35f) out.keys &= ~(1u<<4);
+        if(ax < -0.35f) out.keys &= ~(1u<<5);
+        if(ay>0.35f) out.keys &= ~(1u<<7);
+        if(ay < -0.35f) out.keys &= ~(1u<<6);
         float x=SDL_GameControllerGetAxis(h,SDL_CONTROLLER_AXIS_RIGHTX)/32768.0f;
         float y=SDL_GameControllerGetAxis(h,SDL_CONTROLLER_AXIS_RIGHTY)/32768.0f;
         auto dead=[](float v){ return std::abs(v)<0.18f?0.0f:v; };

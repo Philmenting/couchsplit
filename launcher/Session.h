@@ -52,8 +52,10 @@ class Session : public QObject {
     std::array<qint64,2> lastProgress{{0,0}};
     void cleanup() {
         active=false; monitor.stop();
-        for(auto& p:workers) p.reset(); for(auto& f:logs) f.reset();
-        for(auto& m:maps) m.reset(); runtime.reset(); saves.release();
+        for(auto& p:workers) p.reset();
+        for(auto& f:logs) f.reset();
+        for(auto& m:maps) m.reset();
+        runtime.reset(); saves.release();
         stopping=false;
     }
 public:

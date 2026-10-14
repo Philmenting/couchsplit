@@ -1,0 +1,4 @@
+/tmp/tmpcpuzpncd/transport.cpp: In member function ‘bool mpnet::Net::handleCtlFrame(int, const melonDS::u8*, melonDS::u32, int)’:
+/tmp/tmpcpuzpncd/transport.cpp:426:76: warning: unused parameter ‘role’ [-Wunused-parameter]
+  426 |     bool handleCtlFrame(int pi, const melonDS::u8* rx, melonDS::u32 n, int role)
+      |                                                                        ~~~~^~~~

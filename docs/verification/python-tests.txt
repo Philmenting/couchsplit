@@ -1,0 +1,7 @@
+test_missing_binary (test_scripts.InstallerTests.test_missing_binary) ... ok
+test_quoting_and_isolated_paths (test_scripts.InstallerTests.test_quoting_and_isolated_paths) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.005s
+
+OK

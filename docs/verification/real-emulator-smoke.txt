@@ -1,0 +1,2 @@
+PMCOOP_ABI=1;BRIDGE_WIRE=2;POSIX=1
+PASS: two PRODUCTION DS processes executed self-authored ARM homebrew, published frames, connected on localhost, assigned roles 1/2, and exited via SIGTERM

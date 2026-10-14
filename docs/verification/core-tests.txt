@@ -1,0 +1,8 @@
+Internal ctest changing into directory: /workspace/scratch/0976c5f14aa1/pokemon-platinum-local-coop/build/launcher
+Test project /workspace/scratch/0976c5f14aa1/pokemon-platinum-local-coop/build/launcher
+    Start 1: core
+1/1 Test #1: core .............................   Passed    1.15 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   1.15 sec
