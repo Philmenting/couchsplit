@@ -8,6 +8,8 @@ Eine bereitgestellte deutsche Original-ROM wurde inzwischen in zwei echten Emula
 
 [Deutsche Kompatibilität und Patchbeschaffung](docs/german-compatibility.md): Patch 0.4.5 wurde inzwischen bereitgestellt und geprüft. Er verlangt **USA Revision 1**; der echte Patchversuch auf der deutschen ROM scheitert. [Paketprüfung und Basisanforderungen](docs/project-pm-045.md). Deutsche Koop-Unterstützung ist noch nicht hergestellt.
 
+Die anschließend bereitgestellte **US-Rev-1-ROM wurde erfolgreich mit PM 0.4.5 gepatcht** und in zwei echten Emulatoren gestartet. Für diesen bekannten Build genügt `python3 scripts/prepare-rom.py --rom ORIGINAL.nds --patch BUILD.zip --output GEPATCHT.nds`; Prüfsummen werden automatisch geprüft. Die Ausgabe ist englisch. Gemeinsames Sinnoh-Gameplay und die deutsche Lokalisierung bleiben offen.
+
 ## Start auf Bazzite
 
 ```bash

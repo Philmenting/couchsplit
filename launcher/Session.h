@@ -36,6 +36,8 @@ inline void requireMultiplayerPatch(const QString& sha256) {
     // An unknown fingerprint is NOT proof of a compatible multiplayer patch.
     if(sha256=="9ffc28ff2b2d8fab60454548f92e60dd5d44f0dcc456e6e00e756424b3259217")
         fail("Unveränderte deutsche Platin-ROM erkannt. Für Koop wird eine mit dem passenden Project-PM-Patch vorbereitete ROM benötigt. Ob dieser Patch die deutsche Ausgabe unterstützt, muss anhand seiner Anleitung geprüft werden.");
+    if(sha256=="fbce4c4def0c7797f8dd238a3d7a5e48b4a7e3abd86890ac65f6321cef781bdb")
+        fail("Unveränderte USA-Rev-1-ROM erkannt. Zuerst Project PM anwenden: scripts/prepare-rom.py --rom ORIGINAL.nds --patch BUILD.zip --output GEPATCHT.nds. Die Ausgabe bleibt bei PM 0.4.5 englisch.");
 }
 inline void validateFirmware(const Settings& s) {
     bool any=!s.bios9.isEmpty()||!s.bios7.isEmpty()||!s.firmware.isEmpty();

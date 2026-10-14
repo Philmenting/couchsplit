@@ -1,6 +1,6 @@
 # Entwicklungsstatus — 14.10.2026
 
-**Ergebnis:** vollständiger Linux-Build von Project PM + eigenem Launcher, bestandene ROM-freie Tests und reale Starts zweier Emulatorprozesse mit selbst geschriebenem ARM-Homebrew sowie einer rechtmäßig bereitgestellten deutschen Original-Platin-ROM. Die Original-ROM ist ungepatcht. Noch keine erfolgreiche Pokémon-Sinnoh-Welt-Synchronisation und keine Bazzite-Hardwareabnahme. [Konkreter ROM-Test](rom-boot-check.md).
+**Ergebnis:** vollständiger Linux-Build von Project PM + eigenem Launcher, bestandene ROM-freie Tests und reale Starts zweier Emulatorprozesse mit selbst geschriebenem ARM-Homebrew, einer deutschen Original-ROM sowie der erfolgreich gepatchten US-PM-ROM 0.4.5. Die PM-Ausgabe ist englisch. Noch keine erfolgreiche Pokémon-Sinnoh-Welt-Synchronisation, deutsche Lokalisierung oder Bazzite-Hardwareabnahme. [Original-ROM-Test](rom-boot-check.md) · [PM-Patch-/Starttest](project-pm-045.md).
 
 ## Implementiert
 
@@ -33,6 +33,7 @@ Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Ent
 | Installer | Zwei Python-Tests: Pfade mit Leerzeichen, Argumentquoting, fehlendes Binary; keine Steamkonfigurationsänderung |
 | Patchvorbereitung | Echte xdelta3-Testpatches auf eigenen synthetischen Daten: Rekonstruktion, Originalerhalt, Zielschutz, Prüfsummenfehler, englische Kennungen, kaputter Patch und fehlender Decoder |
 | Bereitgestellter PM-Patch 0.4.5 | Anleitung verlangt USA Rev 1; echter Decoder verweigert deutsche Original-ROM mit Prüfsummenfehler. ZIP-Inspektion erkennt Patch/ROM und lehnt die unpassende Basis ab. Kein gepatchtes Gameplay gestartet. |
+| US-PM-ROM 0.4.5 nach weiterer Bereitstellung | Reguläres xdelta mit aktiven Prüfungen erfolgreich, Ergebnis-SHA-256 bestätigt und aus ZIP reproduziert. Zwei echte Prozesse 35 Sekunden, je 2075 Frames, TCP-Rollen 1/2, beide Exitcode 0. Einführung getestet; Wireless-Aktivierung und gemeinsame Welt offen. |
 | GUI-Erzeugung | Qt offscreen gestartet, Screenshots bei 1280 × 1000 und 3840 × 2160 erzeugt |
 | Buildpatch | Gegen den gepinnten Quellstand reversibel anwendbar geprüft |
 | GitHub Actions | Vollständiger Neubau und alle ROM-freien Tests erfolgreich (Run 38607299933) |
@@ -40,6 +41,8 @@ Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Ent
 Auch der Folgecommit zur Original-ROM-Erkennung bestand den vollständigen GitHub-Neubau und alle damaligen ROM-freien Tests: https://github.com/Philmenting/pokemon-platinum-local-coop/actions/runs/38610385288. Die anschließend ergänzte Patchvorbereitung wurde lokal mit xdelta3 3.0.11 getestet: sieben Python-Testfälle (einschließlich der zwei Installertests), alle erfolgreich. Dabei wurde kein Project-PM-ROM-Patch verwendet; dessen Beschaffung und deutscher Port bleiben blockiert.
 
 Die Patchvorbereitung bestand anschließend auch GitHub CI (https://github.com/Philmenting/pokemon-platinum-local-coop/actions/runs/38612252475). Nach Bereitstellung von Build 0.4.5 wurden Paket-/Basisprüfung und Pokédex-Hinweis ergänzt: lokaler Neubau, native Komponentensuite und nun neun Python-Tests einschließlich ZIP-Inspektion/Mehrdeutigkeitsablehnung erfolgreich. Der reale Patchversuch auf der deutschen ROM wurde erwartungsgemäß abgelehnt; keine gemeinsame Spielwelt getestet. Der zuvor fehlende Patch liegt jetzt vor, aber für die verlangte US-Basis beziehungsweise einen deutschen Port fehlen weiter die passenden Dateien.
+
+Nach zusätzlicher Bereitstellung der US-Basis: Patchskript unterstützt den bekannten Release aus ZIP mit automatischen Prüfsummen und verbietet abweichende Hash-Overrides. Das echte Ergebnis wurde ein zweites Mal reproduziert. Lokaler Neubau und native Tests erfolgreich; zehn Python-Tests bestehen, einschließlich automatischer Release-Prüfsummen/ZIP-Decodierung mit eigenem Testdatenkatalog und echtem xdelta. Patched-US-Start: 35 Sekunden, je 2075 Frames, TCP verbunden, beide sauber beendet. Die englische Datei wurde dem Nutzer separat bereitgestellt; keine ROM in GitHub.
 
 Der Homebrew-Test enthält keine Nintendo-Spiel-/Logo-/BIOS-/Firmwarebytes. Er prüft **nicht** ROM-Mailbox-Synchronisation oder Pokémon-Gameplay. Die separate TCP-Prüfung extrahiert den echten Bridgecode; das ist kein Ersatztransport.
 
@@ -49,7 +52,7 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 
 ## Nicht verifiziert / offen
 
-1. Patch 0.4.5 wurde bereitgestellt; er verlangt USA Revision 1. Die passende US-Basis liegt nicht vor; ein deutscher CPUD-Patch und ROM-Mod-Quellcode fehlen. [Pakettest](project-pm-045.md).
+1. Patch 0.4.5 und passende US-Rev-1-Basis wurden bereitgestellt und erfolgreich gepatcht. Ein deutscher CPUD-Patch beziehungsweise eine vollständige deutsche Lokalisierung fehlt weiter. [Pakettest](project-pm-045.md).
 2. Wichtigstes Akzeptanzkriterium: zwei Spielfiguren interagieren synchron in derselben Sinnoh-Welt. Die bereitgestellte deutsche Original-ROM startet, aber der vorliegende US-Patch passt nicht darauf. Ein deutscher Port wurde nicht erstellt.
 3. Tatsächliche Ingame-Save-Write/Load-Vorgänge von Pokémon; die Sicherungs-/Wiederherstellungsmechanik ist geprüft, aber nicht ein kompletter Pokémon-Spielzyklus.
 4. Physische USB-/Bluetooth-Controller, Steam-Input-Konflikte, Gerätetrennung und Neuverbindung auf dem Zielsystem.
@@ -65,6 +68,7 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 - [x] Verfügbare ROM-freie Tests und echte DS-Homebrew-Starts durchführen.
 - [x] Repository auf GitHub anlegen und lokalen Commitstand veröffentlichen.
 - [ ] Passende, rechtmäßig bereitgestellte ROM/Project-PM-Patchversion testen.
+- [x] Passende USA-Rev-1-Basis mit PM 0.4.5 patchen und in zwei echten Emulatoren auf Intro-/TCP-/Prozessfunktion testen.
 - [x] Bereitgestellten Patch 0.4.5 auf Basisanforderung prüfen und echten deutschen Patchversuch durchführen: inkompatible Basis bestätigt.
 - [ ] Gemeinsame Sinnoh-Welt nach docs/acceptance-tests.md nachweisen; erst dann spielbare Koop-Version behaupten.
 - [ ] Bazzite-/Controller-/TV-Abnahme und Dauerbetrieb.

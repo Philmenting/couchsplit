@@ -4,6 +4,8 @@ Stand 14.10.2026. **Keine deutsche Project-PM-Koop-ROM erstellt oder als funktio
 
 **Update nach Dateibereitstellung:** Das Paket `Build V0.4.5.zip` liegt jetzt vor. Seine Anleitung verlangt USA Revision 1; der echte xdelta-Test auf der deutschen Original-ROM scheitert mit einem Prüfsummenfehler. Die direkte Patchbeschaffung ist damit erledigt, aber ein CPUD-Port und die ROM-Mod-Quelle fehlen weiter. [Vollständiger Pakettest](project-pm-045.md). Die folgende öffentliche Quellenrecherche beschreibt den Stand vor diesem Upload.
 
+**Weiteres Update:** Die passende US-Rev-1-Basis wurde ebenfalls bereitgestellt und PM 0.4.5 erfolgreich mit aktiven xdelta-Prüfungen angewendet. Das englische Ergebnis startet in zwei echten Emulatorprozessen. Deutsche Sprachübernahme und tatsächliche Sinnoh-Welt-Synchronisation sind noch nicht umgesetzt beziehungsweise bestätigt.
+
 ## Erneut geprüfte Primärquellen
 
 | Quelle | Tatsächlich gefunden |
@@ -27,7 +29,7 @@ Mit der ROM-Mod-Quelle können die deutschen Spielressourcen, ROM-Hooks/Overlays
 
 `scripts/prepare-rom.py` verwendet den vorhandenen xdelta3-Decoder. Es prüft ausdrücklich:
 
-- deutsche `CPUD`-Kennung von Basis und Ergebnis;
+- deutsche `CPUD`-Kennung bei unbekannten deutschen Patches; für den verifizierten US-PM-Build 0.4.5 die katalogisierten `CPUE`-Kennungen;
 - erwartete SHA-256-Werte von Basis-ROM, Patch und Ergebnis;
 - vorhandene Zieldateien werden nicht überschrieben;
 - Original-ROM bleibt erhalten, Ausgabe mit privaten Dateirechten außerhalb des Repositories;
@@ -52,4 +54,4 @@ Der Beispielaufruf setzt einen Patch voraus, dessen dokumentierte Basis exakt di
 
 Die Patchvorbereitung wird mit echten xdelta3-Encoding-/Decoding-Vorgängen auf selbst erstellten synthetischen Daten geprüft. Keine Nintendo-Spielbytes in Tests. Prüfungen umfassen erfolgreiche Rekonstruktion, Pfade mit Leerzeichen, Originalerhalt, Schreibrechte, Verweigerung vorhandener Ziele, falsche Basis-/Patch-/Ergebnis-Prüfsummen, englische Kennungen, kaputte Patches und fehlenden Decoder. Das ist ein Test der Patchvorbereitung; **kein Test eines deutschen Project-PM-Patches**.
 
-Der nun bereitgestellte Patch 0.4.5 hat als Basis CPUE USA Revision 1. Er passt nicht auf die deutsche Datei. Für Deutsch wird die ROM-Mod-Quelle oder ein CPUD-Patch benötigt; für einen englischen Gameplaytest zuerst eine eigene passende US-Basis. Ein SHA-1-/Kennungsabgleich ist jetzt mit `scripts/prepare-rom.py --inspect` möglich.
+Der nun bereitgestellte Patch 0.4.5 hat als Basis CPUE USA Revision 1. Er passt nicht auf die deutsche Datei. Die ebenfalls bereitgestellte passende US-Basis wurde erfolgreich gepatcht und auf Start-/TCP-Funktion geprüft. Für Deutsch ist weiterhin eine Lokalisierung des US-PM-Ergebnisses oder ein nativer CPUD-Port zu entwickeln. Ein SHA-1-/Kennungsabgleich ist mit `scripts/prepare-rom.py --inspect` möglich.

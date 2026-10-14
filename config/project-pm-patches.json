@@ -7,9 +7,13 @@
     "source_revision": 1,
     "source_size": 134217728,
     "source_sha1": "0862ec35b24de5c7e2dcb88c9eea0873110d755c",
+    "source_sha256": "fbce4c4def0c7797f8dd238a3d7a5e48b4a7e3abd86890ac65f6321cef781bdb",
+    "target_game_code": "CPUE",
+    "target_sha256": "8ef9d4eeee81513f2d6e13c36125cdbfa4c6f498b039ef4b99faa7095d39cfa5",
+    "target_fingerprint_evidence": "Decoded from the user-provided verified USA Rev 1 base with all xdelta window checks active; booted in two real emulator processes",
     "source_label": "Pokémon Platinum (USA), Revision 1",
     "evidence": "User-supplied Build V0.4.5/SETUP_GUIDE.md, section 1; No-Intro USA Rev 1 fingerprint",
     "german_port": "not_provided",
-    "emulator_bridge_test": "not_run_without_matching_base_rom"
+    "emulator_bridge_test": "tcp_and_intro_boot_passed_35s; ROM activation and world synchronization not tested"
   }
 ]

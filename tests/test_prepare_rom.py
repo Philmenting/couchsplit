@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 import sys
 import zipfile
 
@@ -58,7 +59,7 @@ class PatchTests(unittest.TestCase):
                 self.assertFalse(self.output.exists())
                 self.assertFalse(list(self.root.glob('.platinum-patch-*')))
 
-    def test_english_base_rejected_even_if_checksums_match(self):
+    def test_unknown_english_base_rejected_even_if_checksums_match(self):
         data = bytearray(self.source.read_bytes()); data[12:16] = b'CPUE'; self.source.write_bytes(data)
         with self.assertRaises(ValueError): self.apply()
         self.assertFalse(self.output.exists())
@@ -103,3 +104,25 @@ class PatchTests(unittest.TestCase):
         with self.assertRaises(ValueError): patcher.inspect_patch(self.source, archive)
         self.source.write_bytes(b'bad header')
         with self.assertRaises(ValueError): patcher.inspect_patch(self.source, self.delta)
+
+    def test_known_release_auto_hashes_zip_and_no_override(self):
+        # Test-only release metadata, real VCDIFF decoder, self-authored buffers.
+        for path in (self.source, self.target):
+            data = bytearray(path.read_bytes()); data[12:16] = b'CPUE'; data[0x1E] = 1; path.write_bytes(data)
+        self.encode()
+        archive = self.root / 'own release.zip'
+        with zipfile.ZipFile(archive, 'w') as package: package.write(self.delta, 'own.xdelta')
+        report = patcher.inspect_patch(self.source, archive)
+        catalog = self.root / 'TEST_ONLY_catalog.json'
+        catalog.write_text(json.dumps([dict(version='TEST_ONLY', source_label='own synthetic header',
+                                          patch_sha256=patcher.sha256(self.delta),
+                                          source_sha1=report['source_sha1'], source_game_code='CPUE',
+                                          source_revision=1, source_size=self.source.stat().st_size,
+                                          source_sha256=patcher.sha256(self.source),
+                                          target_game_code='CPUE', target_sha256=patcher.sha256(self.target))]))
+        with patch.object(patcher, 'CATALOG_PATH', catalog):
+            with self.assertRaises(ValueError):
+                patcher.prepare(self.source, archive, self.output, target_sha256='0' * 64)
+            self.assertFalse(self.output.exists())
+            patcher.prepare(self.source, archive, self.output)
+        self.assertEqual(self.output.read_bytes(), self.target.read_bytes())
