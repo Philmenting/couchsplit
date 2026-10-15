@@ -46,14 +46,22 @@ Nach zusätzlicher Bereitstellung der US-Basis: Patchskript unterstützt den bek
 
 Der Homebrew-Test enthält keine Nintendo-Spiel-/Logo-/BIOS-/Firmwarebytes. Er prüft **nicht** ROM-Mailbox-Synchronisation oder Pokémon-Gameplay. Die separate TCP-Prüfung extrahiert den echten Bridgecode; das ist kein Ersatztransport.
 
+## Deutsche Text-Alpha, 15.10.2026
+
+Implementiert: stdlib-Nitro/NARC/Nachrichtenwerkzeuge, Drei-Wege-Abgleich, 857 eigene Übersetzungsfingerabdrücke (1.208 Vorkommen), deutsche Originaltexte und geprüfte Fontübernahme, exakte Eingabehashes, atomare Ausgabe ohne Überschreiben. Alle PM-Programm-/Overlay-/Skriptbytes bleiben unverändert. Die unbenutzte regional unterschiedliche Diamond/Pearl-Abspannbank wird erhalten. [Verfahren, Abdeckung und Grenzen](german-localization.md).
+
+Automatisiert getestet: fünf neue synthetische Format-/Merge-/Kontrollzeichen-/Byteinvarianztests; vollständige Python-Suite mit echtem xdelta3: 15 Tests erfolgreich, keine übersprungen. Zweimaliger echter ROM-Build ergibt identischen SHA-256 `8b11f36e7bf4a15932eb364358fba183c2067ac8265cfbc97611ca53e3c90949`. 40 Sekunden in zwei echten Emulatorprozessen: 2369/2370 Frames, je 2097 zusätzliche Frames nach Sekunde 5, TCP verbunden, Rollen 1/2, beide sauber mit Exitcode 0 beendet. Funkspiel-Bridge blieb vor dem Pokédex inaktiv; keine Welt-Synchronisation bewiesen.
+
+Visuell geprüft: deutsche Begrüßung „Schön, dich kennenzulernen!“ mit Umlaut im echten Emulator-Framebuffer. Nicht verifiziert: vollständige Story, alle PM-Menüs und Textbreiten, sprachabhängige US-Grammatikroutinen, Ingame-Save-Migration, Bazzite-Hardware. Grafisch eingebettete Schrift ist nicht lokalisiert; „YES/NO“ in der Einführung wurde als englisch erkannt. Ein weiterer 105-Sekunden-Lauf mit Eingaben an Spieler 1 bestand mit 6272/6273 Frames, TCP-Verbindung und beiden Exitcodes 0. Originaltext-Anleitungen auf beiden DS-Schirmen wurden deutsch dargestellt.
+
 ## Manuell bestätigt
 
 Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhalte visuell kontrolliert. Private DS-Bilder der deutschen Original-ROM zeigen unterschiedliche Intro-/Einführungszustände nach Eingaben nur an Spieler 1. **Keine Funktion wurde auf dem tatsächlichen Bazzite-PC mit Fernseher und physischen Controllern manuell bestätigt.**
 
 ## Nicht verifiziert / offen
 
-1. Patch 0.4.5 und passende US-Rev-1-Basis wurden bereitgestellt und erfolgreich gepatcht. Ein deutscher CPUD-Patch beziehungsweise eine vollständige deutsche Lokalisierung fehlt weiter. [Pakettest](project-pm-045.md).
-2. Wichtigstes Akzeptanzkriterium: zwei Spielfiguren interagieren synchron in derselben Sinnoh-Welt. Die bereitgestellte deutsche Original-ROM startet, aber der vorliegende US-Patch passt nicht darauf. Ein deutscher Port wurde nicht erstellt.
+1. Patch 0.4.5 und passende US-Rev-1-Basis wurden bereitgestellt und erfolgreich gepatcht. Die US-basierte deutsche Text-Alpha ist inzwischen implementiert und gestartet; ein nativer CPUD-Patch und vollständige Spielprüfung fehlen. [Pakettest](project-pm-045.md).
+2. Wichtigstes Akzeptanzkriterium: zwei Spielfiguren interagieren synchron in derselben Sinnoh-Welt. US-PM und die darauf aufbauende deutsche Text-Alpha starten. Die ROM-seitige Funkspiel-Aktivierung und tatsächliche gemeinsame Welt wurden noch nicht geprüft.
 3. Tatsächliche Ingame-Save-Write/Load-Vorgänge von Pokémon; die Sicherungs-/Wiederherstellungsmechanik ist geprüft, aber nicht ein kompletter Pokémon-Spielzyklus.
 4. Physische USB-/Bluetooth-Controller, Steam-Input-Konflikte, Gerätetrennung und Neuverbindung auf dem Zielsystem.
 5. KDE Plasma Wayland, Steam Gamescope, Distrobox-GUI/Audio/Gerätezugriff auf Bazzite, Desktop/Gaming-Mode-Wechsel.
@@ -67,7 +75,8 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 - [x] Profile, Prozessverwaltung, Eingaben, Darstellung und Launcher implementieren.
 - [x] Verfügbare ROM-freie Tests und echte DS-Homebrew-Starts durchführen.
 - [x] Repository auf GitHub anlegen und lokalen Commitstand veröffentlichen.
-- [ ] Passende, rechtmäßig bereitgestellte ROM/Project-PM-Patchversion testen.
+- [x] Passende, rechtmäßig bereitgestellte ROM/Project-PM-Patchversion auf Start testen.
+- [x] US-basierte deutsche Text-Alpha bauen und Einführung prüfen.
 - [x] Passende USA-Rev-1-Basis mit PM 0.4.5 patchen und in zwei echten Emulatoren auf Intro-/TCP-/Prozessfunktion testen.
 - [x] Bereitgestellten Patch 0.4.5 auf Basisanforderung prüfen und echten deutschen Patchversuch durchführen: inkompatible Basis bestätigt.
 - [ ] Gemeinsame Sinnoh-Welt nach docs/acceptance-tests.md nachweisen; erst dann spielbare Koop-Version behaupten.

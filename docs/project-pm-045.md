@@ -1,6 +1,8 @@
 # Prüfung des bereitgestellten Project-PM-Pakets 0.4.5
 
-14.10.2026. Das vom Nutzer bereitgestellte `Build V0.4.5.zip` enthält einen echten ROM-Binärpatch. **Der Patch ist für Pokémon Platinum USA Revision 1 vorgesehen und auf der bereitgestellten deutschen Original-ROM nicht direkt anwendbar.** Keine gepatchte deutsche ROM oder gemeinsame Sinnoh-Welt wurde erfolgreich erzeugt/getestet.
+Historischer Pakettest vom 14.10.2026; Update 15.10.2026: Die spätere [deutsche US-basierte Text-Alpha](german-localization.md) wurde erzeugt und gestartet. Ein nativer CPUD-Port und Welt-Synchronisation bleiben unbestätigt.
+
+Das vom Nutzer bereitgestellte `Build V0.4.5.zip` enthält einen echten ROM-Binärpatch. **Der Patch ist für Pokémon Platinum USA Revision 1 vorgesehen und auf der bereitgestellten deutschen Original-ROM nicht direkt anwendbar.** Beim damaligen direkten deutschen Patchversuch wurde keine funktionierende Ausgabe erzeugt.
 
 ## Update: US-Basis bereitgestellt und erfolgreich gepatcht
 
@@ -70,4 +72,4 @@ Der Launcher zeigt den Pokédex-/Wireless-Play-Schritt jetzt im Verbindungsstatu
 
 Für einen belastbaren deutschen Port fehlt weiterhin der ROM-Mod-Quellcode oder ein vom Autor tatsächlich für CPUD erstellter Patch. Ein Binärdelta für CPUE reicht zur geprüften Anpassung aller Spielcode-Hooks und deutschen Textressourcen nicht aus. Es wurde kein vollständiger deutscher Port implementiert.
 
-Die passende USA-Rev-1-Basis wurde inzwischen bereitgestellt, gepatcht und auf Intro-/TCP-/Prozessfunktion getestet. Als Nächstes muss die gemeinsame Spielwelt nach dem Pokédex tatsächlich nachgewiesen werden. Danach ist eine deutsche Lokalisierung auf US-PM-Basis zu untersuchen; ein vollständiger nativer CPUD-Port bleibt ein anderes, noch nicht umgesetztes Vorhaben. Die deutsche Originaldatei wird dabei nicht ersetzt.
+Die passende USA-Rev-1-Basis wurde inzwischen bereitgestellt, gepatcht und auf Intro-/TCP-/Prozessfunktion getestet. Als Nächstes muss die gemeinsame Spielwelt nach dem Pokédex tatsächlich nachgewiesen werden. Die deutsche Lokalisierung auf US-PM-Basis ist inzwischen als Alpha implementiert; ein vollständiger nativer CPUD-Port bleibt ein anderes, noch nicht umgesetztes Vorhaben. Die deutsche Originaldatei wird dabei nicht ersetzt.

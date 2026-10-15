@@ -6,9 +6,9 @@ Ein Linux-Launcher für zwei **getrennte Project-PM/melonDS-Prozesse**, zwei Con
 
 Eine bereitgestellte deutsche Original-ROM wurde inzwischen in zwei echten Emulatorprozessen gestartet und geprüft: [ROM-Startprüfung](docs/rom-boot-check.md). Sie ist ungepatcht; ihre Multiplayer-Bridge bleibt inaktiv. Die App erklärt bei diesem bekannten Original-Fingerabdruck ausdrücklich den fehlenden Patch.
 
-[Deutsche Kompatibilität und Patchbeschaffung](docs/german-compatibility.md): Patch 0.4.5 wurde inzwischen bereitgestellt und geprüft. Er verlangt **USA Revision 1**; der echte Patchversuch auf der deutschen ROM scheitert. [Paketprüfung und Basisanforderungen](docs/project-pm-045.md). Deutsche Koop-Unterstützung ist noch nicht hergestellt.
+[Deutsche Lokalisierung](docs/german-localization.md): Eine **US-basierte deutsche PM-0.4.5-Alpha** kann jetzt reproduzierbar aus den drei eigenen ROM-Dateien erzeugt werden. Deutsche Originaltexte und zusätzliche PM-Übersetzungen werden übernommen, die PM-Programmbytes bleiben erhalten. Die deutsche Einführung wurde im Emulator visuell geprüft. Ein vollständiger deutscher Spieldurchlauf und die gemeinsame Sinnoh-Welt sind offen. Das ist kein nativer CPUD-Port.
 
-Die anschließend bereitgestellte **US-Rev-1-ROM wurde erfolgreich mit PM 0.4.5 gepatcht** und in zwei echten Emulatoren gestartet. Für diesen bekannten Build genügt `python3 scripts/prepare-rom.py --rom ORIGINAL.nds --patch BUILD.zip --output GEPATCHT.nds`; Prüfsummen werden automatisch geprüft. Die Ausgabe ist englisch. Gemeinsames Sinnoh-Gameplay und die deutsche Lokalisierung bleiben offen.
+Die bereitgestellte **US-Rev-1-ROM wurde erfolgreich mit PM 0.4.5 gepatcht** und in zwei echten Emulatoren gestartet. Für diesen bekannten Build genügt `python3 scripts/prepare-rom.py --rom ORIGINAL.nds --patch BUILD.zip --output GEPATCHT.nds`; Prüfsummen werden automatisch geprüft. Dieses erste Ergebnis ist englisch. Anschließend erzeugt `scripts/localize-pm.py` daraus zusammen mit beiden Original-ROMs die deutsche Alpha. [Basisanforderungen und Paketprüfung](docs/project-pm-045.md).
 
 ## Start auf Bazzite
 

@@ -1,0 +1,31 @@
+{
+  "rom_sha256": "8b11f36e7bf4a15932eb364358fba183c2067ac8265cfbc97611ca53e3c90949",
+  "seconds": 40,
+  "frame_counts": [
+    2369,
+    2370
+  ],
+  "frame_progress_after_5s": [
+    2097,
+    2097
+  ],
+  "tcp_connected": [
+    true,
+    true
+  ],
+  "bridge_activated": [
+    false,
+    false
+  ],
+  "final_roles": [
+    1,
+    2
+  ],
+  "exit_codes": [
+    0,
+    0
+  ],
+  "final_views_differ": true,
+  "input": "A pulses to player 1 only, 10\u201320 seconds",
+  "world_synchronization_verified": false
+}

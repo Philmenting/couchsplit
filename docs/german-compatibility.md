@@ -1,10 +1,12 @@
 # Deutsche Ausgabe: Patchbeschaffung und Kompatibilität
 
-Stand 14.10.2026. **Keine deutsche Project-PM-Koop-ROM erstellt oder als funktionsfähig bestätigt.** Die deutsche Original-ROM `CPUD`, Revision 0, wurde bereits in zwei realen Emulatoren gestartet; siehe [ROM-Startprüfung](rom-boot-check.md). Die fehlende Komponente ist weiterhin der ROM-seitige Multiplayer-Mod.
+Aktueller Stand 15.10.2026: Eine **US-basierte deutsche Text-Alpha ist implementiert und auf Start geprüft**; siehe [deutsche Lokalisierung](german-localization.md). Vollständiger Spieldurchlauf und Welt-Koop bleiben unbestätigt. Der folgende historische Bericht vom 14.10.2026 dokumentiert die Beschaffung und erklärt den weiterhin nicht implementierten nativen CPUD-Port.
+
+Historischer Prüfstand 14.10.2026: Die deutsche Original-ROM `CPUD`, Revision 0, wurde bereits in zwei realen Emulatoren gestartet; siehe [ROM-Startprüfung](rom-boot-check.md). Die fehlende Komponente ist weiterhin der ROM-seitige Multiplayer-Mod.
 
 **Update nach Dateibereitstellung:** Das Paket `Build V0.4.5.zip` liegt jetzt vor. Seine Anleitung verlangt USA Revision 1; der echte xdelta-Test auf der deutschen Original-ROM scheitert mit einem Prüfsummenfehler. Die direkte Patchbeschaffung ist damit erledigt, aber ein CPUD-Port und die ROM-Mod-Quelle fehlen weiter. [Vollständiger Pakettest](project-pm-045.md). Die folgende öffentliche Quellenrecherche beschreibt den Stand vor diesem Upload.
 
-**Weiteres Update:** Die passende US-Rev-1-Basis wurde ebenfalls bereitgestellt und PM 0.4.5 erfolgreich mit aktiven xdelta-Prüfungen angewendet. Das englische Ergebnis startet in zwei echten Emulatorprozessen. Deutsche Sprachübernahme und tatsächliche Sinnoh-Welt-Synchronisation sind noch nicht umgesetzt beziehungsweise bestätigt.
+**Weiteres Update:** Die passende US-Rev-1-Basis wurde ebenfalls bereitgestellt und PM 0.4.5 erfolgreich mit aktiven xdelta-Prüfungen angewendet. Das englische Ergebnis startet in zwei echten Emulatorprozessen. Die inzwischen implementierte deutsche Sprachübernahme ist separat dokumentiert. Tatsächliche Sinnoh-Welt-Synchronisation bleibt unbestätigt.
 
 ## Erneut geprüfte Primärquellen
 
@@ -23,7 +25,7 @@ Stand 14.10.2026. **Keine deutsche Project-PM-Koop-ROM erstellt oder als funktio
 
 Erforderlich ist entweder ein für `CPUD` veröffentlichter Patch samt exakter Basis-/Ergebnis-Prüfsumme oder der ROM-Mod-Quellcode mit Nutzungsbedingungen und Buildanleitung. Ein US-xdelta-Patch ist nicht automatisch ein deutscher Port. Die Emulator-Bridge findet ihre Mailbox dynamisch über Discovery-Magics; im geprüften Bridgecode gibt es dafür keine CPUE-Sprachvoraussetzung. Der ROM-Mod muss diese Mailbox jedoch selbst bereitstellen und mit seinem Spielcode verbinden.
 
-Mit der ROM-Mod-Quelle können die deutschen Spielressourcen, ROM-Hooks/Overlays und zusätzlichen Multiplayertexte angepasst und getestet werden. Ohne diese Quelle lassen sich die fehlenden Funktionen nicht aus dem Emulatorrelease rekonstruieren. Nur die Headerkennung zu ändern oder xdelta-Prüfungen abzuschalten erzeugt keine belastbare Sprachunterstützung.
+Mit der ROM-Mod-Quelle können die deutschen Spielressourcen, ROM-Hooks/Overlays und zusätzlichen Multiplayertexte angepasst und getestet werden. Für einen nativen CPUD-Spielcode-Port reicht der Emulatorrelease allein nicht. Die neue US-basierte Textlokalisierung benötigt diesen Spielcode-Port nicht. Nur die Headerkennung zu ändern oder xdelta-Prüfungen abzuschalten erzeugt keine belastbare Sprachunterstützung.
 
 ## Implementierte lokale Patchvorbereitung
 
@@ -54,4 +56,4 @@ Der Beispielaufruf setzt einen Patch voraus, dessen dokumentierte Basis exakt di
 
 Die Patchvorbereitung wird mit echten xdelta3-Encoding-/Decoding-Vorgängen auf selbst erstellten synthetischen Daten geprüft. Keine Nintendo-Spielbytes in Tests. Prüfungen umfassen erfolgreiche Rekonstruktion, Pfade mit Leerzeichen, Originalerhalt, Schreibrechte, Verweigerung vorhandener Ziele, falsche Basis-/Patch-/Ergebnis-Prüfsummen, englische Kennungen, kaputte Patches und fehlenden Decoder. Das ist ein Test der Patchvorbereitung; **kein Test eines deutschen Project-PM-Patches**.
 
-Der nun bereitgestellte Patch 0.4.5 hat als Basis CPUE USA Revision 1. Er passt nicht auf die deutsche Datei. Die ebenfalls bereitgestellte passende US-Basis wurde erfolgreich gepatcht und auf Start-/TCP-Funktion geprüft. Für Deutsch ist weiterhin eine Lokalisierung des US-PM-Ergebnisses oder ein nativer CPUD-Port zu entwickeln. Ein SHA-1-/Kennungsabgleich ist mit `scripts/prepare-rom.py --inspect` möglich.
+Der nun bereitgestellte Patch 0.4.5 hat als Basis CPUE USA Revision 1. Er passt nicht auf die deutsche Datei. Die ebenfalls bereitgestellte passende US-Basis wurde erfolgreich gepatcht und auf Start-/TCP-Funktion geprüft. Die Lokalisierung des US-PM-Ergebnisses ist inzwischen als Alpha vorhanden; ein nativer CPUD-Port bleibt offen. Ein SHA-1-/Kennungsabgleich ist mit `scripts/prepare-rom.py --inspect` möglich.
