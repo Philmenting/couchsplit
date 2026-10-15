@@ -12,7 +12,7 @@ Die bereitgestellte **US-Rev-1-ROM wurde erfolgreich mit PM 0.4.5 gepatcht** und
 
 ## Start auf Bazzite
 
-**Einfachster Weg:** `Pokemon-Platinum-Coop-Bazzite.run` im Desktop herunterladen, in den Dateieigenschaften als ausführbar markieren und doppelklicken. Der Installer richtet eine eigene Laufzeit ein, legt den Startmenüeintrag an und öffnet danach die ROM-Auswahl. Die vorbereitete ROM oder ihr ZIP hinzufügen. Beide fertigen Programme sind enthalten; kein Kompilieren und kein GitHub-Login. Internet und 3 GiB freier Speicher erforderlich. [Anleitung und tatsächlicher Prüfstatus](docs/one-file-installer.md).
+**Einfachster Weg:** `Pokemon-Platinum-Coop-Bazzite.run` im Desktop herunterladen, in den Dateieigenschaften als ausführbar markieren und doppelklicken. Der Installer richtet eine eigene Laufzeit ein, legt den Startmenüeintrag an, fordert automatisch die Aufnahme in Steam an und öffnet danach die ROM-Auswahl. Die vorbereitete ROM oder ihr ZIP hinzufügen. Beide fertigen Programme sind enthalten; kein Kompilieren und kein GitHub-Login. Internet und 3 GiB freier Speicher erforderlich. [Anleitung und tatsächlicher Prüfstatus](docs/one-file-installer.md).
 
 Für Entwickler bleibt der Quellbuild verfügbar:
 
@@ -23,7 +23,7 @@ Für Entwickler bleibt der Quellbuild verfügbar:
 
 Das Skript legt einen Fedora-44-Distrobox-Container an, installiert die Abhängigkeiten **im Container**, baut beide Programme und erzeugt einen eigenen Launcher/Desktop-Eintrag. Bestehende Steam-, Gamescope- und NVIDIA-Einstellungen werden nicht verändert.
 
-Ersteinrichtung im Desktopmodus: kompatible gepatchte ROM auswählen, Emulatorpfad kontrollieren, Controller zuordnen. Den Desktop-Eintrag anschließend in Steam als Nicht-Steam-Spiel hinzufügen. **Steam Input für dieses Spiel deaktivieren**, damit die SDL-Eingaben eindeutig bleiben. [Vollständige Anleitung](docs/bazzite-installation.md).
+Ersteinrichtung im Desktopmodus: kompatible gepatchte ROM auswählen, Emulatorpfad kontrollieren, Controller zuordnen. Die Installation fordert über Bazzites Funktion automatisch einen Nicht-Steam-Eintrag an. Falls dieser fehlt: Startmenü-Rechtsklick → „Erneut zu Steam hinzufügen“. **Steam Input für dieses Spiel deaktivieren**, damit die SDL-Eingaben eindeutig bleiben. [Vollständige Anleitung](docs/bazzite-installation.md).
 
 ## Funktionen im Code
 

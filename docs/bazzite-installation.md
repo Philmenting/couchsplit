@@ -33,7 +33,7 @@ Ersteinrichtung im KDE-Desktop:
 
 ## Steam Gaming Mode
 
-Im Desktop-Steam „Spiel hinzufügen → Steam-fremdes Spiel“ und den erzeugten Eintrag **Pokémon Platinum Local Co-op** bzw. `~/.local/bin/pokemon-platinum-local-coop` wählen. Startoptionen müssen nicht global geändert werden. Für diesen einen Eintrag **Steam Input deaktivieren**, wenn Steam physische und virtuelle Controller doppelt präsentiert oder Tastatureingaben emuliert.
+Der Installer öffnet automatisch Bazzites Funktion zum Hinzufügen des Launchers zu Steam. Falls erforderlich, in Desktop-Steam anmelden. Unter „Steam-fremd“ nach **Pokémon Platinum Local Co-op** suchen. Fehlt der Eintrag: im Startmenü Rechtsklick auf den Launcher → „Erneut zu Steam hinzufügen“. Alternativ in Desktop-Steam „Spiel hinzufügen → Steam-fremdes Spiel“ und den erzeugten Startmenüeintrag wählen. Startoptionen müssen nicht global geändert werden. Für diesen einen Eintrag **Steam Input deaktivieren**, wenn Steam physische und virtuelle Controller doppelt präsentiert oder Tastatureingaben emuliert.
 
 Danach in den Gaming Mode wechseln und den Eintrag starten. Ein einziges Qt-Hauptfenster enthält beide Spieleransichten. Keine Fremdfensterpositionierung oder zweite Gamescope-Instanz erforderlich. Ausgabeauflösung in den vorhandenen Steam-/TV-Einstellungen auf 3840 × 2160, 60 Hz wählen. Das Programm respektiert die tatsächlich verfügbare Fenstergröße.
 

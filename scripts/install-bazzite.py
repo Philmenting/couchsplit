@@ -187,10 +187,22 @@ def main():
             try: fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError: raise RuntimeError('Eine Installation läuft bereits.')
             wrapper = install(args.payload.resolve(), root, data, Path.home() / '.local/bin', args.release_id, ui, log)
+            ui.stage(5, 'Launcher zu Steam hinzufügen …')
+            # Host helper, after the application is installed. Missing/closed Steam
+            # must not roll back a working runtime or affect saves.
+            steam_script = root / 'software/current/project/scripts/add-to-steam.py'
+            try:
+                result = command([sys.executable, str(steam_script), '--desktop',
+                                  str(data / 'applications/pokemon-platinum-local-coop.desktop'),
+                                  '--state', str(root / 'steam-registration.json')], log, check=False, timeout=40)
+                steam_message = result.stdout.strip()
+            except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+                steam_message = 'Steam-Anfrage nicht bestätigt: ' + str(error)
         ui.close()
         if not args.yes: ui.message('Installation abgeschlossen.\n\nJetzt deine ROM oder das ROM-ZIP auswählen.\n'
                      'Später findest du das Spiel im Startmenü unter „Pokémon Platinum Local Co-op“.\n\n'
-                     'Für Gaming Mode einmal in Steam: Spiel hinzufügen → Steam-fremdes Spiel.\n'
+                     + steam_message + '\n'
+                     'Fehlt der Eintrag? Im Startmenü Rechtsklick → Erneut zu Steam hinzufügen.\n'
                      'Für diesen Eintrag Steam Input deaktivieren, falls doppelte Eingaben auftreten.')
         if not args.no_launch:
             with log_path.open('a') as log:

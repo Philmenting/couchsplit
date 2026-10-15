@@ -11,7 +11,23 @@ Der Installer `Pokemon-Platinum-Coop-Bazzite.run` enthält beide fertigen Linux-
 
 Die ROM wird mit privaten Dateirechten in den eigenen Datenordner kopiert. Der Download kann danach entfernt werden. Eine normale ungepatchte Platin-ROM wird weiterhin abgelehnt; der Installer beschafft keine Spiele und patcht diese nicht automatisch.
 
-Später im Startmenü **Pokémon Platinum Local Co-op** öffnen. Für Gaming Mode einmal in Desktop-Steam „Spiel hinzufügen → Steam-fremdes Spiel“ und diesen Eintrag auswählen. Bestehende Steamdateien werden vom Installer nicht umgeschrieben. Steam Input für diesen Eintrag deaktivieren, falls doppelte oder emulierte Tastatureingaben auftreten. BIOS/Firmware ist für den voreingestellten freien Direktstart nicht erforderlich.
+Später im Startmenü **Pokémon Platinum Local Co-op** öffnen. Der Installer fordert automatisch einen Nicht-Steam-Eintrag für den Gaming Mode an. Falls nötig, in Steam anmelden; unter **Steam-fremd** nach dem Launcher suchen. Steam Input für diesen Eintrag deaktivieren, falls doppelte oder emulierte Tastatureingaben auftreten. BIOS/Firmware ist für den voreingestellten freien Direktstart nicht erforderlich.
+
+## Automatisch zu Steam hinzufügen
+
+Der Installer ruft **auf dem Host** Bazzites vorhandenes `steamos-add-to-steam` mit unserem `.desktop`-Eintrag auf. Steam verarbeitet die Aufnahme für das dort angemeldete Konto. Der stabile Wrapper bleibt bei Updates gleich; die neue Programmversion wird dadurch über den vorhandenen Steam-Eintrag gestartet. Steamdateien, Controlleroptionen und andere Spiele werden von unserem Code nicht direkt bearbeitet.
+
+Eine Sperre und eine eigene Datei `steam-registration.json` verhindern eine erneute automatische Anfrage bei Neuinstallation. Die Datei bestätigt nur die **Anfrage**, nicht die tatsächliche Aufnahme durch Steam. Auch bei einem Timeout kann Steam den Eintrag bereits erhalten haben; deshalb wird dann nicht still erneut angefordert. Fehlt die Bazzite-Funktion, bleibt die Anwendung installiert und die Abschlussmeldung erklärt den Rückfall.
+
+Falls der Eintrag fehlt, im Desktop-Steam anmelden und zuerst die Bibliothek prüfen. Danach bei Bedarf im Startmenü Rechtsklick auf den Launcher → **Erneut zu Steam hinzufügen**. Alternativ im Terminal:
+
+```bash
+~/.local/bin/pokemon-platinum-local-coop --add-to-steam
+```
+
+Dies wiederholt die Anfrage ausdrücklich und kann bei bereits vorhandenem Eintrag einen Doppelgänger erzeugen. Auch nach einem Steam-Kontowechsel oder bewusstem Entfernen des Eintrags diese Aktion verwenden. Manuell geht weiterhin „Spiel hinzufügen → Steam-fremdes Spiel“. Für die automatische Aufnahme wird Bazzites native Steam-Integration vorausgesetzt; eine separat installierte Flatpak-Version wird hier nicht automatisch konfiguriert.
+
+Primärquellen: Bazzite [installiert den KDE-Helfer](https://github.com/ublue-os/bazzite/blob/main/spec_files/steamdeck-kde-presets/steamdeck-kde-presets-desktop.spec); das [GNOME-Gegenstück](https://github.com/ublue-os/bazzite/blob/main/spec_files/steamdeck-gnome-presets/steamos-add-to-steam) zeigt das verwendete Steam-Protokoll und die Unterstützung von Desktopdateien. Der vorhandene Helfer wird aufgerufen, kein fremder GPLv2-Skriptcode in dieses GPLv3-Projekt kopiert. Quellstand am 15.10.2026 geprüft. Der tatsächliche Steam-Client ist in dieser Entwicklungsumgebung nicht verfügbar.
 
 ## Was eingerichtet wird
 
@@ -50,8 +66,8 @@ Primärquellen: [Distrobox auf Bazzite](https://docs.bazzite.gg/Installing_and_M
 
 ## Prüfstatus
 
-Implementiert: Paketbauer, eingebetteter Installer, grafischer Ablauf mit KDialog/Zenity beziehungsweise Konsole als Rückfall, Runtime-Einrichtung, Startprüfungen, versionsweises Aktivieren, ROM-/ZIP-Import und automatische Ersteinrichtung.
+Implementiert: Paketbauer, eingebetteter Installer, grafischer Ablauf mit KDialog/Zenity beziehungsweise Konsole als Rückfall, Runtime-Einrichtung, Startprüfungen, versionsweises Aktivieren, ROM-/ZIP-Import, automatische Ersteinrichtung und Steam-Helferaufruf mit Wiederholschutz/erneuter Anfrage.
 
-Automatisiert geprüft: 24 Python-Tests, darunter Selbstextraktion/Manipulationsablehnung, Archivpfade, Erst-/Neuinstallation, Fehler vor Aktivierung, Schutz fremder Container und Importvalidierung. Containerbefehle werden in diesen Unit-Tests ausdrücklich durch Testdoubles abgegrenzt; das ist kein tatsächlicher Distrobox-Installationstest. Native Komponentensuite und neuer Launcher-Build bestehen. Die echte deutsche Alpha-2-ROM wurde aus ihrem ZIP importiert und anhand ihres vollständigen SHA-256 bestätigt. Der Launcher wurde offscreen gestartet.
+Automatisiert geprüft: 30 Python-Tests, darunter Selbstextraktion/Manipulationsablehnung, Archivpfade, Erst-/Neuinstallation, Fehler vor Aktivierung, Schutz fremder Container und Importvalidierung. Sechs zusätzliche Steam-Tests prüfen Argumente mit Sonderzeichen, Wiederholschutz, explizite Wiederholung, fehlenden Helfer, Fehler/Timeout, beschädigte Metadaten, Root-Ablehnung und Dispatch vor dem Containerstart. Steam-Aufrufe und Containerbefehle werden in diesen Unit-Tests ausdrücklich durch Testdoubles abgegrenzt; das ist kein tatsächlicher Distrobox-Installationstest. Native Komponentensuite und neuer Launcher-Build bestehen. Die echte deutsche Alpha-2-ROM wurde aus ihrem ZIP importiert und anhand ihres vollständigen SHA-256 bestätigt. Der Launcher wurde offscreen gestartet.
 
-Nicht verifiziert: vollständige Einrichtung auf einem realen Bazzite-/Podman-System, grafische Hostdialoge, physische Controller, Steam Gaming Mode und 4K-TV. In dieser Entwicklungsumgebung sind Podman und Distrobox nicht installiert. Gemeinsame Sinnoh-Spielwelt und vollständiger Spieldurchlauf bleiben weiterhin offen. Diese Grenzen werden durch einen komfortableren Installer nicht aufgehoben.
+Nicht verifiziert: vollständige Einrichtung auf einem realen Bazzite-/Podman-System, grafische Hostdialoge, physische Controller, tatsächliche Aufnahme durch einen laufenden Steam-Client, Steam Gaming Mode und 4K-TV. In dieser Entwicklungsumgebung sind Podman und Distrobox nicht installiert. Gemeinsame Sinnoh-Spielwelt und vollständiger Spieldurchlauf bleiben weiterhin offen. Diese Grenzen werden durch einen komfortableren Installer nicht aufgehoben.

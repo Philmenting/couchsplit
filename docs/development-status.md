@@ -12,7 +12,7 @@
 - SDL-Instanz-ID-Zuordnung, automatische Erstzuordnung bei genau zwei Geräten / eindeutigen gespeicherten Kennungen, explizite Auswahl bei Mehrdeutigkeit, konfigurierbare Tasten, Stick-Touch und Trennungsschutz.
 - TV-Oberfläche mit größeren Elementen auf einer 4K-Fläche; Controller-Menünavigation, Logs, Einstellungen, Backup/Restore.
 - Sitzungssperre, SHA-256-Backupmanifeste, atomare Metadaten, gemeinsame Beendigung, Prozessfehlerbehandlung, Parent-death-Signal.
-- Distrobox-Build/Run-Wrapper, Desktop-Eintrag und manuelle Steam-Verknüpfung ohne Umschreiben vorhandener Konfigurationen.
+- Distrobox-Build/Run-Wrapper, Desktop-Eintrag und automatische Steam-Anfrage über Bazzites Host-Helfer ohne direkte Bearbeitung vorhandener Konfigurationen.
 - GPL-Lizenz, AGENTS.md, gepinnter Upstream, CI-Workflow, dokumentierte Installation und Abnahme.
 - Lokale xdelta-Patchvorbereitung mit CPUD-Kennung, drei SHA-256-Prüfungen, unveränderter Originaldatei und atomarer Ausgabe. Enthält keinen Project-PM-ROM-Patch; [deutsche Kompatibilität und Beschaffungsblocker](german-compatibility.md).
 
@@ -62,7 +62,7 @@ Automatisiert getestet: zwei byteidentische Builds, SHA-256 `800106962a6dd4eba0d
 
 ## Ein-Datei-Installer
 
-Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 24 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Nicht verifiziert: reale Podman-/Bazzite-Installation in dieser Umgebung.
+Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 30 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Sechs zusätzliche Steam-Tests prüfen den Host-Helferaufruf, Wiederholschutz, explizite Wiederholung und Fehlergrenzen mit Testdoubles. Nicht verifiziert: reale Podman-/Bazzite-Installation und tatsächliche Steam-Aufnahme in dieser Umgebung.
 
 ## Manuell bestätigt
 

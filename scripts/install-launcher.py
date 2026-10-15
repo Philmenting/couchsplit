@@ -4,6 +4,7 @@ import argparse
 import os
 from pathlib import Path
 import shlex
+import subprocess
 import tempfile
 
 
@@ -28,6 +29,10 @@ def install(project, data_home, bin_home, box=None):
         raise SystemExit('Build fehlt: scripts/build.sh oder scripts/bazzite-build.sh ausführen.')
     bin_home.mkdir(parents=True, exist_ok=True)
     wrapper = bin_home / 'pokemon-platinum-local-coop'
+    desktop = data_home / 'applications/pokemon-platinum-local-coop.desktop'
+    steam = steam_command(project, data_home)
+    steam_action = ('if [[ "${1:-}" == --add-to-steam ]]; then\n'
+                    '  exec ' + shlex.join([*steam, '--retry', '--dialog']) + '\nfi\n')
     args = ['env', 'DBX_CONTAINER_MANAGER=podman', 'distrobox', 'enter', '--name', box, '--no-tty', '--no-workdir', '--',
             'env', '-u', 'LD_PRELOAD', '-u', 'LD_LIBRARY_PATH', '-u', 'QT_PLUGIN_PATH', '-u', 'QML2_IMPORT_PATH', str(binary)] if box else [str(binary)]
     environment = ''
@@ -37,13 +42,20 @@ def install(project, data_home, bin_home, box=None):
                        'export QT_QUICK_BACKEND=software QT_XCB_GL_INTEGRATION=none\n')
     options = ' --fullscreen'
     if box: options += ' --data-dir ' + shlex.quote(str(data_home / 'pokemon-platinum-local-coop'))
-    atomic_text(wrapper, '#!/usr/bin/env bash\nset -euo pipefail\n' + environment + 'exec ' + shlex.join(args) + options + ' "$@"\n', 0o755)
-    desktop = data_home / 'applications/pokemon-platinum-local-coop.desktop'
+    atomic_text(wrapper, '#!/usr/bin/env bash\nset -euo pipefail\n' + steam_action + environment + 'exec ' + shlex.join(args) + options + ' "$@"\n', 0o755)
     desktop.parent.mkdir(parents=True, exist_ok=True)
     atomic_text(desktop, '[Desktop Entry]\nType=Application\nName=Pokémon Platinum Local Co-op\n'
                 + 'Comment=Zwei Spieler · Project PM · ROM hinzufügen und starten\n'
-                + 'Exec="' + desktop_escape(str(wrapper)) + '"\nTerminal=false\nIcon=applications-games\nCategories=Game;Emulator;\n')
+                + 'Exec="' + desktop_escape(str(wrapper)) + '"\nTerminal=false\nIcon=applications-games\nCategories=Game;Emulator;\n'
+                + 'Actions=AddToSteam;\n\n[Desktop Action AddToSteam]\nName=Erneut zu Steam hinzufügen\n'
+                + 'Exec="' + desktop_escape(str(wrapper)) + '" --add-to-steam\n')
     return wrapper, desktop
+
+
+def steam_command(project, data_home):
+    return ['python3', str(project / 'scripts/add-to-steam.py'),
+            '--desktop', str(data_home / 'applications/pokemon-platinum-local-coop.desktop'),
+            '--state', str(data_home / 'pokemon-platinum-local-coop/steam-registration.json')]
 
 
 if __name__ == '__main__':
@@ -53,4 +65,5 @@ if __name__ == '__main__':
     project = Path(__file__).resolve().parents[1]
     data = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share'))
     wrapper, desktop = install(project, data, Path.home() / '.local/bin', args.distrobox)
-    print(f'Launcher: {wrapper}\nDesktop-Eintrag: {desktop}\nIn Steam als Nicht-Steam-Spiel hinzufügen. Steam Input für dieses Spiel deaktivieren.')
+    print(f'Launcher: {wrapper}\nDesktop-Eintrag: {desktop}', flush=True)
+    subprocess.run(steam_command(project, data))
