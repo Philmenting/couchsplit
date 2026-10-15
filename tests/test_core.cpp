@@ -67,6 +67,8 @@ void validationTest() {
     Settings s;validateFirmware(s);s.bios9="missing";rejects([&]{validateFirmware(s);});
     rejects([&]{requireMultiplayerPatch("9ffc28ff2b2d8fab60454548f92e60dd5d44f0dcc456e6e00e756424b3259217");});
     requireMultiplayerPatch(QString(64,'a')); // Unknown hash still needs explicit user confirmation.
+    assert(knownPreparedRom(QString(64,'a')).isEmpty());
+    assert(knownPreparedRom("800106962a6dd4eba0d090c4acca322d8e45f0eefbe3281aa2a843459a08629c").contains("Deutsch Alpha 2"));
     assert(quoted("a\"b\\c")=="\"a\\\"b\\\\c\"");
 }
 void processTest(const QString& fixture) {

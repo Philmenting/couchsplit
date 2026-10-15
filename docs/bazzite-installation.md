@@ -1,5 +1,7 @@
 # Installation auf Bazzite
 
+Für die komfortable Installation die [Ein-Datei-Anleitung](one-file-installer.md) verwenden. Sie nutzt fertige Programme mit eigener Ubuntu-24.04-Laufzeit und automatischer ROM-/ZIP-Ersteinrichtung. Die folgenden Abschnitte beschreiben weiterhin den optionalen Entwicklerbuild im Fedora-Container.
+
 ## Voraussetzungen
 
 Bazzite mit funktionierenden vorhandenen NVIDIA-Treibern, Distrobox/Podman, zwei SDL-kompatible USB-/Bluetooth-Controller. Eine rechtmäßig bereitgestellte Pokémon-Platin-ROM, die bereits mit dem zur Bridge passenden Project-PM-Patch vorbereitet ist. Das Projekt liefert weder ROM noch Nintendo-Dumps und lädt diese nicht herunter.

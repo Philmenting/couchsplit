@@ -99,7 +99,9 @@ class Launcher : public QWidget {
     QJsonObject stored;
     void report(QString msg) { QMessageBox::warning(this,"Pokémon Platinum Local Co-op",msg); }
     void saveSettings() {
-        stored["emulator"]=settings.emulator; stored["rom"]=settings.rom;
+        if(settings.emulator==QCoreApplication::applicationDirPath()+"/melonDS-coop") stored.remove("emulator");
+        else stored["emulator"]=settings.emulator;
+        stored["rom"]=settings.rom;
         stored["bios9"]=settings.bios9; stored["bios7"]=settings.bios7; stored["firmware"]=settings.firmware;
         stored["layout"]=settings.layout; stored["horizontal"]=settings.horizontal;
         stored["patchedConfirmed"]=settings.patchedConfirmed;
@@ -203,16 +205,28 @@ class Launcher : public QWidget {
         saveSettings();session.start(settings);play->reset();pages->setCurrentWidget(play);play->setFocus();
     }
     void chooseRom() {
-        auto rom=QFileDialog::getOpenFileName(this,"Vorbereitete Project-PM-ROM wählen",settings.rom,"Nintendo DS (*.nds *.srl)");if(rom.isEmpty())return;
-        requireMultiplayerPatch(validateRom(rom));
-        bool confirmed=QMessageBox::question(this,"Project PM ROM","Ist diese Platin-ROM mit dem passenden Project-PM-Multiplayer-Patch vorbereitet? Der Launcher kann Patchversion und Welt-Synchronisation nicht anhand des ROM-Headers bestätigen.") == QMessageBox::Yes;
+        auto rom=QFileDialog::getOpenFileName(this,"Project-PM-ROM hinzufügen",settings.rom,"Nintendo DS oder ROM-ZIP (*.nds *.srl *.zip)");if(rom.isEmpty())return;
+        auto importer=QCoreApplication::applicationDirPath()+"/../../scripts/import-rom.py";
+        if(QFileInfo::exists(importer)) {
+            QProcess process;process.start("python3",{importer,"--rom",rom,"--into",root+"/roms"});
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+            bool finished=process.waitForFinished(120000);
+            QApplication::restoreOverrideCursor();
+            if(!finished) {process.kill();process.waitForFinished();fail("ROM-Import dauert zu lange. Speicherplatz und Datei prüfen.");}
+            if(process.exitCode()!=0) fail(QString::fromUtf8(process.readAllStandardError()).trimmed());
+            rom=QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+        } else if(QFileInfo(rom).suffix().compare("zip",Qt::CaseInsensitive)==0) fail("ROM-ZIP zuerst entpacken; Importskript fehlt in dieser Installation.");
+        auto sha=validateRom(rom);requireMultiplayerPatch(sha);auto known=knownPreparedRom(sha);
+        bool confirmed=!known.isEmpty() || QMessageBox::question(this,"Project PM ROM","Ist diese Platin-ROM mit dem passenden Project-PM-Multiplayer-Patch vorbereitet? Der Launcher kann Patchversion und Welt-Synchronisation nicht anhand des ROM-Headers bestätigen.") == QMessageBox::Yes;
         if(!confirmed)return;
-        settings.rom=rom;settings.patchedConfirmed=true;romLabel->setText(QFileInfo(rom).fileName());saveSettings();
+        settings.rom=rom;settings.patchedConfirmed=true;romLabel->setText(known.isEmpty()?QFileInfo(rom).fileName():known);saveSettings();
     }
 public:
+    void firstRun() {if(settings.rom.isEmpty())guarded([this]{chooseRom();});}
     Launcher(QString data):root(std::move(data)),saves(root),session(saves) {
         QFile f(root+"/settings.json");if(f.open(QIODevice::ReadOnly))stored=QJsonDocument::fromJson(f.readAll()).object();
         settings.emulator=stored.value("emulator").toString(QCoreApplication::applicationDirPath()+"/melonDS-coop");settings.rom=stored["rom"].toString();
+        if(!QFileInfo(settings.emulator).isExecutable()) settings.emulator=QCoreApplication::applicationDirPath()+"/melonDS-coop";
         settings.bios9=stored["bios9"].toString();settings.bios7=stored["bios7"].toString();settings.firmware=stored["firmware"].toString();
         settings.layout=qBound(0,stored["layout"].toInt(),2);settings.horizontal=stored["horizontal"].toBool();settings.patchedConfirmed=stored["patchedConfirmed"].toBool();
         auto mapping=stored["buttons"].toArray();if(mapping.size()==12)for(int i=0;i<12;i++){int n=mapping[i].toInt(-1);controllers.buttons[i]=(n>=-1&&n<SDL_CONTROLLER_BUTTON_MAX)?n:-1;}
@@ -266,7 +280,7 @@ int main(int argc,char** argv) {
     std::signal(SIGTERM,requestQuit);std::signal(SIGINT,requestQuit);
     QTimer quitTimer;QObject::connect(&quitTimer,&QTimer::timeout,&app,[&]{if(quitRequested)app.quit();});quitTimer.start(100);
     QStringList args=app.arguments();
-    if(args.contains("--help")) {puts("platinum-coop [--fullscreen] [--data-dir PATH]\nFirst setup in desktop mode. See docs/bazzite-installation.md.");return 0;}
+    if(args.contains("--help")) {puts("platinum-coop [--fullscreen] [--first-run] [--data-dir PATH]\nErsteinrichtung im Desktopmodus. Siehe docs/bazzite-installation.md.");return 0;}
     QString root=QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)+"/pokemon-platinum-local-coop";
     int i=args.indexOf("--data-dir");if(i>=0){if(i+1>=args.size()){fputs("--data-dir requires a path\n",stderr);return 2;}root=QFileInfo(args[i+1]).absoluteFilePath();}
     try { Launcher launcher(root); if(args.contains("--fullscreen"))launcher.showFullScreen();else launcher.show();
@@ -280,6 +294,7 @@ int main(int argc,char** argv) {
             }
             QTimer::singleShot(300,&app,[&]{bool ok=launcher.grab().save(args[smoke+1]);app.exit(ok?0:1);});
         }
+        if(args.contains("--first-run") && !args.contains("--smoke-test")) QTimer::singleShot(400,&launcher,[&]{launcher.firstRun();});
         return app.exec(); }
     catch(const std::exception& e){QMessageBox::critical(nullptr,"Local Co-op",e.what());return 1;}
 }

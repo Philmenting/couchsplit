@@ -29,3 +29,12 @@ jobs:
           path: |
             /tmp/coop-ui.png
             build/launcher/Testing/Temporary/LastTest.log
+      - name: Build and verify single-file Bazzite installer
+        run: |
+          python3 scripts/make-installer.py --upstream .cache/project-pm --output /tmp/Pokemon-Platinum-Coop-Bazzite.run
+          bash /tmp/Pokemon-Platinum-Coop-Bazzite.run --check
+      - name: Retain installer with matching GPL source
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bazzite-Installer
+          path: /tmp/Pokemon-Platinum-Coop-Bazzite.run

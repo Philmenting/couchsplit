@@ -39,6 +39,12 @@ inline void requireMultiplayerPatch(const QString& sha256) {
     if(sha256=="fbce4c4def0c7797f8dd238a3d7a5e48b4a7e3abd86890ac65f6321cef781bdb")
         fail("Unveränderte USA-Rev-1-ROM erkannt. Zuerst Project PM anwenden: scripts/prepare-rom.py --rom ORIGINAL.nds --patch BUILD.zip --output GEPATCHT.nds. Die Ausgabe bleibt bei PM 0.4.5 englisch.");
 }
+inline QString knownPreparedRom(const QString& sha256) {
+    if(sha256=="800106962a6dd4eba0d090c4acca322d8e45f0eefbe3281aa2a843459a08629c") return "Project PM 0.4.5 · Deutsch Alpha 2";
+    if(sha256=="8b11f36e7bf4a15932eb364358fba183c2067ac8265cfbc97611ca53e3c90949") return "Project PM 0.4.5 · Deutsch Alpha 1";
+    if(sha256=="8ef9d4eeee81513f2d6e13c36125cdbfa4c6f498b039ef4b99faa7095d39cfa5") return "Project PM 0.4.5 · Englisch";
+    return {}; // A header or an unknown hash is not a patch compatibility test.
+}
 inline void validateFirmware(const Settings& s) {
     bool any=!s.bios9.isEmpty()||!s.bios7.isEmpty()||!s.firmware.isEmpty();
     if(!any) return; // upstream's built-in free BIOS + generated firmware, direct boot

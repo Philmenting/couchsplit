@@ -60,6 +60,10 @@ Implementiert: originale deutsche Touch-Textur aus dem regionalen Pfad unter dem
 
 Automatisiert getestet: zwei byteidentische Builds, SHA-256 `800106962a6dd4eba0d090c4acca322d8e45f0eefbe3281aa2a843459a08629c`. 110 Sekunden in zwei echten Emulatorprozessen, 6566/6571 Frames, TCP verbunden, Rollen 1/2, beide Exitcodes 0. Visuell geprüft: JA/NEIN im Framebuffer vor dem Touch; einmaliges Antippen von JA führt zu Professor Eibe und dem nächsten Dialog. Kein Bazzite-/Hardwaretest und kein Welt-Koop-Nachweis. Andere Grafiken wurden dadurch nicht automatisch lokalisiert. [Details](german-localization.md).
 
+## Ein-Datei-Installer
+
+Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 23 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Nicht verifiziert: reale Podman-/Bazzite-Installation in dieser Umgebung.
+
 ## Manuell bestätigt
 
 Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhalte visuell kontrolliert. Private DS-Bilder der deutschen Original-ROM zeigen unterschiedliche Intro-/Einführungszustände nach Eingaben nur an Spieler 1. **Keine Funktion wurde auf dem tatsächlichen Bazzite-PC mit Fernseher und physischen Controllern manuell bestätigt.**
