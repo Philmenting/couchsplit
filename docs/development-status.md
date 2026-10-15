@@ -54,6 +54,12 @@ Automatisiert getestet: fünf neue synthetische Format-/Merge-/Kontrollzeichen-/
 
 Visuell geprüft: deutsche Begrüßung „Schön, dich kennenzulernen!“ mit Umlaut im echten Emulator-Framebuffer. Nicht verifiziert: vollständige Story, alle PM-Menüs und Textbreiten, sprachabhängige US-Grammatikroutinen, Ingame-Save-Migration, Bazzite-Hardware. Grafisch eingebettete Schrift ist nicht lokalisiert; „YES/NO“ in der Einführung wurde als englisch erkannt. Ein weiterer 105-Sekunden-Lauf mit Eingaben an Spieler 1 bestand mit 6272/6273 Frames, TCP-Verbindung und beiden Exitcodes 0. Originaltext-Anleitungen auf beiden DS-Schirmen wurden deutsch dargestellt.
 
+## JA/NEIN-Grafik, Alpha 2
+
+Implementiert: originale deutsche Touch-Textur aus dem regionalen Pfad unter dem US-Pfad übernommen. Die übrigen neun Archivmitglieder (Palette und acht Animationskarten) sind bytegleich, entpackte Grafikgröße und alle PM-Programmbytes unverändert. Keine Nintendo-Grafikbytes im Repository. Schutz vor PM-Modifikationen und inkompatiblen Ressourcen durch zwei neue Tests; komplette Python-Suite jetzt 17 Tests erfolgreich.
+
+Automatisiert getestet: zwei byteidentische Builds, SHA-256 `800106962a6dd4eba0d090c4acca322d8e45f0eefbe3281aa2a843459a08629c`. 110 Sekunden in zwei echten Emulatorprozessen, 6566/6571 Frames, TCP verbunden, Rollen 1/2, beide Exitcodes 0. Visuell geprüft: JA/NEIN im Framebuffer vor dem Touch; einmaliges Antippen von JA führt zu Professor Eibe und dem nächsten Dialog. Kein Bazzite-/Hardwaretest und kein Welt-Koop-Nachweis. Andere Grafiken wurden dadurch nicht automatisch lokalisiert. [Details](german-localization.md).
+
 ## Manuell bestätigt
 
 Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhalte visuell kontrolliert. Private DS-Bilder der deutschen Original-ROM zeigen unterschiedliche Intro-/Einführungszustände nach Eingaben nur an Spieler 1. **Keine Funktion wurde auf dem tatsächlichen Bazzite-PC mit Fernseher und physischen Controllern manuell bestätigt.**

@@ -1,0 +1,34 @@
+{
+  "version": "PM 0.4.5 de-alpha2",
+  "input_sha256": {
+    "us": "fbce4c4def0c7797f8dd238a3d7a5e48b4a7e3abd86890ac65f6321cef781bdb",
+    "german": "9ffc28ff2b2d8fab60454548f92e60dd5d44f0dcc456e6e00e756424b3259217",
+    "pm": "8ef9d4eeee81513f2d6e13c36125cdbfa4c6f498b039ef4b99faa7095d39cfa5"
+  },
+  "dictionary_sha256": "5c8710faae5f1fc7ff40e99ac81b95afeb02212da001d8d9e0cb9a15998b3777",
+  "output_sha256": "800106962a6dd4eba0d090c4acca322d8e45f0eefbe3281aa2a843459a08629c",
+  "output_size": 141962768,
+  "game_code": "CPUE",
+  "statistics": {
+    "entries": 77132,
+    "german_vanilla_same_id": 72586,
+    "explicit_pm_translation": 1208,
+    "legacy_credit_entries_retained": 216,
+    "german_vanilla_reordered": 2701,
+    "intentional_neutral": 421,
+    "german_font_archives": 2,
+    "german_touch_button_archives": 1,
+    "german_touch_button_animation_frames": 8
+  },
+  "changed_resources": [
+    "graphic/font.narc",
+    "graphic/pl_font.narc",
+    "graphic/touch_subwindow.narc",
+    "msgdata/msg.narc",
+    "msgdata/pl_msg.narc"
+  ],
+  "executable_bytes_preserved": true,
+  "all_other_original_bytes_preserved_except_fat_and_header": true,
+  "world_synchronization_verified": false,
+  "full_playthrough_verified": false
+}

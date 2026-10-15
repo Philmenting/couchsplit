@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT))
 from localization.formats import Bank, Narc, Rom, crc16
 from localization.text import compress, controls, decode, encode, expand
 from localization.merge import localize, text_hash
+from localization.graphics import localize_buttons, TOUCH_BUTTONS, GERMAN_TOUCH_BUTTONS
 
 spec = importlib.util.spec_from_file_location('localize_cli', ROOT / 'scripts/localize-pm.py')
 cli = importlib.util.module_from_spec(spec); spec.loader.exec_module(cli)
@@ -52,6 +53,39 @@ def tiny_rom():
 
 
 class LocalizationTests(unittest.TestCase):
+    def button_roms(self):
+        us, de, pm = FixtureRom([]), FixtureRom([]), FixtureRom([])
+        # Self-authored tiny literal LZ10 packets, no Nintendo graphics.
+        packet = b'\x10\x10\0\0' + b'\0ABCDEFGH\0IJKLMNOP'
+        palette = b'OWN PALETTE'
+        members = [palette, packet] + [b'OWN ANIMATION ' + bytes([i]) for i in range(8)]
+        us.files[TOUCH_BUTTONS] = pm.files[TOUCH_BUTTONS] = narc(members)
+        members[1] = packet[:-1] + b'Z'
+        de.files[GERMAN_TOUCH_BUTTONS] = narc(members)
+        return us, de, pm
+
+    def test_original_german_button_texture_import_and_animation_preservation(self):
+        us, de, pm = self.button_roms()
+        result = localize_buttons(us, de, pm)[TOUCH_BUTTONS]
+        self.assertEqual(result, de.file(GERMAN_TOUCH_BUTTONS))
+        a, b = Narc(pm.file(TOUCH_BUTTONS)), Narc(result)
+        self.assertNotEqual(a.files[1], b.files[1])
+        self.assertEqual([x for i, x in enumerate(a.files) if i != 1],
+                         [x for i, x in enumerate(b.files) if i != 1])
+
+    def test_button_import_rejects_pm_changes_and_incompatible_resources(self):
+        us, de, pm = self.button_roms()
+        pm.files[TOUCH_BUTTONS] += b'changed'
+        with self.assertRaisesRegex(ValueError, 'PM hat'):
+            localize_buttons(us, de, pm)
+        for index, content, error in ((0, b'OTHER PALETTE', 'Palette'),
+                                      (2, b'OTHER ANIMATION', 'Palette'),
+                                      (1, b'\x10\x20\0\0different size', 'VRAM')):
+            us, de, pm = self.button_roms()
+            archive = Narc(de.file(GERMAN_TOUCH_BUTTONS)); archive.files[index] = content
+            de.files[GERMAN_TOUCH_BUTTONS] = archive.save()
+            with self.assertRaisesRegex(ValueError, error): localize_buttons(us, de, pm)
+
     def test_glyphs_controls_and_packed_names(self):
         text = 'ÄÖÜ äöü ß é Pokémon!\n{FFFE,0100,0002,0000,0000}{25BC}'
         self.assertEqual(decode(encode(text)), text)

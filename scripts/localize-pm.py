@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from localization.formats import Rom, crc16
 from localization.merge import localize
+from localization.graphics import localize_buttons
 
 INPUTS = {
     'us': 'fbce4c4def0c7797f8dd238a3d7a5e48b4a7e3abd86890ac65f6321cef781bdb',
@@ -68,6 +69,8 @@ def build(us, german, pm, output):
     translations = json.loads(dictionary_bytes)
     replacements, stats, missing = localize(roms['us'], roms['german'], roms['pm'], translations)
     if missing: raise ValueError(f'{len(missing)} PM-Texte ohne Übersetzung. Ausgabe abgebrochen.')
+    replacements.update(localize_buttons(roms['us'], roms['german'], roms['pm']))
+    stats.update(german_touch_button_archives=1, german_touch_button_animation_frames=8)
     encoded = roms['pm'].replace(replacements)
     audit(roms['pm'], Rom(encoded), replacements)
     with tempfile.NamedTemporaryFile(prefix='.pm-de-', dir=parent) as temporary:
