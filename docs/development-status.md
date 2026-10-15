@@ -62,11 +62,11 @@ Automatisiert getestet: zwei byteidentische Builds, SHA-256 `800106962a6dd4eba0d
 
 ## Ein-Datei-Installer
 
-Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 30 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Sechs zusätzliche Steam-Tests prüfen den Host-Helferaufruf, Wiederholschutz, explizite Wiederholung und Fehlergrenzen mit Testdoubles. Nicht verifiziert: reale Podman-/Bazzite-Installation und tatsächliche Steam-Aufnahme in dieser Umgebung.
+Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 35 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Sechs zusätzliche Steam-Tests prüfen den Host-Helferaufruf, Wiederholschutz, explizite Wiederholung und Fehlergrenzen mit Testdoubles. Weitere fünf Installer-Regressionstests prüfen Live-Ausgabe, UTF-8, Timeout/Prozessgruppen, Containerdiagnose und Fortschrittsansteuerung. Ein nativer UI-Test bestätigt den Beenden-Knopf mit Mausereignissen und virtueller SDL-Navigation einschließlich geordnetem Stoppen zweier Testprozesse und Freigeben der Savesperre. Auf Bazzite bleiben Fortschritts-/Beenden-Korrektur und Steam-Aufnahme nachzuprüfen.
 
 ## Manuell bestätigt
 
-Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhalte visuell kontrolliert. Private DS-Bilder der deutschen Original-ROM zeigen unterschiedliche Intro-/Einführungszustände nach Eingaben nur an Spieler 1. **Keine Funktion wurde auf dem tatsächlichen Bazzite-PC mit Fernseher und physischen Controllern manuell bestätigt.**
+Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhalte visuell kontrolliert. Private DS-Bilder der deutschen Original-ROM zeigen unterschiedliche Intro-/Einführungszustände nach Eingaben nur an Spieler 1. **Benutzerrückmeldung vom 15.10.2026:** Der Installer lief auf Bazzite durch und der Launcher startete. Dabei fehlte sichtbarer Fortschritt und der bisherige Beenden-Knopf schloss die App nicht. Die Korrekturen wurden automatisiert geprüft; ihre Bestätigung auf dem tatsächlichen PC und Tests mit physischen Controllern stehen aus.
 
 ## Nicht verifiziert / offen
 

@@ -240,7 +240,7 @@ public:
         button("Controller zuordnen",[this]{assignPads();});button("Bildschirmaufteilung",[this]{layoutDialog();});
         button("ROM auswählen",[this]{chooseRom();});button("Spielstände",[this]{restoreDialog();});button("Tastenbelegung",[this]{remap();});
         button("Einstellungen",[this]{configure();});button("Logs anzeigen",[this]{showLogs();});
-        button("Spiel beenden",[this]{session.stop();pages->setCurrentIndex(0);});
+        button("Launcher beenden",[this]{close();})->setObjectName("exitLauncher");
         statusLabel=new QLabel("Bereit · Ersteinrichtung im Desktopmodus empfohlen");statusLabel->setWordWrap(true);layout->addWidget(statusLabel);layout->addStretch();
         pages->addWidget(menu);play=new PlayView(session,controllers,settings);pages->addWidget(play);
         play->leave=[this]{pages->setCurrentIndex(0);};
@@ -275,6 +275,7 @@ protected:
     }
     void closeEvent(QCloseEvent* e) override {session.stop();e->accept();}
 };
+#ifndef PLATINUM_COOP_NO_MAIN
 int main(int argc,char** argv) {
     QApplication app(argc,argv); app.setApplicationName("platinum-coop");app.setOrganizationName("PlatinumLocalCoop");
     std::signal(SIGTERM,requestQuit);std::signal(SIGINT,requestQuit);
@@ -298,3 +299,4 @@ int main(int argc,char** argv) {
         return app.exec(); }
     catch(const std::exception& e){QMessageBox::critical(nullptr,"Local Co-op",e.what());return 1;}
 }
+#endif

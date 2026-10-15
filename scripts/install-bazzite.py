@@ -5,6 +5,7 @@
 All sudo/apt commands execute INSIDE the container. Never layer host RPMs.
 """
 import argparse
+import codecs
 import fcntl
 import hashlib
 import importlib.util
@@ -12,8 +13,10 @@ import json
 import os
 from pathlib import Path
 import platform
+import selectors
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -41,6 +44,7 @@ class Dialogs:
         if self.kdialog and not self.qdbus and shutil.which('zenity'):
             self.kdialog = None; self.zenity = shutil.which('zenity')
         self.ref = []; self.progress = None
+        self.label = ''; self.last_activity = 0
 
     def message(self, text, error=False, question=False):
         print(text, flush=True)
@@ -56,19 +60,32 @@ class Dialogs:
 
     def stage(self, number, text):
         print(f'{number}/5: {text}', flush=True)
+        self.label = f'Schritt {number} von 5\n{text}'
+        self.last_activity = 0
+        self.display_progress(self.label)
+
+    def activity(self, elapsed):
+        now = time.monotonic()
+        if now - self.last_activity < 1: return
+        self.last_activity = now
+        self.display_progress(self.label + f'\n\nDieser Vorgang läuft seit {int(elapsed)} Sekunden.')
+
+    def display_progress(self, text):
         if self.kdialog and self.qdbus:
             if not self.ref:
-                result = subprocess.run([self.kdialog, '--title', 'Pokémon Platinum Local Co-op', '--progressbar', text, '5'],
+                # Downloads and first-time initialization have no known percentage.
+                # A zero range animates continuously instead of freezing at 1/5.
+                result = subprocess.run([self.kdialog, '--title', 'Pokémon Platinum Local Co-op', '--progressbar', text, '0'],
                                         capture_output=True, text=True, timeout=10)
                 self.ref = result.stdout.split() if result.returncode == 0 else []
             if len(self.ref) == 2:
-                for args in (['setLabelText', text], ['Set', '', 'value', str(number)]):
-                    subprocess.run([self.qdbus, *self.ref, *args], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+                subprocess.run([self.qdbus, *self.ref, 'setLabelText', text],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
         elif self.zenity:
             if self.progress is None:
                 self.progress = subprocess.Popen([self.zenity, '--progress', '--pulsate', '--auto-close', '--no-cancel',
                                                  '--title=Pokémon Platinum Local Co-op', '--text=' + text], stdin=subprocess.PIPE, text=True)
-            try: self.progress.stdin.write('# ' + text + '\n'); self.progress.stdin.flush()
+            try: self.progress.stdin.write('# ' + text.replace('\n', ' · ') + '\n'); self.progress.stdin.flush()
             except (BrokenPipeError, OSError): pass
 
     def close(self):
@@ -81,23 +98,82 @@ class Dialogs:
             self.progress.terminate(); self.progress.wait(timeout=5); self.progress = None
 
 
-def command(args, log, check=True, timeout=1200):
+def command(args, log, check=True, timeout=1200, progress=None, kill_group=True):
     log.write('\n$ ' + shlex.join(map(str, args)) + '\n'); log.flush()
     env = dict(os.environ, DBX_CONTAINER_MANAGER='podman', DBX_NON_INTERACTIVE='1')
     for key in ('LD_PRELOAD', 'LD_LIBRARY_PATH'): env.pop(key, None)
-    result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                            env=env, timeout=timeout)
-    log.write(result.stdout); log.flush()
+    chunks = []; decoder = codecs.getincrementaldecoder('utf-8')(errors='replace')
+    started = time.monotonic(); heartbeat = started + 15
+    def emit(text):
+        if text:
+            chunks.append(text); log.write(text); log.flush()
+            print(text, end='', flush=True)
+    # Drain while the process runs: the previous subprocess.run(capture_output)
+    # hid the entire first-start output, including on timeout.
+    with subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT, env=env, start_new_session=True) as process:
+        try:
+            with selectors.DefaultSelector() as streams:
+                streams.register(process.stdout, selectors.EVENT_READ)
+                while streams.get_map() or process.poll() is None:
+                    remaining = timeout - (time.monotonic() - started)
+                    if remaining <= 0: raise subprocess.TimeoutExpired(args, timeout)
+                    if streams.get_map():
+                        for key, _ in streams.select(min(1, remaining)):
+                            block = os.read(key.fd, 65536)
+                            if block: emit(decoder.decode(block))
+                            else: streams.unregister(key.fileobj)
+                    else:
+                        try: process.wait(timeout=min(1, remaining))
+                        except subprocess.TimeoutExpired: pass
+                    if time.monotonic() >= heartbeat:
+                        status = f'\n[Installer] Befehl läuft seit {int(time.monotonic() - started)} Sekunden.\n'
+                        log.write(status); log.flush(); print(status, end='', flush=True)
+                        heartbeat = time.monotonic() + 15
+                    if progress: progress(time.monotonic() - started)
+        except BaseException as error:
+            # Terminate this command's group, including inherited pipe writers.
+            # Keep Podman containers intact. Steam may launch an independent
+            # client, so its registration call explicitly disables group killing.
+            try:
+                if kill_group: os.killpg(process.pid, signal.SIGKILL)
+                else: process.kill()
+            except ProcessLookupError: pass
+            tail, _ = process.communicate(timeout=5)
+            emit(decoder.decode(tail, final=True))
+            if isinstance(error, subprocess.TimeoutExpired):
+                message = f'Zeitlimit nach {timeout:g} Sekunden: ' + shlex.join(map(str, args[:8]))
+                log.write('\nFEHLER: ' + message + '\n'); log.flush()
+                raise RuntimeError(message) from error
+            raise
+        emit(decoder.decode(b'', final=True))
+        result = subprocess.CompletedProcess(args, process.returncode, ''.join(chunks))
+    log.write(f'\n[Installer] Exitstatus: {result.returncode}\n'); log.flush()
     if check and result.returncode:
         raise RuntimeError('Schritt fehlgeschlagen: ' + shlex.join(map(str, args[:8])))
     return result
+
+
+def initialize_runtime(log, progress=None):
+    try:
+        command([*ENTER, 'true'], log, progress=progress)
+    except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+        log.write('\n--- Diagnose der Container-Ersteinrichtung ---\n'); log.flush()
+        for args in (['podman', 'inspect', '--format', '{{json .State}}', BOX],
+                     ['podman', 'logs', '--tail', '200', BOX]):
+            try: command(args, log, check=False, timeout=15)
+            except (OSError, RuntimeError, subprocess.SubprocessError) as diagnostic:
+                log.write('Diagnose nicht verfügbar: ' + str(diagnostic) + '\n'); log.flush()
+        raise RuntimeError('Die Distrobox-Ersteinrichtung wurde nicht abgeschlossen. '
+                           'Containerstatus und letzte Containerausgaben stehen im Installationslog. '
+                           'Es wurden keine Spielstände gelöscht.\n' + str(error)) from error
 
 
 def install(payload, root, data_home, bin_home, release_id, ui, log):
     if not release_id or any(c not in '0123456789abcdef' for c in release_id): raise ValueError('Ungültige Release-ID.')
     if any(c in str(root) for c in '\n\r:'): raise ValueError('Installationspfad enthält nicht unterstützte Zeichen.')
     ui.stage(1, 'Eigene Laufzeitumgebung vorbereiten …')
-    rootless = command(['podman', 'info', '--format', '{{.Host.Security.Rootless}}'], log)
+    rootless = command(['podman', 'info', '--format', '{{.Host.Security.Rootless}}'], log, progress=ui.activity)
     if rootless.stdout.strip().lower() != 'true': raise RuntimeError('Podman muss ohne Root-Rechte laufen (rootless).')
     exists = command(['podman', 'container', 'exists', BOX], log, check=False)
     if exists.returncode not in (0, 1): raise RuntimeError('Rootless Podman startet nicht. Installationslog prüfen.')
@@ -106,13 +182,15 @@ def install(payload, root, data_home, bin_home, release_id, ui, log):
         if owner.stdout.strip() != 'runtime-v1': raise RuntimeError('Containername ist bereits fremd belegt: ' + BOX)
     else:
         command(['distrobox', 'create', '--yes', '--no-entry', '--name', BOX, '--image', IMAGE,
-                 '--additional-flags', '--label ' + LABEL + '=runtime-v1', '--volume', f'{root}:{root}:rw'], log)
-    ui.stage(2, 'Benötigte Laufzeitpakete herunterladen und einrichten. Bitte warten …')
+                 '--additional-flags', '--label ' + LABEL + '=runtime-v1', '--volume', f'{root}:{root}:rw'], log, progress=ui.activity)
+    ui.stage(2, 'Container erstmals einrichten. Dabei werden Grundpakete geladen; das kann mehrere Minuten dauern …')
+    initialize_runtime(log, ui.activity)
+    ui.stage(2, 'Benötigte Laufzeitpakete herunterladen und einrichten …')
     command([*ENTER, 'sudo', '-n', 'sh', '-c',
              'if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then '
-             'sed -i "/^Components:/ { /universe/! s/$/ universe/; }" /etc/apt/sources.list.d/ubuntu.sources; fi'], log)
-    command([*ENTER, 'sudo', '-n', 'env', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'update'], log)
-    command([*ENTER, 'sudo', '-n', 'env', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'install', '-y', '--no-install-recommends', *PACKAGES], log)
+             'sed -i "/^Components:/ { /universe/! s/$/ universe/; }" /etc/apt/sources.list.d/ubuntu.sources; fi'], log, progress=ui.activity)
+    command([*ENTER, 'sudo', '-n', 'env', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'update'], log, progress=ui.activity)
+    command([*ENTER, 'sudo', '-n', 'env', 'DEBIAN_FRONTEND=noninteractive', 'apt-get', 'install', '-y', '--no-install-recommends', *PACKAGES], log, progress=ui.activity)
     ui.stage(3, 'Programme und zugehörigen Quellcode installieren …')
     software = root / 'software'; releases = software / 'releases'; releases.mkdir(parents=True, exist_ok=True)
     release = releases / release_id
@@ -131,12 +209,12 @@ def install(payload, root, data_home, bin_home, release_id, ui, log):
     # A failed container/probe never changes current or the existing shortcuts.
     ui.stage(4, 'Emulator und Launcher in der Laufzeitumgebung prüfen …')
     binary = release / 'project/build/bin'
-    result = command([*ENTER, *CLEAN, str(binary / 'melonDS-coop'), '--coop-capabilities'], log, timeout=30)
+    result = command([*ENTER, *CLEAN, str(binary / 'melonDS-coop'), '--coop-capabilities'], log, timeout=30, progress=ui.activity)
     if 'PMCOOP_ABI=1' not in result.stdout: raise RuntimeError('Emulator-Schnittstelle fehlt.')
     with tempfile.TemporaryDirectory(prefix='.install-check-', dir=root) as check:
         command([*ENTER, *CLEAN, 'QT_QPA_PLATFORM=offscreen', 'SDL_AUDIODRIVER=dummy',
                  str(binary / 'platinum-coop'), '--data-dir', str(Path(check) / 'profiles'),
-                 '--smoke-test', str(Path(check) / 'launcher.png')], log, timeout=30)
+                 '--smoke-test', str(Path(check) / 'launcher.png')], log, timeout=30, progress=ui.activity)
         if not (Path(check) / 'launcher.png').is_file(): raise RuntimeError('Launcher-Startprüfung lieferte kein Bild.')
     ui.stage(5, 'Startmenü-Eintrag anlegen …')
     previous = os.readlink(current) if current.is_symlink() else None
@@ -194,7 +272,8 @@ def main():
             try:
                 result = command([sys.executable, str(steam_script), '--desktop',
                                   str(data / 'applications/pokemon-platinum-local-coop.desktop'),
-                                  '--state', str(root / 'steam-registration.json')], log, check=False, timeout=40)
+                                  '--state', str(root / 'steam-registration.json')], log, check=False, timeout=40,
+                                 progress=ui.activity, kill_group=False)
                 steam_message = result.stdout.strip()
             except (OSError, RuntimeError, subprocess.SubprocessError) as error:
                 steam_message = 'Steam-Anfrage nicht bestätigt: ' + str(error)
@@ -208,6 +287,7 @@ def main():
             with log_path.open('a') as log:
                 subprocess.Popen([str(wrapper), '--first-run'], stdout=log, stderr=log, start_new_session=True, cwd=Path.home())
     except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
+        with log_path.open('a') as log: log.write('\nFEHLER: ' + str(error) + '\n')
         ui.close(); ui.message(str(error) + '\n\nDetails: ' + str(log_path), error=True)
         raise SystemExit(1)
 

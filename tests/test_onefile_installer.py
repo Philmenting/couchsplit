@@ -4,11 +4,15 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
+import threading
+import time
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -26,6 +30,100 @@ maker = module('installer_maker', 'make-installer.py')
 bootstrap = module('installer_bootstrap', 'installer-bootstrap.py')
 installer = module('bazzite_installer', 'install-bazzite.py')
 importer = module('rom_importer', 'import-rom.py')
+
+
+class CommandTests(unittest.TestCase):
+    def test_kde_progress_is_animated_and_updates_during_a_command(self):
+        def available(name):
+            return '/TEST-ONLY/' + name if name in ('kdialog', 'qdbus6') else None
+        def dbus(args, **kwargs):
+            return subprocess.CompletedProcess(args, 0, 'org.kde.kdialog-test /ProgressDialog\n')
+        with patch.dict(os.environ, {'DISPLAY': ':TEST-ONLY'}), \
+                patch.object(installer.shutil, 'which', available):
+            ui = installer.Dialogs()
+        # Keep the actual child command real; only KDE/DBus is substituted.
+        calls = []
+        def display(args, **kwargs):
+            calls.append(args); return dbus(args, **kwargs)
+        with patch.object(installer.subprocess, 'run', display):
+            ui.stage(2, 'Grundpakete laden …')
+            ui.activity(42)
+            ui.close()
+        opening = next(args for args in calls if '--progressbar' in args)
+        self.assertEqual(opening[-1], '0')
+        self.assertIn('Schritt 2 von 5', opening[-2])
+        self.assertTrue(any('setLabelText' in args and '42 Sekunden' in args[-1] for args in calls))
+        self.assertFalse(any('Set' in args for args in calls))
+
+    def test_output_is_logged_before_exit_and_split_utf8_is_preserved(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp); resume = base / 'resume'; output = base / 'live.log'; results = []; activity = []
+            script = ('import sys,time,pathlib\n'
+                      'sys.stdout.buffer.write(b"Gr\\xc3");sys.stdout.flush()\n'
+                      f'while not pathlib.Path({str(resume)!r}).exists(): time.sleep(.01)\n'
+                      'sys.stdout.buffer.write(b"\\xbc\\xc3\\x9fe\\n");sys.stdout.flush()\n')
+            def run():
+                with output.open('w', encoding='utf-8') as log:
+                    results.append(installer.command([sys.executable, '-c', script], log, timeout=5, progress=activity.append))
+            worker = threading.Thread(target=run); worker.start()
+            try:
+                deadline = time.monotonic() + 3
+                while time.monotonic() < deadline:
+                    if output.exists() and output.read_text().endswith('Gr'): break
+                    time.sleep(.01)
+                self.assertTrue(output.read_text().endswith('Gr'), 'Output was buffered until process exit')
+                self.assertTrue(worker.is_alive())
+            finally:
+                resume.touch(); worker.join(timeout=6)
+            self.assertFalse(worker.is_alive()); self.assertEqual(len(results), 1)
+            self.assertEqual(results[0].stdout, 'Grüße\n')
+            self.assertTrue(activity)
+            self.assertIn('Exitstatus: 0', output.read_text())
+
+    def test_timeout_keeps_partial_output_and_terminates_command_group(self):
+        with tempfile.TemporaryDirectory() as temp:
+            pidfile = Path(temp) / 'child.pid'; log = io.StringIO()
+            script = ('import subprocess,sys,time,pathlib\n'
+                      'child=subprocess.Popen([sys.executable,"-c","import time;time.sleep(30)"])\n'
+                      f'pathlib.Path({str(pidfile)!r}).write_text(str(child.pid))\n'
+                      'print("partial-before-timeout",flush=True);time.sleep(30)\n')
+            with self.assertRaisesRegex(RuntimeError, 'Zeitlimit'):
+                installer.command([sys.executable, '-c', script], log, timeout=.5)
+            self.assertIn('partial-before-timeout', log.getvalue())
+            self.assertIn('FEHLER:', log.getvalue())
+            child = int(pidfile.read_text()); status = Path(f'/proc/{child}/stat')
+            if status.exists(): self.assertEqual(status.read_text().split()[2], 'Z')
+
+    def test_noninteractive_stdin_environment_and_failure_exit_status(self):
+        script = ('import os,sys\n'
+                  'assert sys.stdin.read()==""\n'
+                  'assert os.environ["DBX_CONTAINER_MANAGER"]=="podman"\n'
+                  'assert os.environ["DBX_NON_INTERACTIVE"]=="1"\n'
+                  'assert "LD_PRELOAD" not in os.environ\n'
+                  'sys.stderr.buffer.write(b"failure\\xff");sys.exit(7)\n')
+        log = io.StringIO()
+        with patch.dict(os.environ, {'LD_PRELOAD': '/TEST-ONLY/bad.so'}):
+            result = installer.command([sys.executable, '-c', script], log, check=False)
+        self.assertEqual(result.returncode, 7); self.assertEqual(result.stdout, 'failure\ufffd')
+        self.assertIn('Exitstatus: 7', log.getvalue())
+        with self.assertRaisesRegex(RuntimeError, 'Schritt fehlgeschlagen'):
+            installer.command([sys.executable, '-c', 'raise SystemExit(7)'], io.StringIO())
+
+    def test_first_start_failure_collects_owned_container_diagnostics(self):
+        log = io.StringIO(); calls = []
+        def external(args, output, **kwargs):
+            calls.append((args, kwargs))
+            if args[:len(installer.ENTER)] == installer.ENTER: raise RuntimeError('TEST-ONLY initialization failure')
+            output.write('TEST-ONLY container output\n')
+            return subprocess.CompletedProcess(args, 0, '')
+        with patch.object(installer, 'command', external):
+            with self.assertRaisesRegex(RuntimeError, 'Ersteinrichtung'):
+                installer.initialize_runtime(log)
+        self.assertEqual(calls[0][0], [*installer.ENTER, 'true'])
+        self.assertEqual(calls[1][0], ['podman', 'inspect', '--format', '{{json .State}}', installer.BOX])
+        self.assertEqual(calls[2][0], ['podman', 'logs', '--tail', '200', installer.BOX])
+        self.assertTrue(all(call[1] == {'check': False, 'timeout': 15} for call in calls[1:]))
+        self.assertIn('TEST-ONLY container output', log.getvalue())
 
 
 class OneFileTests(unittest.TestCase):
@@ -76,7 +174,7 @@ class OneFileTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='co-op $ path ') as temp:
             base = Path(temp); payload = self.payload(base); root = base / 'data/app'; root.mkdir(parents=True)
             calls = []; state = dict(exists=False, fail=False)
-            def external(args, log, check=True, timeout=1200):
+            def external(args, log, check=True, timeout=1200, progress=None):
                 calls.append(args)
                 if args[:2] == ['podman', 'info']: return subprocess.CompletedProcess(args, 0, 'true\n')
                 if args[:3] == ['podman', 'container', 'exists']:
@@ -89,7 +187,7 @@ class OneFileTests(unittest.TestCase):
                     return subprocess.CompletedProcess(args, 0, 'PMCOOP_ABI=1\n')
                 if '--smoke-test' in args: Path(args[args.index('--smoke-test') + 1]).write_bytes(b'TEST-ONLY image boundary')
                 return subprocess.CompletedProcess(args, 0, '')
-            ui = SimpleNamespace(stage=lambda *args: None)
+            ui = SimpleNamespace(stage=lambda *args: None, activity=lambda *args: None)
             with patch.object(installer, 'command', external):
                 wrapper = installer.install(payload, root, base / 'data', base / 'bin', 'a' * 20, ui, io.StringIO())
                 current = root / 'software/current'; self.assertTrue(wrapper.is_file()); previous = current.resolve()
@@ -117,7 +215,7 @@ class OneFileTests(unittest.TestCase):
             with patch.object(installer, 'command', external):
                 with self.assertRaisesRegex(RuntimeError, 'fremd belegt'):
                     installer.install(payload, base, base / 'data', base / 'bin', 'c' * 20,
-                                      SimpleNamespace(stage=lambda *args: None), io.StringIO())
+                                      SimpleNamespace(stage=lambda *args: None, activity=lambda *args: None), io.StringIO())
             self.assertEqual(len(calls), 3)
 
 

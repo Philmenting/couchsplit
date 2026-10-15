@@ -18,3 +18,13 @@
 | Unscharfe 4K-Ausgabe | DS-Auflösung bleibt 256 × 192. Der Prototyp skaliert ohne Stretching, transportiert aber noch keine hochauflösenden OpenGL-Framebuffer. |
 
 Sitzungslogs: Datenwurzel `/logs/<Sitzungs-ID>/player1.log` und `player2.log`. Keine ROM-Inhalte werden hochgeladen. Die App enthält keinen Telemetrie- oder Online-Relay-Aufruf im lokalen Modus.
+
+## Installation zeigt lange keine Änderung
+
+Der erste Einstieg in eine neue Ubuntu-Distrobox installiert selbst Grundpakete. Das kann mehrere Minuten dauern. Frühere Installer hielten zusätzlich die komplette Befehlsausgabe bis zum Prozessende zurück; ein währenddessen kopiertes Log endete deshalb direkt nach `distrobox enter`, obwohl die Installation weiterlief. Das allein ist kein Nachweis für einen Netzwerkfehler oder Absturz.
+
+Den aktuellen Installer verwenden. Er zeigt einen animierten Balken mit Schritt und Zeitangabe und schreibt die Ausgabe laufend ins Installationslog. Bei einem fehlgeschlagenen Erststart werden Status und letzte Containerlogzeilen ergänzt. Eine vorhandene eigene Runtime wird wiederverwendet; Container oder Datenordner müssen für ein Update nicht gelöscht werden. Keine zweite Installation starten, solange noch eine läuft.
+
+## Beenden führt nur ins Menü zurück
+
+In älteren Builds stoppte „Spiel beenden“ nur die Sitzung; im bereits sichtbaren Menü schien der Knopf wirkungslos. Im korrigierten Build heißt er **Launcher beenden** und schließt die Anwendung einschließlich laufender Emulatorprozesse. Das gilt für Mausklick und Controller-Bestätigung. Start + Select im Spiel beendet weiterhin nur die Sitzung. Für ein Update die bisherige Launcher-Version zuerst über das Fenster-Schließen bzw. Alt + F4 beenden und dann den neuen Installer ausführen.
