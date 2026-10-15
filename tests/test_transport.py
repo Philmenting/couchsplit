@@ -84,10 +84,14 @@ int main() {
     host.startHost();pump(730,1100);assert(host.anyUp() && client.anyUp());
     client.shutdown();host.shutdown();
     // POSIX select must use fd+1 and SO_ERROR must reject a refused connect.
+    auto refused=socket(AF_INET,SOCK_STREAM,0);address.sin_port=0;
+    assert(bind(refused,(sockaddr*)&address,sizeof(address))==0);
+    size=sizeof(address);assert(getsockname(refused,(sockaddr*)&address,&size)==0);
+    // This reserved port has no listener. Windows may retry before reporting refusal.
     auto sock=socket(AF_INET,SOCK_STREAM,0);mpnet::setNonBlock(sock);
-    address.sin_port=htons(1);connect(sock,(sockaddr*)&address,sizeof(address));
-    fd_set wr,ex;FD_ZERO(&wr);FD_ZERO(&ex);FD_SET(sock,&wr);FD_SET(sock,&ex);timeval tv{1,0};
-    assert(bridgeSelect(sock,&wr,&ex,&tv)>0);assert(!bridgeConnectOK(sock));closesocket(sock);
+    connect(sock,(sockaddr*)&address,sizeof(address));
+    fd_set wr,ex;FD_ZERO(&wr);FD_ZERO(&ex);FD_SET(sock,&wr);FD_SET(sock,&ex);timeval tv{5,0};
+    assert(bridgeSelect(sock,&wr,&ex,&tv)>0);assert(!bridgeConnectOK(sock));closesocket(sock);closesocket(refused);
     // A dead peer must never kill the host with SIGPIPE.
 #ifndef _WIN32
     int pair[2];assert(socketpair(AF_UNIX,SOCK_STREAM,0,pair)==0);close(pair[1]);
@@ -100,7 +104,7 @@ int main() {
         cpp = Path(temp) / 'transport.cpp'; binary=Path(temp)/('transport.exe' if os.name=='nt' else 'transport')
         cpp.write_text(prelude+transport+checks)
         subprocess.run(['g++','-std=c++17','-O1','-Wall','-Wextra','-pthread','-I'+str(project/'multiplayer'),'-I'+str(source/'src/frontend/qt_sdl'),str(cpp),'-o',str(binary),*(['-lws2_32','-lshell32','-ladvapi32','-luser32'] if os.name=='nt' else [])],check=True)
-        subprocess.run([str(binary)],check=True,timeout=20)
+        subprocess.run([str(binary)],check=True,timeout=45)
 
 
 if __name__ == '__main__':

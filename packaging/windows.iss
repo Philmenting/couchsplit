@@ -16,6 +16,9 @@ ArchitecturesInstallIn64BitMode=x64compatible
 WizardStyle=modern
 LicenseFile=..\LICENSE
 UninstallDisplayIcon={app}\project\build\bin\platinum-coop.exe
+[Languages]
+Name: "german"; MessagesFile: "compiler:Languages\German.isl"
+Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 Source: "..\dist\windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
