@@ -24,7 +24,7 @@ def main():
         image=data/'launcher.png'
         subprocess.run([str(binary/'platinum-coop.exe'),'--data-dir',str(data/'profiles'),
             '--smoke-test',str(image)],check=True,env=env,timeout=30)
-        assert image.is_file()
+        assert image.is_file(), 'Screenshot not at requested Unicode path: '+repr(list(data.parent.glob('coop package*')))
     subprocess.run([str(binary/'python/python.exe'),'-X','utf8',str(root/'project/tests/smoke_emulator.py'),
         str(binary/'melonDS-coop.exe')],check=True,env=env,timeout=45)
     print('PASS: deployed Qt app and embedded Python ROM/ZIP import, isolated PATH and Unicode paths')
