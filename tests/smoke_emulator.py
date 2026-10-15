@@ -47,7 +47,7 @@ def homebrew():
 def smoke(binary):
     binary=Path(binary).resolve()
     subprocess.run([str(binary),'--coop-capabilities'],check=True,timeout=5)
-    with tempfile.TemporaryDirectory() as temp:
+    with tempfile.TemporaryDirectory(prefix='coop-emulator-ä-') as temp:
         base=Path(temp);rom=base/'self-authored-homebrew.nds';rom.write_bytes(homebrew())
         probe=socket.socket();probe.bind(('127.0.0.1',0));port=probe.getsockname()[1];probe.close()
         processes=[];logs=[];maps=[]
@@ -55,7 +55,7 @@ def smoke(binary):
             for p,role in enumerate(('host','join')):
                 profile=base/role;profile.mkdir()
                 (profile/'saves').mkdir()
-                (profile/'melonDS.toml').write_text('[Emu]\nDirectBoot = true\nExternalBIOSEnable = false\n[Screen]\nUseGL = false\n["3D"]\nRenderer = 0\n[Instance0]\nSaveFilePath = "'+(profile/'saves').as_posix()+'"\n')
+                (profile/'melonDS.toml').write_text('[Emu]\nDirectBoot = true\nExternalBIOSEnable = false\n[Screen]\nUseGL = false\n["3D"]\nRenderer = 0\n[Instance0]\nSaveFilePath = "'+(profile/'saves').as_posix()+'"\n',encoding='utf-8')
                 ipc=base/(role+'.ipc')
                 ipc.write_bytes(struct.pack('<10I',0x434F5031,2,0,0xFFF,0,0,0,0,0,0)+bytes(256*192*4*2));ipc.chmod(0o600);maps.append(ipc)
                 env={k:v for k,v in os.environ.items() if not k.startswith(('MELONDS_AP','PMCOOP_'))}

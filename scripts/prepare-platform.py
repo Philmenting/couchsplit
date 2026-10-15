@@ -5,7 +5,14 @@ import argparse
 from pathlib import Path
 
 CHANGES = {
+ 'CMakeLists.txt': [
+  ("pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)", "if(WIN32)\n    find_package(SDL2 CONFIG REQUIRED)\n    add_compile_definitions(SDL_MAIN_HANDLED)\n    set(COOP_SDL_TARGET SDL2::SDL2)\nelse()\n    pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)\n    set(COOP_SDL_TARGET PkgConfig::SDL2)\nendif()"),
+  ("fix_interface_includes(PkgConfig::SDL2 PkgConfig::LibArchive)", "fix_interface_includes(${COOP_SDL_TARGET} PkgConfig::LibArchive)"),
+  ("target_link_libraries(melonDS PRIVATE PkgConfig::SDL2 PkgConfig::LibArchive PkgConfig::Zstd PkgConfig::Faad)", "target_link_libraries(melonDS PRIVATE ${COOP_SDL_TARGET} PkgConfig::LibArchive PkgConfig::Zstd PkgConfig::Faad)"),
+ ],
  'main.cpp': [
+  ('SDL_SetHint(SDL_HINT_APP_NAME, "melonDS");',
+   'SDL_SetMainReady();\n    SDL_SetHint(SDL_HINT_APP_NAME, "melonDS");'),
   ('#include <QTimer>', '#include <QTimer>\n#include "CoopIPC.h"'),
   ('if (const char* profile = getenv("PMCOOP_PROFILE")) {\n        emuDirectory = QString::fromUtf8(profile);',
    'if (const auto profile = qEnvironmentVariable("PMCOOP_PROFILE"); !profile.isEmpty()) {\n        emuDirectory = profile;'),
