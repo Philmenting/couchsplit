@@ -28,3 +28,9 @@ Den aktuellen Installer verwenden. Er zeigt einen animierten Balken mit Schritt 
 ## Beenden führt nur ins Menü zurück
 
 In älteren Builds stoppte „Spiel beenden“ nur die Sitzung; im bereits sichtbaren Menü schien der Knopf wirkungslos. Im korrigierten Build heißt er **Launcher beenden** und schließt die Anwendung einschließlich laufender Emulatorprozesse. Das gilt für Mausklick und Controller-Bestätigung. Start + Select im Spiel beendet weiterhin nur die Sitzung. Für ein Update die bisherige Launcher-Version zuerst über das Fenster-Schließen bzw. Alt + F4 beenden und dann den neuen Installer ausführen.
+
+## Container-Neustart: „creating temporary passwd file … merged/etc/passwd: no such file or directory“
+
+Der Fehler tritt vor dem Programmstart in Podman auf. Ein Bericht mit Podman 5.8.4 zeigte ihn bei einem zuvor erfolgreich initialisierten, inzwischen beendeten Container. Die Meldung belegt einen fehlenden Pfad im eingebundenen Containerdateisystem; ob eine veraltete Einhängung oder ein anderer Speicherfehler vorliegt, ist damit noch nicht bewiesen.
+
+Der aktuelle Installer versucht nur bei diesem genauen Fehler, Zustand `exited`/`stopped`, ausdrücklich `Running=false` und erneut verifiziertem Eigentumslabel einmal `podman container cleanup platinum-coop-runtime-v1`, danach erneut den Einstieg. Laut [Podman-Dokumentation](https://docs.podman.io/en/stable/markdown/podman-container-cleanup.1.html) bereinigt dieser Befehl Einhängungen/Netzwerkzustand beendeter Container und entfernt ohne `--rm` keinen Container. Kein `--all`, `prune`, `system reset`, erzwungenes Entfernen oder Löschen des Datenordners. Das ist ein begrenzter Reparaturversuch, kein auf dem betroffenen PC bestätigter Fix. Bei erneutem Fehler das aktuelle Log bereitstellen; die vorhandene Installation und Daten bleiben erhalten.

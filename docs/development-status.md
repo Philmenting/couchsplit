@@ -62,7 +62,7 @@ Automatisiert getestet: zwei byteidentische Builds, SHA-256 `800106962a6dd4eba0d
 
 ## Ein-Datei-Installer
 
-Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 35 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Sechs zusätzliche Steam-Tests prüfen den Host-Helferaufruf, Wiederholschutz, explizite Wiederholung und Fehlergrenzen mit Testdoubles. Weitere fünf Installer-Regressionstests prüfen Live-Ausgabe, UTF-8, Timeout/Prozessgruppen, Containerdiagnose und Fortschrittsansteuerung. Ein nativer UI-Test bestätigt den Beenden-Knopf mit Mausereignissen und virtueller SDL-Navigation einschließlich geordnetem Stoppen zweier Testprozesse und Freigeben der Savesperre. Auf Bazzite bleiben Fortschritts-/Beenden-Korrektur und Steam-Aufnahme nachzuprüfen.
+Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 38 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Sechs zusätzliche Steam-Tests prüfen den Host-Helferaufruf, Wiederholschutz, explizite Wiederholung und Fehlergrenzen mit Testdoubles. Weitere fünf Installer-Regressionstests prüfen Live-Ausgabe, UTF-8, Timeout/Prozessgruppen, Containerdiagnose und Fortschrittsansteuerung. Ein nativer UI-Test bestätigt den Beenden-Knopf mit Mausereignissen und virtueller SDL-Navigation einschließlich geordnetem Stoppen zweier Testprozesse und Freigeben der Savesperre. Auf Bazzite bleiben Fortschritts-/Beenden-Korrektur und Steam-Aufnahme nachzuprüfen.
 
 ## Manuell bestätigt
 
@@ -106,3 +106,7 @@ Das folgende Skript dient ausschließlich der erstmaligen Veröffentlichung eine
 ```
 
 Das Skript verweigert uncommittierte Änderungen und ein bereits bestehendes origin. Es fragt kein Token ab und legt keines im Projekt ab. Die Datei AGENTS.md unterstützt die Fortsetzung mit Codex.
+
+## Podman-Neustartfehler nach Zielsystem-Rückmeldung
+
+Implementiert: begrenzter Bereinigungsversuch ohne Containerlöschung für den exakten Fehler „creating temporary passwd file … merged/etc/passwd: no such file or directory“, nur nach Stop-/Eigentumsprüfung. Automatisiert getestet: drei weitere Tests prüfen Erfolgspfad, maximal einen Wiederholungsversuch und Ablehnung laufender/fremder/anders fehlerhafter Container. Nicht verifiziert: dass `podman container cleanup` den konkreten Fehler auf dem Bazzite-PC behebt. Der Bericht mit Podman 5.8.4 zeigt erfolgreiche frühere Initialisierung und einen fehlgeschlagenen späteren Start; die tieferliegende Speicherursache ist offen. Keine ROM-/Save-Löschung und keine Eingriffe in andere Container.

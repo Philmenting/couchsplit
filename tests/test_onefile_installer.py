@@ -33,6 +33,50 @@ importer = module('rom_importer', 'import-rom.py')
 
 
 class CommandTests(unittest.TestCase):
+    def recovery_case(self, state, owner='runtime-v1', retry_ok=True):
+        calls = []; enters = 0
+        def external(args, log, **kwargs):
+            nonlocal enters
+            calls.append(args)
+            if args[:len(installer.ENTER)] == installer.ENTER:
+                enters += 1
+                if enters == 1 or not retry_ok: raise RuntimeError('TEST-ONLY start error')
+            output = json.dumps(state) if '{{json .State}}' in args else owner
+            return subprocess.CompletedProcess(args, 0, output)
+        log = io.StringIO()
+        with patch.object(installer, 'command', external):
+            try: installer.initialize_runtime(log)
+            except RuntimeError: return calls, False
+        return calls, True
+
+    def broken_mount_state(self):
+        return {'Status': 'exited', 'Running': False,
+                'Error': 'creating temporary passwd file for container TEST: open /overlay/TEST/merged/etc/passwd: no such file or directory'}
+
+    def test_exact_stopped_owned_mount_failure_gets_cleanup_and_one_retry(self):
+        calls, success = self.recovery_case(self.broken_mount_state())
+        self.assertTrue(success)
+        self.assertEqual(sum(args == [*installer.ENTER, 'true'] for args in calls), 2)
+        self.assertEqual(sum(args == ['podman', 'container', 'cleanup', installer.BOX] for args in calls), 1)
+        self.assertFalse(any(flag in args for args in calls for flag in ('--all', '--rm', '--rmi', 'rm', 'prune', 'reset')))
+
+    def test_failed_cleanup_retry_is_bounded(self):
+        calls, success = self.recovery_case(self.broken_mount_state(), retry_ok=False)
+        self.assertFalse(success)
+        self.assertEqual(sum(args == [*installer.ENTER, 'true'] for args in calls), 2)
+        self.assertEqual(sum('cleanup' in args for args in calls), 1)
+
+    def test_running_foreign_or_unrelated_failure_never_gets_cleanup(self):
+        for changes, owner in (({'Status': 'running', 'Running': True}, 'runtime-v1'),
+                               ({'Error': 'TEST-ONLY DNS failure'}, 'runtime-v1'),
+                               ({'Running': None}, 'runtime-v1'), ({}, 'foreign')):
+            with self.subTest(changes=changes, owner=owner):
+                state = dict(self.broken_mount_state(), **changes)
+                calls, success = self.recovery_case(state, owner=owner)
+                self.assertFalse(success)
+                self.assertFalse(any('cleanup' in args for args in calls))
+                self.assertEqual(sum(args == [*installer.ENTER, 'true'] for args in calls), 1)
+
     def test_kde_progress_is_animated_and_updates_during_a_command(self):
         def available(name):
             return '/TEST-ONLY/' + name if name in ('kdialog', 'qdbus6') else None

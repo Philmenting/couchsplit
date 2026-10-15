@@ -158,13 +158,34 @@ def initialize_runtime(log, progress=None):
     try:
         command([*ENTER, 'true'], log, progress=progress)
     except (OSError, RuntimeError, subprocess.SubprocessError) as error:
-        log.write('\n--- Diagnose der Container-Ersteinrichtung ---\n'); log.flush()
+        log.write('\n--- Diagnose des Containerstarts ---\n'); log.flush()
+        state = {}
         for args in (['podman', 'inspect', '--format', '{{json .State}}', BOX],
                      ['podman', 'logs', '--tail', '200', BOX]):
-            try: command(args, log, check=False, timeout=15)
-            except (OSError, RuntimeError, subprocess.SubprocessError) as diagnostic:
+            try:
+                result = command(args, log, check=False, timeout=15)
+                if args[1] == 'inspect' and result.returncode == 0:
+                    parsed = json.loads(result.stdout)
+                    if isinstance(parsed, dict): state = parsed
+            except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as diagnostic:
                 log.write('Diagnose nicht verfügbar: ' + str(diagnostic) + '\n'); log.flush()
-        raise RuntimeError('Die Distrobox-Ersteinrichtung wurde nicht abgeschlossen. '
+        # A stopped container can retain stale overlay mounts. Only this exact
+        # reported failure permits cleanup, and only after rechecking ownership.
+        problem = str(state.get('Error', '')).lower()
+        if (state.get('Status') in ('exited', 'stopped') and state.get('Running') is False
+                and 'creating temporary passwd file' in problem
+                and '/merged/etc/passwd: no such file or directory' in problem):
+            try:
+                owner = command(['podman', 'inspect', '--format', '{{ index .Config.Labels "' + LABEL + '" }}', BOX], log, timeout=15)
+                if owner.stdout.strip() != 'runtime-v1': raise RuntimeError('Container gehört nicht zu dieser Anwendung; keine Bereinigung.')
+                log.write('\n[Installer] Temporäre Container-Einhängungen bereinigen und einmal neu starten.\n'); log.flush()
+                command(['podman', 'container', 'cleanup', BOX], log, timeout=30, progress=progress)
+                command([*ENTER, 'true'], log, progress=progress)
+                return
+            except (OSError, RuntimeError, subprocess.SubprocessError) as retry_error:
+                log.write('\nBereinigungsversuch nicht erfolgreich: ' + str(retry_error) + '\n'); log.flush()
+                error = retry_error
+        raise RuntimeError('Start bzw. Ersteinrichtung der Distrobox fehlgeschlagen. '
                            'Containerstatus und letzte Containerausgaben stehen im Installationslog. '
                            'Es wurden keine Spielstände gelöscht.\n' + str(error)) from error
 
@@ -183,7 +204,7 @@ def install(payload, root, data_home, bin_home, release_id, ui, log):
     else:
         command(['distrobox', 'create', '--yes', '--no-entry', '--name', BOX, '--image', IMAGE,
                  '--additional-flags', '--label ' + LABEL + '=runtime-v1', '--volume', f'{root}:{root}:rw'], log, progress=ui.activity)
-    ui.stage(2, 'Container erstmals einrichten. Dabei werden Grundpakete geladen; das kann mehrere Minuten dauern …')
+    ui.stage(2, 'Container starten. Beim ersten Start werden Grundpakete geladen; das kann mehrere Minuten dauern …')
     initialize_runtime(log, ui.activity)
     ui.stage(2, 'Benötigte Laufzeitpakete herunterladen und einrichten …')
     command([*ENTER, 'sudo', '-n', 'sh', '-c',
