@@ -136,7 +136,12 @@ class CommandTests(unittest.TestCase):
             self.assertIn('partial-before-timeout', log.getvalue())
             self.assertIn('FEHLER:', log.getvalue())
             child = int(pidfile.read_text()); status = Path(f'/proc/{child}/stat')
-            if status.exists(): self.assertEqual(status.read_text().split()[2], 'Z')
+            try:
+                state = status.read_text().split()[2]
+            except FileNotFoundError:
+                pass  # The terminated child was reaped between inspection and read.
+            else:
+                self.assertEqual(state, 'Z')
 
     def test_noninteractive_stdin_environment_and_failure_exit_status(self):
         script = ('import os,sys\n'
