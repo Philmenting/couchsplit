@@ -50,6 +50,7 @@ def source_files(project, upstream):
         for name, (data, mode) in expected.items():
             path = temp / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(data); path.chmod(mode)
         subprocess.run(['git', 'apply', str(project / 'patches/project-pm-linux-coop.patch')], cwd=temp, check=True)
+        subprocess.run(['python3', str(project / 'scripts/prepare-platform.py'), str(temp)], check=True)
         for own, target in [('multiplayer/SocketCompat.h', 'src/frontend/qt_sdl/SocketCompat.h'),
                             ('display/CoopIPC.h', 'src/frontend/qt_sdl/CoopIPC.h')]:
             expected[target] = ((project / own).read_bytes(), 0o644); (temp / target).write_bytes(expected[target][0])

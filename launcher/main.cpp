@@ -99,7 +99,7 @@ class Launcher : public QWidget {
     QJsonObject stored;
     void report(QString msg) { QMessageBox::warning(this,"Pokémon Platinum Local Co-op",msg); }
     void saveSettings() {
-        if(settings.emulator==QCoreApplication::applicationDirPath()+"/melonDS-coop") stored.remove("emulator");
+        if(settings.emulator==bundledEmulator()) stored.remove("emulator");
         else stored["emulator"]=settings.emulator;
         stored["rom"]=settings.rom;
         stored["bios9"]=settings.bios9; stored["bios7"]=settings.bios7; stored["firmware"]=settings.firmware;
@@ -208,7 +208,11 @@ class Launcher : public QWidget {
         auto rom=QFileDialog::getOpenFileName(this,"Project-PM-ROM hinzufügen",settings.rom,"Nintendo DS oder ROM-ZIP (*.nds *.srl *.zip)");if(rom.isEmpty())return;
         auto importer=QCoreApplication::applicationDirPath()+"/../../scripts/import-rom.py";
         if(QFileInfo::exists(importer)) {
-            QProcess process;process.start("python3",{importer,"--rom",rom,"--into",root+"/roms"});
+            QString python="python3";
+#ifdef _WIN32
+            python=QCoreApplication::applicationDirPath()+"/python/python.exe";
+#endif
+            QProcess process;process.start(python,{importer,"--rom",rom,"--into",root+"/roms"});
             QApplication::setOverrideCursor(Qt::WaitCursor);
             bool finished=process.waitForFinished(120000);
             QApplication::restoreOverrideCursor();
@@ -225,8 +229,8 @@ public:
     void firstRun() {if(settings.rom.isEmpty())guarded([this]{chooseRom();});}
     Launcher(QString data):root(std::move(data)),saves(root),session(saves) {
         QFile f(root+"/settings.json");if(f.open(QIODevice::ReadOnly))stored=QJsonDocument::fromJson(f.readAll()).object();
-        settings.emulator=stored.value("emulator").toString(QCoreApplication::applicationDirPath()+"/melonDS-coop");settings.rom=stored["rom"].toString();
-        if(!QFileInfo(settings.emulator).isExecutable()) settings.emulator=QCoreApplication::applicationDirPath()+"/melonDS-coop";
+        settings.emulator=stored.value("emulator").toString(bundledEmulator());settings.rom=stored["rom"].toString();
+        if(!QFileInfo(settings.emulator).isExecutable()) settings.emulator=bundledEmulator();
         settings.bios9=stored["bios9"].toString();settings.bios7=stored["bios7"].toString();settings.firmware=stored["firmware"].toString();
         settings.layout=qBound(0,stored["layout"].toInt(),2);settings.horizontal=stored["horizontal"].toBool();settings.patchedConfirmed=stored["patchedConfirmed"].toBool();
         auto mapping=stored["buttons"].toArray();if(mapping.size()==12)for(int i=0;i<12;i++){int n=mapping[i].toInt(-1);controllers.buttons[i]=(n>=-1&&n<SDL_CONTROLLER_BUTTON_MAX)?n:-1;}

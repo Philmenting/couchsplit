@@ -12,6 +12,7 @@ import sys
 import tempfile
 import time
 import socket
+import mmap
 
 
 def homebrew():
@@ -54,9 +55,9 @@ def smoke(binary):
             for p,role in enumerate(('host','join')):
                 profile=base/role;profile.mkdir()
                 (profile/'saves').mkdir()
-                (profile/'melonDS.toml').write_text('[Emu]\nDirectBoot = true\nExternalBIOSEnable = false\n[Screen]\nUseGL = false\n["3D"]\nRenderer = 0\n[Instance0]\nSaveFilePath = "'+str(profile/'saves')+'"\n')
+                (profile/'melonDS.toml').write_text('[Emu]\nDirectBoot = true\nExternalBIOSEnable = false\n[Screen]\nUseGL = false\n["3D"]\nRenderer = 0\n[Instance0]\nSaveFilePath = "'+(profile/'saves').as_posix()+'"\n')
                 ipc=base/(role+'.ipc')
-                ipc.write_bytes(struct.pack('<9I',0x434F5031,1,0,0xFFF,0,0,0,0,0)+bytes(256*192*4*2));ipc.chmod(0o600);maps.append(ipc)
+                ipc.write_bytes(struct.pack('<10I',0x434F5031,2,0,0xFFF,0,0,0,0,0,0)+bytes(256*192*4*2));ipc.chmod(0o600);maps.append(ipc)
                 env={k:v for k,v in os.environ.items() if not k.startswith(('MELONDS_AP','PMCOOP_'))}
                 env.update(QT_QPA_PLATFORM='offscreen',SDL_AUDIODRIVER='dummy',PMCOOP_PROFILE=str(profile),PMCOOP_IPC=str(ipc),PMCOOP_ROLE=role,PMCOOP_PORT=str(port))
                 log=open(base/(role+'.log'),'wb');logs.append(log)
@@ -65,14 +66,16 @@ def smoke(binary):
             headers=[]
             while time.monotonic()<end:
                 if any(p.poll() is not None for p in processes):raise AssertionError('Production emulator exited early')
-                headers=[struct.unpack('<9I',path.read_bytes()[:36]) for path in maps]
+                headers=[struct.unpack('<10I',path.read_bytes()[:40]) for path in maps]
                 if all(h[5]>10 and h[6] for h in headers) and headers[1][7]==2:break
                 time.sleep(0.1)
             else:raise AssertionError('No frames / loopback roles within 20 s: '+repr(headers))
-            assert all(len(set(path.read_bytes()[36:]))>1 for path in maps), 'Framebuffer is still empty'
-            for p in processes:p.terminate()
+            assert all(len(set(path.read_bytes()[40:]))>1 for path in maps), 'Framebuffer is still empty'
+            for path in maps:
+                with path.open('r+b') as file, mmap.mmap(file.fileno(),0,access=mmap.ACCESS_WRITE) as memory:
+                    memory[36:40]=struct.pack('<I',1)
             for p in processes:assert p.wait(timeout=10)==0,'Emulator did not exit cleanly'
-            print('PASS: two PRODUCTION DS processes executed self-authored ARM homebrew, published frames, connected on localhost, assigned roles 1/2, and exited via SIGTERM')
+            print('PASS: two PRODUCTION DS processes executed self-authored ARM homebrew, published frames, connected on localhost, assigned roles 1/2, and exited via cooperative IPC shutdown')
         except Exception:
             for log in logs:log.flush()
             for role in ('host','join'):

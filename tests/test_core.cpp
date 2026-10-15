@@ -5,25 +5,26 @@
 #include <cassert>
 #include <functional>
 #include <iostream>
-#include <sys/wait.h>
+
 #include "Controllers.h"
 #include "Session.h"
 #include "Layout.h"
 using namespace coop;
 void rejects(std::function<void()> f) {bool caught=false;try{f();}catch(const std::exception&){caught=true;}assert(caught);}
 void spin(int ms){QElapsedTimer t;t.start();while(t.elapsed()<ms){QCoreApplication::processEvents();QThread::msleep(5);}}
-void ipcTest() {
-    QTemporaryDir temp;auto path=(temp.path()+"/map").toStdString();Mapping a;a.open(path,true);
+void ipcTest(const QString& fixture) {
+    QTemporaryDir temp;auto path=(temp.path()+QString::fromUtf8("/map-ä")).toUtf8().toStdString();Mapping a;a.open(path,true);
     Mapping b;b.open(path,false);b.data->keys.store(42);assert(a.data->keys.load()==42);
     a.data->touch.store(touch(255,191,true));assert((b.data->touch.load()&0xFFFF)==(255|(191<<8)));
     assert(a.acquire());assert(!b.acquire());a.release();assert(b.acquire());b.release();
     uint32_t top[Pixels]{},bottom[Pixels]{};top[0]=0xFF123456;bottom[0]=0xFFABCDEF;a.publish(top,bottom);
     assert(b.data->frame.load()==1&&b.data->top[0]==top[0]&&b.data->bottom[0]==bottom[0]);
-    auto child=fork();assert(child>=0);
-    if(child==0){Mapping c;c.open(path,false);c.data->keys.store(123);_exit(0);}
-    int status=0;waitpid(child,&status,0);assert(WIFEXITED(status)&&WEXITSTATUS(status)==0);assert(a.data->keys.load()==123);
+    QProcess child;child.start(fixture,{"--ipc-write",QString::fromUtf8(path)});
+    assert(child.waitForFinished(5000));assert(child.exitCode()==0);assert(a.data->keys.load()==123);
     atomicWrite(temp.path()+"/short",QByteArray("bad"));Mapping shortFile;rejects([&]{shortFile.open((temp.path()+"/short").toStdString(),false);});
+#ifndef _WIN32
     assert(symlink(path.c_str(),(temp.path()+"/link").toStdString().c_str())==0);Mapping link;rejects([&]{link.open((temp.path()+"/link").toStdString(),false);});
+#endif
 }
 void layoutTest() {
     for(auto size:{QSize(3840,2160),QSize(1920,1080),QSize(1280,720),QSize(800,1200)})for(bool horizontal:{false,true})for(int p=0;p<2;p++)for(int layout=0;layout<3;layout++)for(bool bottom:{false,true}) {
@@ -80,7 +81,7 @@ void processTest(const QString& fixture) {
     s.emulator=temp.path()+"/missing";rejects([&]{session.start(s);});assert(!store.locked());
 }
 int main(int argc,char**argv) {
-    QApplication app(argc,argv);ipcTest();layoutTest();saveTest();controllerTest();validationTest();
-    assert(argc==2);processTest(QFileInfo(argv[1]).absoluteFilePath());
+    QApplication app(argc,argv);assert(argc==2);auto fixture=QFileInfo(argv[1]).absoluteFilePath();
+    ipcTest(fixture);layoutTest();saveTest();controllerTest();validationTest();processTest(fixture);
     std::cout<<"PASS: IPC across processes, 4:3 layouts, profile locks, verified restore, corruption rejection, virtual controller isolation/hotplug/touch, validation, repeated starts, graceful stop, worker failure cleanup\n";
 }

@@ -11,7 +11,9 @@
 #include <QElapsedTimer>
 #include <QTcpServer>
 #include <functional>
+#ifdef __linux__
 #include <sys/prctl.h>
+#endif
 #include <signal.h>
 #include "CoopIPC.h"
 #include "SaveStore.h"
@@ -20,6 +22,14 @@ struct Settings {
     QString emulator, rom, bios9, bios7, firmware;
     int layout=0; bool horizontal=false; bool patchedConfirmed=false;
 };
+inline QString executableSuffix() {
+#ifdef _WIN32
+    return ".exe";
+#else
+    return {};
+#endif
+}
+inline QString bundledEmulator() {return QCoreApplication::applicationDirPath()+"/melonDS-coop"+executableSuffix();}
 inline QString quoted(QString value) {
     // JSON basic strings are valid TOML basic strings for these paths.
     return QString::fromUtf8(QJsonDocument(QJsonArray{value}).toJson(QJsonDocument::Compact)).mid(1).chopped(1);
@@ -60,6 +70,9 @@ class Session : public QObject {
     std::unique_ptr<QTemporaryDir> runtime;
     std::array<std::unique_ptr<QFile>,2> logs;
     bool active=false, stopping=false, failed=false;
+#ifdef _WIN32
+    HANDLE job = nullptr;
+#endif
     QTimer monitor;
     QElapsedTimer elapsed;
     std::array<uint32_t,2> lastFrame{{0,0}};
@@ -67,6 +80,9 @@ class Session : public QObject {
     void cleanup() {
         active=false; monitor.stop();
         for(auto& p:workers) p.reset();
+#ifdef _WIN32
+        if(job) {CloseHandle(job);job=nullptr;}
+#endif
         for(auto& f:logs) f.reset();
         for(auto& m:maps) m.reset();
         runtime.reset(); saves.release();
@@ -112,12 +128,17 @@ public:
         if(!binary.isFile()||!binary.isExecutable()) fail("Gepatchtes Emulator-Binary fehlt: "+s.emulator);
         // Reject unrelated binaries before acquiring locks or launching sessions.
         QProcess capability; capability.start(s.emulator,{"--coop-capabilities"});
-        if(!capability.waitForFinished(5000) || capability.exitCode()!=0 || !capability.readAllStandardOutput().contains("PMCOOP_ABI=1")) {
+        if(!capability.waitForFinished(5000) || capability.exitCode()!=0 || !capability.readAllStandardOutput().contains("PMCOOP_ABI=2")) {
             capability.kill(); capability.waitForFinished(1000); fail("Emulator unterstützt die Co-op-Schnittstelle nicht. scripts/build.sh ausführen.");
         }
         saves.acquire();
         failed=false; stopping=false; elapsed.start(); lastFrame={{0,0}}; lastProgress={{0,0}};
         try {
+#ifdef _WIN32
+            job=CreateJobObjectW(nullptr,nullptr);
+            JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};limits.BasicLimitInformation.LimitFlags=JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+            if(!job || !SetInformationJobObject(job,JobObjectExtendedLimitInformation,&limits,sizeof(limits))) fail("Windows-Prozessgruppe konnte nicht angelegt werden.");
+#endif
             runtime=std::make_unique<QTemporaryDir>(saves.root()+"/run-XXXXXX");
             if(!runtime->isValid()) fail("Temporärer Sitzungsordner nicht anlegbar.");
             QFile::setPermissions(runtime->path(),QFileDevice::ReadOwner|QFileDevice::WriteOwner|QFileDevice::ExeOwner);
@@ -137,10 +158,12 @@ public:
                 maps[i]=std::make_unique<Mapping>(); maps[i]->open(ipc.toStdString(),true);
                 workers[i]=std::make_unique<QProcess>();
                 workers[i]->setWorkingDirectory(profile);
+#ifdef __linux__
                 const pid_t parentPid=getpid();
                 workers[i]->setChildProcessModifier([parentPid]{
                     if(prctl(PR_SET_PDEATHSIG,SIGTERM)!=0 || getppid()!=parentPid) _exit(127);
                 });
+#endif
                 auto env=QProcessEnvironment::systemEnvironment();
                 for(const auto& key:env.keys()) if(key.startsWith("MELONDS_AP")||key.startsWith("PMCOOP_")) env.remove(key);
                 env.insert("PMCOOP_ROLE",i?"join":"host"); env.insert("PMCOOP_PORT",QString::number(port));
@@ -161,6 +184,12 @@ public:
                 });
                 workers[i]->start(binary.absoluteFilePath(),{QFileInfo(s.rom).absoluteFilePath()});
                 if(!workers[i]->waitForStarted(5000)) fail("Emulator konnte nicht gestartet werden: "+workers[i]->errorString());
+#ifdef _WIN32
+                HANDLE child=OpenProcess(PROCESS_SET_QUOTA|PROCESS_TERMINATE,FALSE,DWORD(workers[i]->processId()));
+                bool assigned=child && AssignProcessToJobObject(job,child);
+                if(child) CloseHandle(child);
+                if(!assigned) fail("Emulator konnte nicht der Windows-Prozessgruppe zugeordnet werden.");
+#endif
             }
             active=true; monitor.start();
         } catch(...) { stop(); throw; }
@@ -169,7 +198,10 @@ public:
         if(stopping || (!active&&!saves.locked())) return;
         stopping=true; monitor.stop();
         for(auto& m:maps) if(m) { m->data->keys.store(0xFFF); m->data->touch.store(0); }
+        for(auto& m:maps) if(m) m->data->shutdown.store(1);
+#ifndef _WIN32
         for(auto& p:workers) if(p && p->state()!=QProcess::NotRunning) p->terminate();
+#endif
         for(int i=0;i<2;i++) if(workers[i]) {
             if(!workers[i]->waitForFinished(8000) && workers[i]->state()!=QProcess::NotRunning) {
                 workers[i]->kill(); workers[i]->waitForFinished(3000); failed=true;

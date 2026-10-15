@@ -7,6 +7,7 @@ import argparse
 from pathlib import Path
 import subprocess
 import tempfile
+import os
 
 
 def test(source, project):
@@ -16,6 +17,7 @@ def test(source, project):
     transport = text[begin:end]
     prelude = r'''
 #include <cassert>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -32,13 +34,22 @@ uint32_t SDL_GetTicks() { return GetTickCount(); }
 bool MpOnlineResolve(const char*,int,MpOnlineTarget*) { return false; }
 '''
     checks = r'''
+#ifdef _WIN32
+int setenv(const char* key,const char* value,int) {return _putenv_s(key,value);}
+#endif
 int main() {
+    WSADATA data;WSAStartup(MAKEWORD(2,2),&data);
     // Ephemeral port avoids collisions. Both production endpoints are nonblocking.
-    int probe=socket(AF_INET,SOCK_STREAM,0);
+    auto probe=socket(AF_INET,SOCK_STREAM,0);
     sockaddr_in address{}; address.sin_family=AF_INET; address.sin_addr.s_addr=htonl(INADDR_LOOPBACK);
     assert(bind(probe,(sockaddr*)&address,sizeof(address))==0);
-    socklen_t size=sizeof(address); assert(getsockname(probe,(sockaddr*)&address,&size)==0);
-    close(probe);
+    #ifdef _WIN32
+    int size=sizeof(address);
+#else
+    socklen_t size=sizeof(address);
+#endif
+     assert(getsockname(probe,(sockaddr*)&address,&size)==0);
+    closesocket(probe);
     auto port=std::to_string(ntohs(address.sin_port));
     setenv("PMCOOP_PORT",port.c_str(),1);setenv("PMCOOP_ROLE","host",1);
     mpnet::Net host,client;host.startHost();client.startJoin("127.0.0.1");
@@ -73,17 +84,19 @@ int main() {
     auto sock=socket(AF_INET,SOCK_STREAM,0);mpnet::setNonBlock(sock);
     address.sin_port=htons(1);connect(sock,(sockaddr*)&address,sizeof(address));
     fd_set wr,ex;FD_ZERO(&wr);FD_ZERO(&ex);FD_SET(sock,&wr);FD_SET(sock,&ex);timeval tv{1,0};
-    assert(bridgeSelect(sock,&wr,&ex,&tv)>0);assert(!bridgeConnectOK(sock));close(sock);
+    assert(bridgeSelect(sock,&wr,&ex,&tv)>0);assert(!bridgeConnectOK(sock));closesocket(sock);
     // A dead peer must never kill the host with SIGPIPE.
+#ifndef _WIN32
     int pair[2];assert(socketpair(AF_UNIX,SOCK_STREAM,0,pair)==0);close(pair[1]);
     assert(bridgeSend(pair[0],"x",1,0)==-1);close(pair[0]);
-    puts("PASS: production bridge localhost, roles, bidirectional framing, fragmentation, malformed frame, reconnect, refused connect, SIGPIPE");
+#endif
+    puts("PASS: production bridge localhost, roles, framing, reconnect and refused connect");
 }
 '''
     with tempfile.TemporaryDirectory() as temp:
-        cpp = Path(temp) / 'transport.cpp'; binary=Path(temp)/'transport'
+        cpp = Path(temp) / 'transport.cpp'; binary=Path(temp)/('transport.exe' if os.name=='nt' else 'transport')
         cpp.write_text(prelude+transport+checks)
-        subprocess.run(['g++','-std=c++17','-O1','-Wall','-Wextra','-pthread','-I'+str(project/'multiplayer'),'-I'+str(source/'src/frontend/qt_sdl'),str(cpp),'-o',str(binary)],check=True)
+        subprocess.run(['g++','-std=c++17','-O1','-Wall','-Wextra','-pthread','-I'+str(project/'multiplayer'),'-I'+str(source/'src/frontend/qt_sdl'),str(cpp),'-o',str(binary),*(['-lws2_32'] if os.name=='nt' else [])],check=True)
         subprocess.run([str(binary)],check=True,timeout=20)
 
 

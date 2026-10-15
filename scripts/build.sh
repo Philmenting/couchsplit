@@ -16,9 +16,9 @@ fi
 if git -C "$source_dir" apply --check "$project_dir/patches/project-pm-linux-coop.patch"; then
   git -C "$source_dir" apply "$project_dir/patches/project-pm-linux-coop.patch"
 elif ! git -C "$source_dir" apply --reverse --check "$project_dir/patches/project-pm-linux-coop.patch"; then
-  echo 'Patch passt nicht. Eigene Änderungen in .cache/project-pm prüfen; nichts wird überschrieben.' >&2
-  exit 1
+  python3 "$project_dir/scripts/prepare-platform.py" --check "$source_dir"
 fi
+python3 "$project_dir/scripts/prepare-platform.py" "$source_dir"
 cp "$project_dir/multiplayer/SocketCompat.h" "$source_dir/src/frontend/qt_sdl/"
 cp "$project_dir/display/CoopIPC.h" "$source_dir/src/frontend/qt_sdl/"
 cmake -S "$source_dir" -B "$build_dir/emulator" -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_LTO_RELEASE=OFF
@@ -26,8 +26,10 @@ cmake --build "$build_dir/emulator" --parallel "$jobs"
 cmake -S "$project_dir" -B "$build_dir/launcher" -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build "$build_dir/launcher" --parallel "$jobs"
 mkdir -p "$build_dir/bin"
-cp "$build_dir/emulator/melonDS" "$build_dir/bin/melonDS-coop"
-cp "$build_dir/launcher/platinum-coop" "$build_dir/bin/"
+suffix=""
+if [[ "${OS:-}" == Windows_NT ]]; then suffix=".exe"; fi
+cp "$build_dir/emulator/melonDS$suffix" "$build_dir/bin/melonDS-coop$suffix"
+cp "$build_dir/launcher/platinum-coop$suffix" "$build_dir/bin/"
 ctest --test-dir "$build_dir/launcher" --output-on-failure
 python3 "$project_dir/tests/test_transport.py" --source "$source_dir"
-"$build_dir/bin/melonDS-coop" --coop-capabilities
+"$build_dir/bin/melonDS-coop$suffix" --coop-capabilities

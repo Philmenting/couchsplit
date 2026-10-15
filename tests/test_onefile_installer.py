@@ -228,7 +228,7 @@ class OneFileTests(unittest.TestCase):
                 if args[:2] == ['distrobox', 'create']: state['exists'] = True
                 if '--coop-capabilities' in args:
                     if state['fail']: raise RuntimeError('TEST-ONLY probe failure')
-                    return subprocess.CompletedProcess(args, 0, 'PMCOOP_ABI=1\n')
+                    return subprocess.CompletedProcess(args, 0, 'PMCOOP_ABI=2\n')
                 if '--smoke-test' in args: Path(args[args.index('--smoke-test') + 1]).write_bytes(b'TEST-ONLY image boundary')
                 return subprocess.CompletedProcess(args, 0, '')
             ui = SimpleNamespace(stage=lambda *args: None, activity=lambda *args: None)

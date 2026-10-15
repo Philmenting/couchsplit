@@ -26,6 +26,7 @@ public:
         SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
         SDL_CONTROLLER_BUTTON_Y,SDL_CONTROLLER_BUTTON_X}};
     Controllers() {
+        SDL_SetMainReady();
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,"1");
         if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0)
             throw std::runtime_error(SDL_GetError());
