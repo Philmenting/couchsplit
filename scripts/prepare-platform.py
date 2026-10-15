@@ -7,7 +7,7 @@ from pathlib import Path
 CHANGES = {
  'CMakeLists.txt': [
   ("pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)", "if(WIN32)\n    find_package(SDL2 CONFIG REQUIRED)\n    add_compile_definitions(SDL_MAIN_HANDLED)\n    set(COOP_SDL_TARGET SDL2::SDL2)\nelse()\n    pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)\n    set(COOP_SDL_TARGET PkgConfig::SDL2)\nendif()"),
-  ("fix_interface_includes(PkgConfig::SDL2 PkgConfig::LibArchive)", "fix_interface_includes(${COOP_SDL_TARGET} PkgConfig::LibArchive)"),
+  ("fix_interface_includes(PkgConfig::SDL2 PkgConfig::LibArchive)", "if(WIN32)\n    fix_interface_includes(PkgConfig::LibArchive)\nelse()\n    fix_interface_includes(PkgConfig::SDL2 PkgConfig::LibArchive)\nendif()"),
   ("target_link_libraries(melonDS PRIVATE PkgConfig::SDL2 PkgConfig::LibArchive PkgConfig::Zstd PkgConfig::Faad)", "target_link_libraries(melonDS PRIVATE ${COOP_SDL_TARGET} PkgConfig::LibArchive PkgConfig::Zstd PkgConfig::Faad)"),
  ],
  'main.cpp': [
