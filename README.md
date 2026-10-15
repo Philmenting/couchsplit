@@ -10,6 +10,10 @@ Eine bereitgestellte deutsche Original-ROM wurde inzwischen in zwei echten Emula
 
 Die bereitgestellte **US-Rev-1-ROM wurde erfolgreich mit PM 0.4.5 gepatcht** und in zwei echten Emulatoren gestartet. Für diesen bekannten Build genügt `python3 scripts/prepare-rom.py --rom ORIGINAL.nds --patch BUILD.zip --output GEPATCHT.nds`; Prüfsummen werden automatisch geprüft. Dieses erste Ergebnis ist englisch. Anschließend erzeugt `scripts/localize-pm.py` daraus zusammen mit beiden Original-ROMs die deutsche Alpha. [Basisanforderungen und Paketprüfung](docs/project-pm-045.md).
 
+## Veröffentlichungen und Plattformen
+
+Die erste Bazzite-Ausgabe ist als [v0.1.0-alpha.1](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.1.0-alpha.1) verfügbar. Native ZorinOS-18-/Windows-Pakete und ihr tatsächlicher Prüfstand: [Plattformanleitung](docs/platforms.md). Alle Ausgaben bleiben Alpha; keine ROM enthalten.
+
 ## Start auf Bazzite
 
 **Einfachster Weg:** `Pokemon-Platinum-Coop-Bazzite.run` im Desktop herunterladen, in den Dateieigenschaften als ausführbar markieren und doppelklicken. Der Installer richtet eine eigene Laufzeit ein, legt den Startmenüeintrag an, fordert automatisch die Aufnahme in Steam an und öffnet danach die ROM-Auswahl. Die vorbereitete ROM oder ihr ZIP hinzufügen. Beide fertigen Programme sind enthalten; kein Kompilieren und kein GitHub-Login. Internet und 3 GiB freier Speicher erforderlich. [Anleitung und tatsächlicher Prüfstatus](docs/one-file-installer.md).

@@ -3,6 +3,35 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config extra-cmake-modules libsdl2-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive-dev libenet-dev libzstd-dev libcurl4-openssl-dev libfaad-dev libpcap-dev xdelta3
+      - name: Build and verify
+        env:
+          QT_QPA_PLATFORM: offscreen
+          SDL_AUDIODRIVER: dummy
+        run: |
+          bash scripts/build.sh
+          python3 -m unittest discover -s tests -p 'test_*.py'
+          python3 tests/smoke_emulator.py build/bin/melonDS-coop
+          mkdir -p dist
+          python3 scripts/make-installer.py --upstream .cache/project-pm --output dist/Pokemon-Platinum-Coop-Bazzite.run
+          bash dist/Pokemon-Platinum-Coop-Bazzite.run --check
+          python3 scripts/make-deb.py --upstream .cache/project-pm --output dist/Pokemon-Platinum-Coop-ZorinOS18-amd64.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Linux-installers
+          path: dist/*
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Linux-native-evidence
+          path: build/launcher/Testing/Temporary/LastTest.log
   windows:
     runs-on: windows-2025
     defaults:
@@ -29,9 +58,53 @@ jobs:
           QT_QPA_PLATFORM: offscreen
           SDL_AUDIODRIVER: dummy
         run: python3 tests/smoke_emulator.py build/bin/melonDS-coop.exe
+      - name: Package standalone Windows applications
+        run: |
+          mkdir -p dist
+          python3 scripts/package-windows.py --upstream .cache/project-pm --output dist/windows --prefix "$(cygpath -w "$MINGW_PREFIX")"
+          # Validate with no MSYS2 runtime in PATH: the deployed application must be self-contained.
+          env PATH="/c/Windows/System32:/c/Windows" QT_QPA_PLATFORM=offscreen SDL_AUDIODRIVER=dummy dist/windows/project/build/bin/platinum-coop.exe --data-dir "$(cygpath -w "$RUNNER_TEMP")/coop-deploy" --smoke-test "$(cygpath -w "$RUNNER_TEMP")/coop-deploy.png"
+      - name: Create per-user Windows installer
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging/windows.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed" }
+          Compress-Archive -Path dist/windows/* -DestinationPath dist/Pokemon-Platinum-Coop-Windows-Portable.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Windows-installers
+          path: |
+            dist/Pokemon-Platinum-Coop-Windows-Setup.exe
+            dist/Pokemon-Platinum-Coop-Windows-Portable.zip
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Windows-build-evidence
           path: |
             build/launcher/Testing/Temporary/LastTest.log
+  release:
+    needs: [linux, windows]
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[release]')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*-installers'
+          path: release
+          merge-multiple: true
+      - name: Publish only after every platform build passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd release
+          sha256sum * > SHA256SUMS
+          if gh release view v0.2.0-alpha.1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'Release already exists; preserving its assets.'
+            exit 0
+          fi
+          gh release create v0.2.0-alpha.1 * --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --prerelease --title 'Pokémon Platinum Local Co-op 0.2.0 Alpha 1 — Bazzite, ZorinOS, Windows' \
+            --notes-file ../docs/releases/v0.2.0-alpha.1.md

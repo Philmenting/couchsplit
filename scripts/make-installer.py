@@ -37,7 +37,7 @@ def snapshot(repository, revision):
     return result
 
 
-def source_files(project, upstream):
+def source_files(project, upstream, windows=False):
     if git('status', '--porcelain', cwd=project).strip(): raise ValueError('Projekt vor dem Paketbau committen.')
     commit = git('rev-parse', 'HEAD', cwd=project).decode().strip()
     files = {'project/' + name: value for name, value in snapshot(project, 'HEAD').items()}
@@ -73,14 +73,20 @@ cp rebuild/launcher/platinum-coop project/build/bin/platinum-coop
 Run project/build/bin/platinum-coop in the same runtime.
 See project/LICENSE and the dependency licenses in corresponding-source/.
 ''', 0o644)
-    for binary in ('platinum-coop', 'melonDS-coop'):
+    suffix = '.exe' if windows else ''
+    binaries = tuple(name + suffix for name in ('platinum-coop', 'melonDS-coop'))
+    for binary in binaries:
         data = (project / 'build/bin' / binary).read_bytes()
-        if data[:6] != b'\x7fELF\x02\x01' or struct.unpack_from('<H', data, 18)[0] != 62:
+        valid = data[:6] == b'\x7fELF\x02\x01' and struct.unpack_from('<H', data, 18)[0] == 62
+        if windows:
+            pe = struct.unpack_from('<I', data, 0x3c)[0] if len(data) >= 64 else len(data)
+            valid = data[:2] == b'MZ' and data[pe:pe+4] == b'PE\0\0' and data[pe+4:pe+6] == b'\x64\x86'
+        if not valid:
             raise ValueError('Linux-x86_64-Binary fehlt: ' + binary)
         files['project/build/bin/' + binary] = (data, 0o755)
     for name in files:
-        if forbidden(name): raise ValueError('Geschützte/unerwartete Datei im Paket: ' + name)
-    return files, dict(project_commit=commit, upstream_commit=lock['commit'], architecture='x86_64', runtime='ubuntu:24.04')
+        if forbidden(name) and name not in {'project/build/bin/' + binary for binary in binaries}: raise ValueError('Geschützte/unerwartete Datei im Paket: ' + name)
+    return files, dict(project_commit=commit, upstream_commit=lock['commit'], architecture='x86_64', runtime='windows-ucrt64' if windows else 'ubuntu:24.04')
 
 
 def make_installer(files, metadata, output, bootstrap):

@@ -7,8 +7,9 @@ commit=4d9785468bbefc8d08002f16df4d85a12f9611f7
 jobs="${COOP_BUILD_JOBS:-4}"
 mkdir -p "$project_dir/.cache"
 if [[ ! -d "$source_dir/.git" ]]; then
-  git clone --no-checkout https://github.com/ComicartOlie/melonDS-Project-PM.git "$source_dir"
+  git -c core.autocrlf=false clone --no-checkout https://github.com/ComicartOlie/melonDS-Project-PM.git "$source_dir"
 fi
+git -C "$source_dir" config core.autocrlf false
 if [[ "$(git -C "$source_dir" rev-parse HEAD 2>/dev/null || true)" != "$commit" ]]; then
   git -C "$source_dir" fetch origin "$commit"
   git -C "$source_dir" checkout --detach "$commit"

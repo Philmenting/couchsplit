@@ -28,14 +28,14 @@ def prepare(source, check=False):
     pending={}
     for name, replacements in CHANGES.items():
         path=source/'src/frontend/qt_sdl'/name
-        text=path.read_text()
+        text=path.read_text(encoding='utf-8')
         for old,new in replacements:
             if new in text: continue
             if check or text.count(old)!=1: raise ValueError('Unexpected upstream edit: '+name)
             text=text.replace(old,new,1)
         pending[path]=text
     if not check:
-        for path,text in pending.items(): path.write_text(text)
+        for path,text in pending.items(): path.write_text(text,encoding='utf-8',newline='\n')
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('source',type=Path);p.add_argument('--check',action='store_true')
     a=p.parse_args();prepare(a.source,a.check)

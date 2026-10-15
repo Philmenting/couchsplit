@@ -19,7 +19,7 @@ void ipcTest(const QString& fixture) {
     assert(a.acquire());assert(!b.acquire());a.release();assert(b.acquire());b.release();
     uint32_t top[Pixels]{},bottom[Pixels]{};top[0]=0xFF123456;bottom[0]=0xFFABCDEF;a.publish(top,bottom);
     assert(b.data->frame.load()==1&&b.data->top[0]==top[0]&&b.data->bottom[0]==bottom[0]);
-    QProcess child;child.start(fixture,{"--ipc-write",QString::fromUtf8(path)});
+    QProcess child;child.start(fixture,{"--ipc-write",QString::fromUtf8(path.c_str())});
     assert(child.waitForFinished(5000));assert(child.exitCode()==0);assert(a.data->keys.load()==123);
     atomicWrite(temp.path()+"/short",QByteArray("bad"));Mapping shortFile;rejects([&]{shortFile.open((temp.path()+"/short").toStdString(),false);});
 #ifndef _WIN32
