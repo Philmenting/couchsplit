@@ -17,6 +17,8 @@ static void requestQuit(int) {quitRequested=1;}
 #include <QMessageBox>
 #include <QPainter>
 #include <QPushButton>
+#include <QScreen>
+#include <QScrollArea>
 #include <QStandardPaths>
 #include <QStackedWidget>
 #include <QTextEdit>
@@ -42,7 +44,7 @@ public:
         setFocusPolicy(Qt::StrongFocus); timer.setInterval(16); delta.start();
         connect(&timer,&QTimer::timeout,this,[this]{
             if(!session.running()) return;
-            if(!isVisible()) { for(int p=0;p<2;p++) if(auto* s=session.shared(p)) {s->keys.store(0xFFF);s->touch.store(0);} return; }
+            if(!isVisible() || window()->isMinimized()) { neutralInput(); return; }
             float dt=qMin(qint64(50),delta.restart())/1000.0f;
             controllers.update();
             for(int p=0;p<2;p++) {
@@ -57,6 +59,10 @@ public:
             }
             update();
         }); timer.start();
+    }
+    void neutralInput() {
+        for(int p=0;p<2;p++) if(auto* s=session.shared(p)) {s->keys.store(0xFFF);s->touch.store(0);}
+        controllers.resetGestures(); delta.restart();
     }
     void reset() { lastFrames={{0,0}}; tops={}; bottoms={}; bottomOnly={{false,false}}; delta.restart(); }
 protected:
@@ -91,7 +97,7 @@ class Launcher : public QWidget {
     Controllers controllers;
     Session session;
     QStackedWidget* pages;
-    PlayView* play;
+    PlayView* play=nullptr;
     QLabel *statusLabel,*romLabel,*padLabel;
     QTimer uiTimer;
         bool menuHeld=false;
@@ -167,7 +173,7 @@ class Launcher : public QWidget {
         connect(&restore,&QPushButton::clicked,&dialog,[&]{guarded([&]{
             auto path=QFileDialog::getExistingDirectory(&dialog,"Backupordner auswählen",saves.profile(player.currentIndex(),game)+"/backups");if(path.isEmpty())return;
             if(QMessageBox::question(&dialog,"Spielstand wiederherstellen","Der aktuelle Stand wird zuerst gesichert. Gewähltes Backup wiederherstellen?")!=QMessageBox::Yes)return;
-            saves.acquire();try{saves.restore(player.currentIndex(),game,path);saves.release();}catch(...){saves.release();throw;}
+            saves.acquire();try{saves.restore(player.currentIndex(),game,path,settings.rom);saves.release();}catch(...){saves.release();throw;}
             QMessageBox::information(&dialog,"Spielstände","Backup erfolgreich wiederhergestellt.");
         });});
         QDialogButtonBox close(QDialogButtonBox::Close);form.addRow(&close);connect(&close,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);dialog.exec();
@@ -237,8 +243,9 @@ public:
         auto* outer=new QVBoxLayout(this);pages=new QStackedWidget(this);outer->addWidget(pages);
         auto* menu=new QWidget;auto* layout=new QVBoxLayout(menu);layout->setContentsMargins(60,30,60,30);
         auto* title=new QLabel("Pokémon Platinum\nLocal Co-op");title->setObjectName("title");title->setStyleSheet("font-size: 42px; font-weight: bold; color: #9ff4d8;");layout->addWidget(title);
-        romLabel=new QLabel(settings.rom.isEmpty()?"Noch keine Project-PM-ROM ausgewählt":QFileInfo(settings.rom).fileName());layout->addWidget(romLabel);
-        padLabel=new QLabel("Controller noch nicht zugeordnet");layout->addWidget(padLabel);
+        romLabel=new QLabel(settings.rom.isEmpty()?"Noch keine Project-PM-ROM ausgewählt":QFileInfo(settings.rom).fileName());romLabel->setWordWrap(true);layout->addWidget(romLabel);
+        padLabel=new QLabel("Controller noch nicht zugeordnet");padLabel->setWordWrap(true);layout->addWidget(padLabel);
+        for(auto* label:{romLabel,padLabel}) {auto policy=label->sizePolicy();policy.setHorizontalPolicy(QSizePolicy::Ignored);label->setSizePolicy(policy);}
         auto button=[&](QString name,std::function<void()> fn){auto* b=new QPushButton(name);b->setMinimumHeight(66);layout->addWidget(b);connect(b,&QPushButton::clicked,this,[this,fn]{guarded(fn);});return b;};
         auto* start=button("Koop-Spiel starten",[this]{startGame();});
         button("Controller zuordnen",[this]{assignPads();});button("Bildschirmaufteilung",[this]{layoutDialog();});
@@ -246,13 +253,21 @@ public:
         button("Einstellungen",[this]{configure();});button("Logs anzeigen",[this]{showLogs();});
         button("Launcher beenden",[this]{close();})->setObjectName("exitLauncher");
         statusLabel=new QLabel("Bereit · Ersteinrichtung im Desktopmodus empfohlen");statusLabel->setWordWrap(true);layout->addWidget(statusLabel);layout->addStretch();
-        pages->addWidget(menu);play=new PlayView(session,controllers,settings);pages->addWidget(play);
+        auto* menuScroll=new QScrollArea;
+        menuScroll->setObjectName("menuScroll");menuScroll->setWidgetResizable(true);
+        menuScroll->setFrameShape(QFrame::NoFrame);menuScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        menuScroll->setWidget(menu);pages->addWidget(menuScroll);
+        connect(qApp,&QApplication::focusChanged,this,[menuScroll](QWidget*,QWidget* focused){
+            if(focused && menuScroll->isAncestorOf(focused)) menuScroll->ensureWidgetVisible(focused,0,12);
+        });
+        play=new PlayView(session,controllers,settings);pages->addWidget(play);
+        connect(pages,&QStackedWidget::currentChanged,this,[this](int page){if(page==0)play->neutralInput();});
         play->leave=[this]{pages->setCurrentIndex(0);};
         play->endSession=[this]{session.stop();pages->setCurrentIndex(0);};
         session.status=[this](QString text){statusLabel->setText(text);};
         session.error=[this](QString text){statusLabel->setText(text);};
         session.ended=[this]{pages->setCurrentIndex(0);};
-        setWindowTitle("Pokémon Platinum Local Co-op");resize(1280,1000);
+        setWindowTitle("Pokémon Platinum Local Co-op");resize(QSize(1280,1000).boundedTo(screen()->availableGeometry().size()));
         setStyleSheet("QWidget {background:#111b2b; color:#e8efff; font-size:24px;} QPushButton {background:#24354e; border:2px solid #526b91; border-radius:8px; padding:10px;} QPushButton:focus {border-color:#9ff4d8; background:#345470;} QComboBox,QLineEdit {padding:8px; background:#24354e;}");
         start->setFocus();
         // UI navigation works through mapped controllers after assignment.
@@ -269,6 +284,10 @@ public:
         });uiTimer.start();
     }
 protected:
+    void changeEvent(QEvent* e) override {
+        QWidget::changeEvent(e);
+        if(e->type()==QEvent::WindowStateChange && isMinimized() && play) play->neutralInput();
+    }
     void resizeEvent(QResizeEvent* e) override {
         QWidget::resizeEvent(e);
         bool large=width()>=2800 && height()>=1600;
@@ -295,7 +314,7 @@ int main(int argc,char** argv) {
             int sizeIndex=args.indexOf("--smoke-size");
             if(sizeIndex>=0 && sizeIndex+1<args.size()) {
                 auto parts=args[sizeIndex+1].split('x');
-                if(parts.size()==2 && parts[0].toInt()>=800 && parts[1].toInt()>=800)launcher.resize(parts[0].toInt(),parts[1].toInt());
+                if(parts.size()==2 && parts[0].toInt()>=320 && parts[1].toInt()>=240)launcher.resize(parts[0].toInt(),parts[1].toInt());
             }
             QTimer::singleShot(300,&app,[&]{bool ok=launcher.grab().save(args[smoke+1]);app.exit(ok?0:1);});
         }

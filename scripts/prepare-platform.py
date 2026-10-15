@@ -17,6 +17,7 @@ CHANGES = {
   ('if (const char* profile = getenv("PMCOOP_PROFILE")) {\n        emuDirectory = QString::fromUtf8(profile);',
    'if (const auto profile = qEnvironmentVariable("PMCOOP_PROFILE"); !profile.isEmpty()) {\n        emuDirectory = profile;'),
   ('PMCOOP_ABI=1;BRIDGE_WIRE=2;POSIX=1','PMCOOP_ABI=2;BRIDGE_WIRE=2'),
+  ('PMCOOP_ABI=2;BRIDGE_WIRE=2','PMCOOP_ABI=2;BRIDGE_WIRE=2;STABLE_SAVE=1'),
   ('qputenv("QT_QPA_PLATFORM", "windows:darkmode=2");',
    'if (!qEnvironmentVariableIsSet("QT_QPA_PLATFORM")) qputenv("QT_QPA_PLATFORM", "windows:darkmode=2");'),
   ('if (getenv("PMCOOP_IPC")) {\n        emuInstances',
@@ -31,6 +32,13 @@ CHANGES = {
    'if (getenv("PMCOOP_ROLE") || getenv("MELONDS_AP")) return;   // local loopback/harness: no firewall changes'),
   ('if (const char* path = getenv("PMCOOP_IPC")) {\n        try { couch.open(path, false); }',
    'if (const auto path = qEnvironmentVariable("PMCOOP_IPC"); !path.isEmpty()) {\n        try { couch.open(path.toUtf8().toStdString(), false); }'),
+ ],
+ 'EmuInstance.cpp': [
+  ('    if (file.empty())\n    {\n        std::string& baseName = gba ? baseGBAAssetName : baseAssetName;',
+   '    const char* stableSave = getenv("PMCOOP_SAVE_NAME");\n'
+   '    if (!gba && file.empty() && ext == ".sav" && stableSave && !strcmp(stableSave, "game"))\n'
+   '    {\n        result += "game";\n    }\n'
+   '    else if (file.empty())\n    {\n        std::string& baseName = gba ? baseGBAAssetName : baseAssetName;'),
  ],
 }
 def prepare(source, check=False):

@@ -45,6 +45,42 @@ void saveTest() {
     assert(f.open(QIODevice::ReadOnly));assert(f.readAll()=="original");f.close();
     rejects([&]{a.restore(0,game,temp.path());});a.release();b.acquire();b.release();
 }
+QByteArray readBytes(const QString& path) {
+    QFile f(path);assert(f.open(QIODevice::ReadOnly));return f.readAll();
+}
+void saveMigrationTest() {
+    QTemporaryDir temp;SaveStore store(temp.path());const auto game=QString(64,'b');
+    rejects([&]{store.prepareSave(0,game,"original.nds");});
+    store.acquire();const auto directory=store.profile(0,game)+"/saves";QDir().mkpath(directory);
+    atomicWrite(directory+"/Platin-ä.sav","legacy player one");const auto legacyBackup=store.backup(0,game);
+    store.prepareSave(0,game,"Platin-ä.nds");
+    assert(readBytes(directory+"/game.sav")=="legacy player one");
+    assert(readBytes(directory+"/Platin-ä.sav")=="legacy player one");
+    atomicWrite(directory+"/game.sav","new progress");
+    store.prepareSave(0,game,"renamed.nds");assert(readBytes(directory+"/game.sav")=="new progress");
+    store.restore(0,game,legacyBackup);assert(readBytes(directory+"/game.sav")=="legacy player one");
+    // A hash change must never migrate another ROM's save.
+    store.prepareSave(0,QString(64,'c'),"renamed.nds");
+    assert(!QFileInfo::exists(store.profile(0,QString(64,'c'))+"/saves/game.sav"));
+    const auto second=store.profile(1,game)+"/saves";QDir().mkpath(second);
+    atomicWrite(second+"/first.sav","older second player");
+    atomicWrite(second+"/second.sav","selected second player");
+    const auto ambiguousBackup=store.backup(1,game);
+    rejects([&]{store.prepareSave(1,game,"unknown.nds");});
+    assert(!QFileInfo::exists(second+"/game.sav"));
+    store.prepareSave(1,game,"second.nds");assert(readBytes(second+"/game.sav")=="selected second player");
+    atomicWrite(second+"/game.sav","current second player");
+    rejects([&]{store.restore(1,game,ambiguousBackup);});
+    assert(readBytes(second+"/game.sav")=="current second player");
+    store.restore(1,game,ambiguousBackup,"first.nds");
+    assert(readBytes(second+"/game.sav")=="older second player");
+    assert(readBytes(directory+"/game.sav")=="legacy player one");
+    // With no exact name match, a single legacy file can be adopted safely.
+    const auto other=QString(64,'d'),single=store.profile(0,other)+"/saves";QDir().mkpath(single);
+    atomicWrite(single+"/before-rename.sav","only candidate");store.prepareSave(0,other,"after-rename.nds");
+    assert(readBytes(single+"/game.sav")=="only candidate");
+    store.release();rejects([&]{store.restore(0,game,legacyBackup);});
+}
 void controllerTest() {
     Controllers c;
     int a=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);
@@ -76,13 +112,21 @@ void processTest(const QString& fixture) {
     QTemporaryDir temp;SaveStore store(temp.path());Session session(store);Settings s;s.emulator=fixture;
     s.rom=temp.path()+"/legal-test-header.nds";QByteArray header(1024,0);header.replace(12,4,"CPUE");atomicWrite(s.rom,header);s.patchedConfirmed=true;
     int errors=0;session.error=[&](QString){errors++;};
-    for(int i=0;i<3;i++) {session.start(s);for(int wait=0;wait<40&&(!session.shared(0)->frame.load()||!session.shared(1)->frame.load());wait++)spin(50);assert(session.running());assert(session.shared(0)->frame.load()>0&&session.shared(1)->frame.load()>0);session.stop();assert(!session.running()&&!store.locked());}
+    const auto game=validateRom(s.rom),directory=store.profile(0,game)+"/saves";QDir().mkpath(directory);
+    atomicWrite(directory+"/legal-test-header.sav","player one progress");
+    for(int i=0;i<3;i++) {
+        session.start(s);for(int wait=0;wait<40&&(!session.shared(0)->frame.load()||!session.shared(1)->frame.load());wait++)spin(50);
+        assert(session.running());assert(session.shared(0)->frame.load()>0&&session.shared(1)->frame.load()>0);
+        assert(readBytes(directory+"/game.sav")=="player one progress");
+        session.stop();assert(!session.running()&&!store.locked());
+        const auto renamed=temp.path()+"/renamed-"+QString::number(i)+".nds";atomicWrite(renamed,header);s.rom=renamed;
+    }
     qputenv("COOP_FIXTURE_CRASH_PLAYER","1");session.start(s);spin(700);assert(!session.running()&&!store.locked()&&errors>0);qunsetenv("COOP_FIXTURE_CRASH_PLAYER");
     s.emulator=temp.path()+"/missing";rejects([&]{session.start(s);});assert(!store.locked());
 }
 int main(int argc,char**argv) {
     QApplication app(argc,argv);assert(argc==2);auto fixture=QFileInfo(argv[1]).absoluteFilePath();
-    ipcTest(fixture);layoutTest();saveTest();controllerTest();validationTest();processTest(fixture);
+    ipcTest(fixture);layoutTest();saveTest();saveMigrationTest();controllerTest();validationTest();processTest(fixture);
     std::cout<<"PASS: IPC across processes, 4:3 layouts, profile locks, verified restore, corruption rejection, virtual controller isolation/hotplug/touch, validation, repeated starts, graceful stop, worker failure cleanup\n";
     return 0;
 }

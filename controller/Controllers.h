@@ -61,6 +61,7 @@ public:
     SDL_JoystickID id(int p) const { return assigned.at(p); }
     bool connected(int p) const { return handles.at(p) && SDL_GameControllerGetAttached(handles.at(p)); }
     QPointF cursor(int p) const { return cursors.at(p); }
+    void resetGestures() { toggleHeld={{false,false}}; exitSince={{0,0}}; }
     ControlState read(int p, float seconds=1.0f/60) {
         ControlState out;
         auto* h=handles.at(p);

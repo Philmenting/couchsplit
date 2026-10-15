@@ -3,6 +3,7 @@
 #define PLATINUM_COOP_NO_MAIN
 #include "../launcher/main.cpp"
 #include <QMouseEvent>
+#include <QScrollBar>
 #include <QTemporaryDir>
 #include <QThread>
 #include <cassert>
@@ -12,13 +13,30 @@ static void spin(int ms) {
     QElapsedTimer elapsed; elapsed.start();
     while(elapsed.elapsed()<ms) {QCoreApplication::processEvents();QThread::msleep(5);}
 }
+static void menuFits() {
+    QTemporaryDir data;
+    atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"rom",QString(250,'r')+".nds"}}).toJson());
+    Launcher launcher(data.path());launcher.show();launcher.activateWindow();spin(50);
+    auto* scroll=launcher.findChild<QScrollArea*>("menuScroll");assert(scroll);
+    for(auto size:{QSize(1280,720),QSize(1366,768),QSize(640,360),QSize(1920,1080),QSize(3840,2160)}) {
+        launcher.resize(size);spin(50);assert(launcher.size()==size);
+        assert(scroll->horizontalScrollBar()->maximum()==0);
+        for(auto* button:launcher.findChildren<QPushButton*>()) {
+            button->setFocus();spin(20);
+            auto position=button->mapTo(scroll->viewport(),QPoint());
+            assert(scroll->viewport()->rect().contains(QRect(position,button->size())));
+        }
+    }
+}
 
 int main(int argc,char** argv) {
     QApplication app(argc,argv);app.setQuitOnLastWindowClosed(false);
     QTemporaryDir mouseData,controllerData,sessionData;
+    menuFits();
     {
-        Launcher launcher(mouseData.path());launcher.show();spin(50);
+        Launcher launcher(mouseData.path());launcher.resize(1280,720);launcher.show();spin(50);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit&&exit->isVisible());
+        launcher.findChild<QScrollArea*>("menuScroll")->ensureWidgetVisible(exit);spin(30);
         QPointF local=exit->rect().center(),global=exit->mapToGlobal(exit->rect().center());
         QMouseEvent press(QEvent::MouseButtonPress,local,global,Qt::LeftButton,Qt::LeftButton,Qt::NoModifier);
         QMouseEvent release(QEvent::MouseButtonRelease,local,global,Qt::LeftButton,Qt::NoButton,Qt::NoModifier);
@@ -29,7 +47,7 @@ int main(int argc,char** argv) {
         Launcher launcher(controllerData.path());
         int index=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);
         assert(index>=0);auto* pad=SDL_JoystickOpen(index);assert(pad);
-        launcher.show();launcher.activateWindow();spin(80);
+        launcher.resize(1280,720);launcher.show();launcher.activateWindow();spin(80);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit);
         auto* start=launcher.findChildren<QPushButton*>().first();start->setFocus();spin(50);
         // Drive the same timer used by physical controllers, including focus traversal.
@@ -39,6 +57,8 @@ int main(int argc,char** argv) {
             assert(SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_DPAD_DOWN,0)==0);spin(70);
         }
         assert(QApplication::focusWidget()==exit);
+        auto* scroll=launcher.findChild<QScrollArea*>("menuScroll");assert(scroll->verticalScrollBar()->value()>0);
+        assert(scroll->viewport()->rect().contains(QRect(exit->mapTo(scroll->viewport(),QPoint()),exit->size())));
         assert(SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,1)==0);spin(100);
         assert(!launcher.isVisible());
         SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,0);
@@ -53,9 +73,31 @@ int main(int argc,char** argv) {
         int a=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);
         int b=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);
         assert(a>=0&&b>=0);
+        auto* ja=SDL_JoystickOpen(a);auto* jb=SDL_JoystickOpen(b);assert(ja&&jb);
         for(auto* button:launcher.findChildren<QPushButton*>())if(button->text()=="Koop-Spiel starten")button->click();
         spin(150);auto* pages=launcher.findChild<QStackedWidget*>();assert(pages&&pages->currentIndex()==1);
         assert(QFileInfo::exists(sessionData.path()+"/session.lock"));
+        {
+            const auto runs=QDir(sessionData.path()).entryList({"run-*"},QDir::Dirs|QDir::NoDotAndDotDot);assert(runs.size()==1);
+            std::array<Mapping,2> input;
+            for(int p=0;p<2;p++)input[p].open((sessionData.path()+"/"+runs.first()+"/player"+QString::number(p+1)+".ipc").toUtf8().toStdString(),false);
+            SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_B,1);
+            SDL_JoystickSetVirtualButton(jb,SDL_CONTROLLER_BUTTON_B,1);
+            SDL_JoystickSetVirtualButton(jb,SDL_CONTROLLER_BUTTON_RIGHTSTICK,1);spin(100);
+            assert(input[0].data->keys.load()!=0xFFF&&input[1].data->keys.load()!=0xFFF&&input[1].data->touch.load());
+            launcher.showMinimized();assert(launcher.isMinimized());
+            for(auto& map:input)assert(map.data->keys.load()==0xFFF&&map.data->touch.load()==0);
+            SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_DPAD_RIGHT,1);spin(100);
+            for(auto& map:input)assert(map.data->keys.load()==0xFFF&&map.data->touch.load()==0);
+            launcher.showNormal();spin(100);assert(input[0].data->keys.load()!=0xFFF);
+            // Time spent minimized must not count toward the two-second exit chord.
+            SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_BACK,1);
+            SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_START,1);spin(100);
+            launcher.showMinimized();spin(2100);launcher.showNormal();spin(100);
+            assert(pages->currentIndex()==1&&QFileInfo::exists(sessionData.path()+"/session.lock"));
+            SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_BACK,0);
+            SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_START,0);
+        }
         QKeyEvent escape(QEvent::KeyPress,Qt::Key_Escape,Qt::NoModifier);
         QCoreApplication::sendEvent(pages->currentWidget(),&escape);assert(pages->currentIndex()==0);
         launcher.findChild<QPushButton*>("exitLauncher")->click();assert(!launcher.isVisible());
@@ -65,8 +107,8 @@ int main(int argc,char** argv) {
             QFile log(sessionData.path()+"/logs/"+sessions.first()+"/player"+QString::number(p)+".log");
             assert(log.open(QIODevice::ReadOnly));assert(log.readAll().contains("TEST_ONLY: graceful exit"));
         }
-        SDL_JoystickDetachVirtual(b);SDL_JoystickDetachVirtual(a);
+        SDL_JoystickClose(ja);SDL_JoystickClose(jb);SDL_JoystickDetachVirtual(b);SDL_JoystickDetachVirtual(a);
     }
-    std::cout<<"PASS: launcher closes via mouse and virtual controller; active fixture workers stop gracefully and release saves\n";
+    std::cout<<"PASS: scrollable menu at 360p/720p/768p/1080p/4K, controller focus scrolling, neutral minimized inputs and reset exit chord; launcher closes and fixture workers release saves\n";
     return 0;
 }

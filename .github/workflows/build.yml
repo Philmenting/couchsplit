@@ -10,7 +10,7 @@ jobs:
       - name: Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config extra-cmake-modules libsdl2-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive-dev libenet-dev libzstd-dev libcurl4-openssl-dev libfaad-dev libpcap-dev xdelta3
+          sudo apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config extra-cmake-modules libsdl2-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive-dev libenet-dev libzstd-dev libcurl4-openssl-dev libfaad-dev libpcap-dev libegl-dev libwayland-dev xdelta3
       - name: Build both applications and test
         run: scripts/build.sh
       - name: Launcher and two real emulator smoke test

@@ -22,6 +22,10 @@ Beide echten Emulatoren und Qt/SDL-Laufzeitbibliotheken sind enthalten. Ein eing
 
 Die Anwendung schreibt keine gemeinsamen Saves. Normales Beenden sendet eine IPC-Abschaltanforderung und wartet auf beide Worker. Eine Windows-Job-Gruppe beendet verbleibende eigene Worker bei einem Launcherabsturz. Nach erzwungenem Prozessabbruch lässt sich ungespeicherter Fortschritt nicht wiederherstellen.
 
+## Update auf 0.2.0 Alpha 2
+
+Launcher und Emulator gemeinsam aktualisieren. Der Launcher verlangt neben IPC ABI 2 die Emulatorfähigkeit `STABLE_SAVE=1`. Koop-Spielstände heißen innerhalb des bisherigen Spieler-/ROM-Hash-Profils jetzt `game.sav`, damit ein geänderter ROM-Dateiname den Fortschritt nicht mehr versteckt. Vor der ersten Übernahme wird ein Backup angelegt, die alte Datei bleibt erhalten. Bei mehreren älteren Saves zuerst die ursprünglich verwendete ROM auswählen; der Launcher rät keine Zuordnung. Ältere Backups werden beim Wiederherstellen auf den festen Speichernamen übernommen. Unterschiedliche ROM-Hashes werden weiterhin nicht automatisch zusammengeführt.
+
 ## Steam und Tests
 
 Bazzite fordert automatisch die Aufnahme an. Auf ZorinOS und Windows in Steam „Spiel hinzufügen → Steam-fremdes Spiel“ wählen und den Launcher hinzufügen. Bei doppelten Controller-Eingaben Steam Input nur für diesen Eintrag deaktivieren.
