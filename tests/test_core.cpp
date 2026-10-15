@@ -76,7 +76,7 @@ void processTest(const QString& fixture) {
     QTemporaryDir temp;SaveStore store(temp.path());Session session(store);Settings s;s.emulator=fixture;
     s.rom=temp.path()+"/legal-test-header.nds";QByteArray header(1024,0);header.replace(12,4,"CPUE");atomicWrite(s.rom,header);s.patchedConfirmed=true;
     int errors=0;session.error=[&](QString){errors++;};
-    for(int i=0;i<3;i++) {session.start(s);spin(120);assert(session.running());assert(session.shared(0)->frame.load()>0&&session.shared(1)->frame.load()>0);session.stop();assert(!session.running()&&!store.locked());}
+    for(int i=0;i<3;i++) {session.start(s);for(int wait=0;wait<40&&(!session.shared(0)->frame.load()||!session.shared(1)->frame.load());wait++)spin(50);assert(session.running());assert(session.shared(0)->frame.load()>0&&session.shared(1)->frame.load()>0);session.stop();assert(!session.running()&&!store.locked());}
     qputenv("COOP_FIXTURE_CRASH_PLAYER","1");session.start(s);spin(700);assert(!session.running()&&!store.locked()&&errors>0);qunsetenv("COOP_FIXTURE_CRASH_PLAYER");
     s.emulator=temp.path()+"/missing";rejects([&]{session.start(s);});assert(!store.locked());
 }

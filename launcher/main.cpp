@@ -212,7 +212,7 @@ class Launcher : public QWidget {
 #ifdef _WIN32
             python=QCoreApplication::applicationDirPath()+"/python/python.exe";
 #endif
-            QProcess process;process.start(python,{importer,"--rom",rom,"--into",root+"/roms"});
+            QProcess process;process.start(python,{"-X","utf8",importer,"--rom",rom,"--into",root+"/roms"});
             QApplication::setOverrideCursor(Qt::WaitCursor);
             bool finished=process.waitForFinished(120000);
             QApplication::restoreOverrideCursor();

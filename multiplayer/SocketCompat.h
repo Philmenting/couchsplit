@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 // Compatibility for Project PM's Winsock transport. The wire format is unchanged.
+#include <cstdint>
 #ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
 inline int bridgeSelect(SOCKET s, fd_set* wr, fd_set* ex, timeval* tv) {
