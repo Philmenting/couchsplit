@@ -24,6 +24,11 @@ def stage(upstream,output,prefix):
     binary=output/'project/build/bin'
     for name in ('platinum-coop.exe','melonDS-coop.exe'):
         subprocess.run([str(prefix/'bin/windeployqt6.exe'),'--release','--no-translations','--dir',str(binary),str(binary/name)],check=True)
+    # windeployqt deploys qwindows by default; our hidden workers require offscreen too.
+    offscreen=prefix/'share/qt6/plugins/platforms/qoffscreen.dll'
+    if not offscreen.is_file():raise ValueError('Required Qt offscreen platform plugin missing')
+    shutil.copyfile(offscreen,binary/'platforms/qoffscreen.dll')
+    (binary/'qt.conf').write_text('[Paths]\\nPrefix=.\\nPlugins=.\\n',encoding='utf-8')
     available={p.name.lower():p for p in (prefix/'bin').glob('*.dll')}
     system=Path(os.environ['SYSTEMROOT'])/'System32'
     pending=list(binary.rglob('*.exe'))+list(binary.rglob('*.dll'));seen=set();runtime=[]

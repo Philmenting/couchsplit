@@ -1,6 +1,6 @@
 # Pokémon Platinum Local Co-op
 
-Ein Linux-Launcher für zwei **getrennte Project-PM/melonDS-Prozesse**, zwei Controller und ein gemeinsames Split-Screen-Fenster. Zielplattform: Bazzite, KDE Plasma und Steam Gaming Mode, 3840 × 2160 bei 60 Hz.
+Ein nativer Launcher für Linux und Windows mit zwei **getrennte Project-PM/melonDS-Prozesse**, zwei Controller und ein gemeinsames Split-Screen-Fenster. Hauptziel: Bazzite, KDE Plasma und Steam Gaming Mode, 3840 × 2160 bei 60 Hz. Zusätzliche Pakete: ZorinOS 18 und Windows 10/11 x64; siehe [Plattformausgaben](docs/platforms.md).
 
 **Entwicklungsstand:** implementierter Prototyp mit reproduzierbaren ROM-freien Tests. Ein passender Project-PM-Multiplayer-Patch und eine eigene Platin-ROM werden für das gewünschte Spielerlebnis benötigt. Gemeinsames Sinnoh-Gameplay wurde hier nicht geprüft. Ein normales Pokémon Platin erhält durch diesen Launcher keinen freien Welt-Koop.
 
