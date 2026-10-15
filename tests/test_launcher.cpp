@@ -68,4 +68,5 @@ int main(int argc,char** argv) {
         SDL_JoystickDetachVirtual(b);SDL_JoystickDetachVirtual(a);
     }
     std::cout<<"PASS: launcher closes via mouse and virtual controller; active fixture workers stop gracefully and release saves\n";
+    return 0;
 }

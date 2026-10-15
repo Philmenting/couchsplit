@@ -84,4 +84,5 @@ int main(int argc,char**argv) {
     QApplication app(argc,argv);assert(argc==2);auto fixture=QFileInfo(argv[1]).absoluteFilePath();
     ipcTest(fixture);layoutTest();saveTest();controllerTest();validationTest();processTest(fixture);
     std::cout<<"PASS: IPC across processes, 4:3 layouts, profile locks, verified restore, corruption rejection, virtual controller isolation/hotplug/touch, validation, repeated starts, graceful stop, worker failure cleanup\n";
+    return 0;
 }
