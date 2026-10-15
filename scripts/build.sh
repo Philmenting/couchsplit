@@ -7,7 +7,7 @@ commit=4d9785468bbefc8d08002f16df4d85a12f9611f7
 jobs="${COOP_BUILD_JOBS:-4}"
 mkdir -p "$project_dir/.cache" "$build_dir"
 patch_file="$build_dir/project-pm-normalized.patch"
-python3 -c 'from pathlib import Path;import sys;Path(sys.argv[2]).write_bytes(Path(sys.argv[1]).read_bytes().replace(b"\\r\\n",b"\\n"))' "$project_dir/patches/project-pm-linux-coop.patch" "$patch_file"
+python3 -c 'from pathlib import Path;import sys;Path(sys.argv[2]).write_bytes(Path(sys.argv[1]).read_bytes().replace(bytes([13,10]),bytes([10])))' "$project_dir/patches/project-pm-linux-coop.patch" "$patch_file"
 if [[ ! -d "$source_dir/.git" ]]; then
   git -c core.autocrlf=false clone --no-checkout https://github.com/ComicartOlie/melonDS-Project-PM.git "$source_dir"
 fi
