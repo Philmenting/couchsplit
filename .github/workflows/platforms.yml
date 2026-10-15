@@ -23,6 +23,17 @@ jobs:
           python3 scripts/make-installer.py --upstream .cache/project-pm --output dist/Pokemon-Platinum-Coop-Bazzite.run
           bash dist/Pokemon-Platinum-Coop-Bazzite.run --check
           python3 scripts/make-deb.py --upstream .cache/project-pm --output dist/Pokemon-Platinum-Coop-ZorinOS18-amd64.deb
+      - name: Install and remove native Debian package
+        env:
+          QT_QPA_PLATFORM: offscreen
+          SDL_AUDIODRIVER: dummy
+        run: |
+          sudo apt-get install -y ./dist/Pokemon-Platinum-Coop-ZorinOS18-amd64.deb
+          /opt/pokemon-platinum-local-coop/project/build/bin/platinum-coop --data-dir "$RUNNER_TEMP/deb-profile" --smoke-test "$RUNNER_TEMP/deb-launcher.png"
+          test -s "$RUNNER_TEMP/deb-launcher.png"
+          sudo apt-get remove -y pokemon-platinum-local-coop
+          test ! -f /opt/pokemon-platinum-local-coop/project/build/bin/platinum-coop
+          test -d "$RUNNER_TEMP/deb-profile"
       - uses: actions/upload-artifact@v4
         with:
           name: Linux-installers
@@ -69,6 +80,17 @@ jobs:
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging/windows.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed" }
+          $installDir = Join-Path $env:RUNNER_TEMP "Coop Setup Test"
+          $profileDir = Join-Path $env:RUNNER_TEMP "Coop User Data"
+          $setup = Start-Process -FilePath "dist/Pokemon-Platinum-Coop-Windows-Setup.exe" -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=`"$installDir`"") -Wait -PassThru
+          if ($setup.ExitCode -ne 0) { throw "Setup failed: $($setup.ExitCode)" }
+          $env:QT_QPA_PLATFORM = "offscreen"
+          $env:SDL_AUDIODRIVER = "dummy"
+          & "$installDir/project/build/bin/platinum-coop.exe" --data-dir "$profileDir" --smoke-test "$env:RUNNER_TEMP/setup-launcher.png"
+          if ($LASTEXITCODE -ne 0 -or !(Test-Path "$env:RUNNER_TEMP/setup-launcher.png")) { throw "Installed launcher failed" }
+          $uninstall = Start-Process -FilePath "$installDir/unins000.exe" -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART") -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0 -or (Test-Path "$installDir/project/build/bin/platinum-coop.exe")) { throw "Uninstall failed" }
+          if (!(Test-Path "$profileDir")) { throw "Uninstall removed personal data" }
           Compress-Archive -Path dist/windows/* -DestinationPath dist/Pokemon-Platinum-Coop-Windows-Portable.zip
       - uses: actions/upload-artifact@v4
         with:

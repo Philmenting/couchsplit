@@ -110,3 +110,10 @@ Das Skript verweigert uncommittierte Änderungen und ein bereits bestehendes ori
 ## Podman-Neustartfehler nach Zielsystem-Rückmeldung
 
 Implementiert: begrenzter Bereinigungsversuch ohne Containerlöschung für den exakten Fehler „creating temporary passwd file … merged/etc/passwd: no such file or directory“, nur nach Stop-/Eigentumsprüfung. Automatisiert getestet: drei weitere Tests prüfen Erfolgspfad, maximal einen Wiederholungsversuch und Ablehnung laufender/fremder/anders fehlerhafter Container. Nicht verifiziert: dass `podman container cleanup` den konkreten Fehler auf dem Bazzite-PC behebt. Der Bericht mit Podman 5.8.4 zeigt erfolgreiche frühere Initialisierung und einen fehlgeschlagenen späteren Start; die tieferliegende Speicherursache ist offen. Keine ROM-/Save-Löschung und keine Eingriffe in andere Container.
+
+
+## Native Plattformpakete 0.2.0 Alpha 1
+
+Bazzite 0.1.0-alpha.1 ist als unveränderter GitHub-Prerelease veröffentlicht. Der neue Code ergänzt native Windows-Dateimappings, kooperative Worker-Abschaltung (IPC ABI 2), Unicode-ROM-Import und Windows-Job-Gruppen. Paketbauer erzeugen ein ZorinOS-18-/Ubuntu-24.04-DEB sowie eine Windows-Setup-EXE und portable ZIP mit passenden eigenen und Emulatorquellen.
+
+Die Freigabe ist in `.github/workflows/platforms.yml` an erfolgreiche native Linux-/Windows-Builds, Komponenten- und ROM-freie Emulatorprüfungen gebunden. Zusätzlich werden DEB und Windows-Setup in der CI installiert, der installierte Launcher gestartet und anschließend deinstalliert; persönliche Daten müssen erhalten bleiben. Details und tatsächliche Ergebnisse stehen beim jeweiligen Release-Commit in GitHub Actions. Das ersetzt keine manuelle Abnahme auf ZorinOS/Windows, mit Bluetooth-Controllern oder einer synchronen Sinnoh-Spielwelt.

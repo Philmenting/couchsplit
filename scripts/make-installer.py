@@ -60,7 +60,7 @@ def source_files(project, upstream, windows=False):
             data = (temp / name).read_bytes()
             if (upstream / name).read_bytes() != data: raise ValueError('Gebauter Upstream weicht vom gepinnten Patch ab: ' + name)
             files['corresponding-source/' + name] = (data, mode)
-    files['corresponding-source/UPSTREAM_COMMIT'] = ((lock['commit'] + '\nwith project/patches/project-pm-linux-coop.patch applied\n').encode(), 0o644)
+    files['corresponding-source/UPSTREAM_COMMIT'] = ((lock['commit'] + '\nwith project/patches/project-pm-linux-coop.patch and project/scripts/prepare-platform.py applied\n').encode(), 0o644)
     files['BUILDING.txt'] = (b'''Complete corresponding source is in project/ and corresponding-source/.
 Install Ubuntu 24.04 development dependencies from project/docs/bazzite-installation.md.
 From this release directory, without fetching any source:
@@ -75,6 +75,21 @@ cp rebuild/launcher/platinum-coop project/build/bin/platinum-coop
 Run project/build/bin/platinum-coop in the same runtime.
 See project/LICENSE and the dependency licenses in corresponding-source/.
 ''', 0o644)
+    if windows:
+        files['BUILDING.txt'] = (b'''Complete matching source is in project/ and corresponding-source/.
+Use MSYS2 UCRT64 x86_64. Exact compiler/runtime versions are in dependency-licenses/MSYS2-PACKAGES.txt.
+The complete package/development dependency list is in project/.github/workflows/platforms.yml.
+From this release directory in the UCRT64 shell, no source download is required:
+cmake -S corresponding-source -B rebuild/emulator -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_LTO_RELEASE=OFF
+cmake --build rebuild/emulator --parallel 4
+cmake -S project -B rebuild/launcher -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build rebuild/launcher --parallel 4
+ctest --test-dir rebuild/launcher --output-on-failure
+cp rebuild/emulator/melonDS.exe project/build/bin/melonDS-coop.exe
+cp rebuild/launcher/platinum-coop.exe project/build/bin/platinum-coop.exe
+Run from UCRT64 for development. For standalone use deploy Qt and transitive DLLs as in project/scripts/package-windows.py.
+See project/LICENSE, corresponding-source/LICENSE and dependency-licenses/.
+''', 0o644)
     suffix = '.exe' if windows else ''
     binaries = tuple(name + suffix for name in ('platinum-coop', 'melonDS-coop'))
     for binary in binaries:
@@ -84,7 +99,7 @@ See project/LICENSE and the dependency licenses in corresponding-source/.
             pe = struct.unpack_from('<I', data, 0x3c)[0] if len(data) >= 64 else len(data)
             valid = data[:2] == b'MZ' and data[pe:pe+4] == b'PE\0\0' and data[pe+4:pe+6] == b'\x64\x86'
         if not valid:
-            raise ValueError('Linux-x86_64-Binary fehlt: ' + binary)
+            raise ValueError('x86_64-Binary fehlt oder hat das falsche Format: ' + binary)
         files['project/build/bin/' + binary] = (data, 0o755)
     for name in files:
         if forbidden(name) and name not in {'project/build/bin/' + binary for binary in binaries}: raise ValueError('Geschützte/unerwartete Datei im Paket: ' + name)
