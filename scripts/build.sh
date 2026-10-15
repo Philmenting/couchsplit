@@ -5,7 +5,9 @@ source_dir="$project_dir/.cache/project-pm"
 build_dir="$project_dir/build"
 commit=4d9785468bbefc8d08002f16df4d85a12f9611f7
 jobs="${COOP_BUILD_JOBS:-4}"
-mkdir -p "$project_dir/.cache"
+mkdir -p "$project_dir/.cache" "$build_dir"
+patch_file="$build_dir/project-pm-normalized.patch"
+python3 -c 'from pathlib import Path;import sys;Path(sys.argv[2]).write_bytes(Path(sys.argv[1]).read_bytes().replace(b"\\r\\n",b"\\n"))' "$project_dir/patches/project-pm-linux-coop.patch" "$patch_file"
 if [[ ! -d "$source_dir/.git" ]]; then
   git -c core.autocrlf=false clone --no-checkout https://github.com/ComicartOlie/melonDS-Project-PM.git "$source_dir"
 fi
@@ -14,9 +16,9 @@ if [[ "$(git -C "$source_dir" rev-parse HEAD 2>/dev/null || true)" != "$commit" 
   git -C "$source_dir" fetch origin "$commit"
   git -C "$source_dir" checkout --detach "$commit"
 fi
-if git -C "$source_dir" apply --check "$project_dir/patches/project-pm-linux-coop.patch"; then
-  git -C "$source_dir" apply "$project_dir/patches/project-pm-linux-coop.patch"
-elif ! git -C "$source_dir" apply --reverse --check "$project_dir/patches/project-pm-linux-coop.patch"; then
+if git -C "$source_dir" apply --check "$patch_file"; then
+  git -C "$source_dir" apply "$patch_file"
+elif ! git -C "$source_dir" apply --reverse --check "$patch_file"; then
   python3 "$project_dir/scripts/prepare-platform.py" --check "$source_dir"
 fi
 python3 "$project_dir/scripts/prepare-platform.py" "$source_dir"

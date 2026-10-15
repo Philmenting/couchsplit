@@ -42,7 +42,7 @@ def stage(upstream,output,prefix):
                 raise ValueError('Unresolved Windows dependency: '+name)
     # CPython is used only for the existing validated ROM/ZIP importer.
     archive=output/'python-embed.zip'
-    urllib.request.urlretrieve('https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip',archive)
+    urllib.request.urlretrieve('https://www.python.org/ftp/python/3.14.8/python-3.14.8-embed-amd64.zip',archive)
     with zipfile.ZipFile(archive) as source:source.extractall(binary/'python')
     archive.unlink()
     licenses=output/'dependency-licenses';licenses.mkdir()
@@ -58,7 +58,7 @@ def stage(upstream,output,prefix):
         'upstream source URLs and checksums: https://github.com/msys2/MINGW-packages . '
         'Historical binaries and source packages: https://repo.msys2.org/mingw/sources/ .\n'
         'Qt original source archives: https://download.qt.io/archive/qt/ .\n'
-        'CPython 3.12.10 full source and license: https://www.python.org/ftp/python/3.12.10/ .\n')
+        'CPython 3.14.8 full source and license: https://www.python.org/ftp/python/3.14.8/ .\n')
     metadata['runtime_dlls']=sorted(runtime);metadata['packages']=manifest
     (output/'release.json').write_text(json.dumps(metadata,indent=2))
     (output/'Start.bat').write_text('@echo off\r\nstart "" "%~dp0project\\build\\bin\\platinum-coop.exe" --fullscreen --first-run\r\n')

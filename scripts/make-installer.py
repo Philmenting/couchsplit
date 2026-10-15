@@ -49,7 +49,9 @@ def source_files(project, upstream, windows=False):
         expected = snapshot(upstream, lock['commit'])
         for name, (data, mode) in expected.items():
             path = temp / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(data); path.chmod(mode)
-        subprocess.run(['git', 'apply', str(project / 'patches/project-pm-linux-coop.patch')], cwd=temp, check=True)
+        patch = temp / 'coop-base.patch'
+        patch.write_bytes((project / 'patches/project-pm-linux-coop.patch').read_bytes().replace(b'\r\n', b'\n'))
+        subprocess.run(['git', 'apply', str(patch)], cwd=temp, check=True)
         subprocess.run(['python3', str(project / 'scripts/prepare-platform.py'), str(temp)], check=True)
         for own, target in [('multiplayer/SocketCompat.h', 'src/frontend/qt_sdl/SocketCompat.h'),
                             ('display/CoopIPC.h', 'src/frontend/qt_sdl/CoopIPC.h')]:
