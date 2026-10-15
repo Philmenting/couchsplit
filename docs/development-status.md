@@ -62,7 +62,7 @@ Automatisiert getestet: zwei byteidentische Builds, SHA-256 `800106962a6dd4eba0d
 
 ## Ein-Datei-Installer
 
-Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 23 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Nicht verifiziert: reale Podman-/Bazzite-Installation in dieser Umgebung.
+Implementiert: siehe [Installationsablauf und abgegrenzter Prüfstatus](one-file-installer.md). Automatisiert getestet: 24 Python-Tests sowie nativer Neubau/Komponententest und Offscreen-Launcher-Start bestehen. Echter ROM-ZIP-Import ergibt den unveränderten Alpha-2-SHA-256. Nicht verifiziert: reale Podman-/Bazzite-Installation in dieser Umgebung.
 
 ## Manuell bestätigt
 

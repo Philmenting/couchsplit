@@ -29,6 +29,11 @@ importer = module('rom_importer', 'import-rom.py')
 
 
 class OneFileTests(unittest.TestCase):
+    def test_gpl_freebios_makefile_is_source_but_dumps_are_rejected(self):
+        self.assertFalse(maker.forbidden('corresponding-source/freebios/Makefile.bios'))
+        for name in ('project/game.nds', 'project/user.bios', 'project/bios9.bin', 'corresponding-source/user.rom'):
+            self.assertTrue(maker.forbidden(name))
+
     def test_self_extraction_and_corruption_rejection_without_install(self):
         with tempfile.TemporaryDirectory(prefix='installer path ') as temp:
             path = Path(temp) / 'Setup with spaces.run'

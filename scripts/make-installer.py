@@ -19,6 +19,11 @@ ROOT = Path(__file__).resolve().parents[1]
 FORBIDDEN = {'.nds', '.srl', '.sav', '.dsv', '.rom', '.bios', '.bin', '.exe', '.dll'}
 
 
+def forbidden(name):
+    # This is the GPL free-BIOS source Makefile, not a firmware dump.
+    return Path(name).suffix.lower() in FORBIDDEN and name != 'corresponding-source/freebios/Makefile.bios'
+
+
 def git(*args, cwd): return subprocess.check_output(['git', *args], cwd=cwd)
 
 
@@ -73,7 +78,7 @@ See project/LICENSE and the dependency licenses in corresponding-source/.
             raise ValueError('Linux-x86_64-Binary fehlt: ' + binary)
         files['project/build/bin/' + binary] = (data, 0o755)
     for name in files:
-        if Path(name).suffix.lower() in FORBIDDEN: raise ValueError('Geschützte/unerwartete Datei im Paket: ' + name)
+        if forbidden(name): raise ValueError('Geschützte/unerwartete Datei im Paket: ' + name)
     return files, dict(project_commit=commit, upstream_commit=lock['commit'], architecture='x86_64', runtime='ubuntu:24.04')
 
 
