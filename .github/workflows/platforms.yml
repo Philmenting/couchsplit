@@ -86,8 +86,9 @@ jobs:
           if ($setup.ExitCode -ne 0) { throw "Setup failed: $($setup.ExitCode)" }
           $env:QT_QPA_PLATFORM = "offscreen"
           $env:SDL_AUDIODRIVER = "dummy"
-          & "$installDir/project/build/bin/platinum-coop.exe" --data-dir "$profileDir" --smoke-test "$env:RUNNER_TEMP/setup-launcher.png"
-          if ($LASTEXITCODE -ne 0 -or !(Test-Path "$env:RUNNER_TEMP/setup-launcher.png")) { throw "Installed launcher failed" }
+          $env:QT_LOGGING_TO_CONSOLE = "1"
+          $smoke = Start-Process -FilePath "$installDir/project/build/bin/platinum-coop.exe" -ArgumentList @("--data-dir", "`"$profileDir`"", "--smoke-test", "`"$env:RUNNER_TEMP/setup-launcher.png`"") -Wait -PassThru
+          if ($smoke.ExitCode -ne 0 -or !(Test-Path "$env:RUNNER_TEMP/setup-launcher.png")) { throw "Installed launcher failed: exit=$($smoke.ExitCode)" }
           $uninstall = Start-Process -FilePath "$installDir/unins000.exe" -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART") -Wait -PassThru
           if ($uninstall.ExitCode -ne 0 -or (Test-Path "$installDir/project/build/bin/platinum-coop.exe")) { throw "Uninstall failed" }
           if (!(Test-Path "$profileDir")) { throw "Uninstall removed personal data" }
