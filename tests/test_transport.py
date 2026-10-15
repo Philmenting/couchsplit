@@ -28,6 +28,9 @@ def test(source, project):
 #include <string>
 #include <algorithm>
 #include "SocketCompat.h"
+#ifdef _WIN32
+#include <shellapi.h>
+#endif
 #include "MpOnline.h"
 namespace melonDS { using u8=uint8_t; using u16=uint16_t; using u32=uint32_t; }
 uint32_t SDL_GetTicks() { return GetTickCount(); }
@@ -96,7 +99,7 @@ int main() {
     with tempfile.TemporaryDirectory() as temp:
         cpp = Path(temp) / 'transport.cpp'; binary=Path(temp)/('transport.exe' if os.name=='nt' else 'transport')
         cpp.write_text(prelude+transport+checks)
-        subprocess.run(['g++','-std=c++17','-O1','-Wall','-Wextra','-pthread','-I'+str(project/'multiplayer'),'-I'+str(source/'src/frontend/qt_sdl'),str(cpp),'-o',str(binary),*(['-lws2_32'] if os.name=='nt' else [])],check=True)
+        subprocess.run(['g++','-std=c++17','-O1','-Wall','-Wextra','-pthread','-I'+str(project/'multiplayer'),'-I'+str(source/'src/frontend/qt_sdl'),str(cpp),'-o',str(binary),*(['-lws2_32','-lshell32','-ladvapi32','-luser32'] if os.name=='nt' else [])],check=True)
         subprocess.run([str(binary)],check=True,timeout=20)
 
 

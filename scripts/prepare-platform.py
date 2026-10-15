@@ -20,6 +20,8 @@ CHANGES = {
    '        couchQuitTimer.start(50);\n        emuInstances'),
  ],
  'EmuThread.cpp': [
+  ('if (getenv("MELONDS_AP")) return;   // automated harness instances: no prompts',
+   'if (getenv("PMCOOP_ROLE") || getenv("MELONDS_AP")) return;   // local loopback/harness: no firewall changes'),
   ('if (const char* path = getenv("PMCOOP_IPC")) {\n        try { couch.open(path, false); }',
    'if (const auto path = qEnvironmentVariable("PMCOOP_IPC"); !path.isEmpty()) {\n        try { couch.open(path.toUtf8().toStdString(), false); }'),
  ],
