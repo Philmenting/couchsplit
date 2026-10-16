@@ -1,0 +1,2 @@
+# Test-only ARM instruction execution; the ROM patcher uses Python stdlib only.
+unicorn==2.1.4

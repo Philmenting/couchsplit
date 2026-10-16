@@ -1,6 +1,8 @@
-# Entwicklungsstatus — 14.10.2026
+# Entwicklungsstatus — 16.10.2026
 
-**Ergebnis:** vollständiger Linux-Build von Project PM + eigenem Launcher, bestandene ROM-freie Tests und reale Starts zweier Emulatorprozesse mit selbst geschriebenem ARM-Homebrew, einer deutschen Original-ROM sowie der erfolgreich gepatchten US-PM-ROM 0.4.5. Die PM-Ausgabe ist englisch. Noch keine erfolgreiche Pokémon-Sinnoh-Welt-Synchronisation, deutsche Lokalisierung oder Bazzite-Hardwareabnahme. [Original-ROM-Test](rom-boot-check.md) · [PM-Patch-/Starttest](project-pm-045.md).
+**Aktueller Nachtrag:** Alpha 4 wurde mit der bereitgestellten deutschen PM-0.4.5-ROM tatsächlich bis zum Pokédex gespielt. Zwei Figuren und ihre Begleiter bewegen sich synchron; ein gemeinsamer Wildkampf mit getrennten Befehlen, identischen Gegnerzuständen, Sieg/EP/Levelaufstieg und anschließendem Ingame-Speichern/-Laden wurde unter Linux geprüft. Native Windows-/Bazzite-Spielabnahme, Trainer-Koop, Tausch und mehrstündiger Dauertest bleiben offen. Die älteren Abschnitte unten beschreiben den damaligen Prüfstand.
+
+Am 16.10.2026 wurde die veraltete Zielauswahl nach besiegtem Gegner erneut im tatsächlichen Koop-Kampf reproduziert und eine separate, exakt hashgebundene ROM-Korrektur erstellt. Der vermutete dauerhafte Begleiterverlust bestätigte sich im Nachtest nicht. [Korrektur und Prüfgrenzen](rom-target-cursor-fix.md).
 
 ## Implementiert
 
@@ -71,8 +73,8 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 ## Nicht verifiziert / offen
 
 1. Patch 0.4.5 und passende US-Rev-1-Basis wurden bereitgestellt und erfolgreich gepatcht. Die US-basierte deutsche Text-Alpha ist inzwischen implementiert und gestartet; ein nativer CPUD-Patch und vollständige Spielprüfung fehlen. [Pakettest](project-pm-045.md).
-2. Wichtigstes Akzeptanzkriterium: zwei Spielfiguren interagieren synchron in derselben Sinnoh-Welt. US-PM und die darauf aufbauende deutsche Text-Alpha starten. Die ROM-seitige Funkspiel-Aktivierung und tatsächliche gemeinsame Welt wurden noch nicht geprüft.
-3. Tatsächliche Ingame-Save-Write/Load-Vorgänge von Pokémon; die Sicherungs-/Wiederherstellungsmechanik ist geprüft, aber nicht ein kompletter Pokémon-Spielzyklus.
+2. Die gemeinsame Welt, Funkspiel-Aktivierung und gemeinsame Wildkämpfe sind inzwischen unter Linux mit der Nutzer-ROM geprüft. Trainer-Koop, Tausch und Zielhardware bleiben offen.
+3. Tatsächliches Ingame-Speichern und erneutes Laden beider Pokémon-Spielstände sind unter Linux geprüft; kein vollständiger Spieldurchlauf.
 4. Physische USB-/Bluetooth-Controller, Steam-Input-Konflikte, Gerätetrennung und Neuverbindung auf dem Zielsystem.
 5. KDE Plasma Wayland, Steam Gamescope, Distrobox-GUI/Audio/Gerätezugriff auf Bazzite, Desktop/Gaming-Mode-Wechsel.
 6. 4K/60-Hz-Ausgabe und Performance/Thermik auf RTX 4060; Bildgeometrie und 4K-Menürendering sind geprüft, tatsächliche TV-Ausgabe nicht.
@@ -153,3 +155,12 @@ Die Menüabfrage gehört nach der ersten erfolgreichen Live-Zuordnung ausschlie�
 Die Bedienhilfe verwendet zwei echte Qt-Textlabels mit Wortumbruch. Jeder Spielerbereich reserviert die anhand seiner Breite benötigte Höhe und hält die DS-Bilder oberhalb. Lokale native Regressionen bestätigen vollständigen Text bei 360p/720p/768p/1080p/4K in beiden Spieleraufteilungen, verfügbaren Bildbereich, fremde/Spieler-2-Eingaben ohne Aktion, Menü-Navigation durch Spieler 1, Trennung mit verschobenen Geräteindizes, keine Ersatzübernahme und erfolgreiche ausdrückliche Neuzuordnung.
 
 Lokal bestehen beide CTest-Ziele und alle 38 Python-Tests. Der isolierte Aktivtest mit produktiven Widgets, virtuellen SDL-Controllern und zwei echten Emulatoren bestätigt beide neuen Korrekturen einschließlich fortlaufender Sitzung, Eingabe nach Neuzuordnung und Menü-Beenden mit Freigabe der Sperre. Die nativen Tests verwenden für Sitzungen ausdrücklich Test-Worker; der zusätzliche Aktivtest verwendet selbst erzeugte ARM-ROMs und die echten Emulator-Binaries des letzten nativen Linux-Pakets. Native Windows-/Linux-Neubauten und Installationsprüfungen sind vor Auslieferung erforderlich. Physische Controller, Bazzite/Wayland/Gamescope, Pokémon-Spielstände und die gemeinsame Sinnoh-Welt bleiben getrennte offene Abnahmen.
+
+
+## Nachuntersuchung der ROM-Auffälligkeiten, 16.10.2026
+
+Die unveränderte Nutzer-ROM reproduzierte die leere Zielauswahl in einem zweiten gemeinsamen Wildkampf. Die passende Cursorinitialisierung im Kampf-Overlay wurde mit dem ursprünglichen PRET-Code abgeglichen. Ein separates Python-Werkzeug erzeugt eine neue, hashgebundene ROM-Kopie mit Prüfung auf weiterhin verfügbare gespeicherte Ziele. Original-ROM und Saves bleiben erhalten; neue ROM-Hashes erzeugen eigene Profile. Die Lokalisierung selbst behält weiterhin ihre bisherigen Programmbyte-Invarianten.
+
+Alle 46 Python-Tests einschließlich Ausführung der tatsächlichen neuen Thumb-Instruktionen in 128 Zustandskombinationen bestehen lokal; beide vorhandenen nativen CTest-Ziele bestehen ebenfalls. Der zusätzliche ARM-Test prüft Register-/Stackerhaltung und ausschließlich die beabsichtigten Cursor-Schreibzugriffe; eine eigene Linux-/Windows-CI macht ihn verpflichtend. Die Begleiter wurden ohne Codeänderung beim Weitergehen wieder sichtbar und blieben nach einem weiteren gemeinsamen Kampf sichtbar. Ein dauerhafter Verlust wird nicht mehr als bestätigter Fehler geführt.
+
+Der aktive Korrektur-Nachtest mit zwei echten Alpha-4-Emulatorprozessen bestand: nach dem ersten besiegten Staralili sprang der Cursor beider Spieler auf das verbleibende Staralili; A wurde ohne zusätzliche Richtungseingabe angenommen. Gemeinsame Runde, Sieg, EP und beiderseitiger Aufstieg auf Lv. 7 sowie Rückkehr mit sichtbaren Begleitern wurden geprüft. Der Codefix gilt in der ROM für alle Plattformen; dieser Spielnachweis stammt ausschließlich von Linux. Ingame-Speichern/-Laden der korrigierten ROM ist ebenfalls mit einer regulären Wiederholung und geänderter Position beider Figuren bestätigt. Ein zuvor zu früh beendeter Speichervorgang im Testtreiber lud den alten Checkpoint; daraus wird kein Produktfehler abgeleitet. Alle Sitzungen endeten geordnet ohne verbleibende Worker oder Sperre. Details und Fingerabdrücke in der verlinkten Korrekturdokumentation.
