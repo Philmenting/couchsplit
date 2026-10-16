@@ -11,12 +11,14 @@
 namespace coop {
 struct Pad { SDL_JoystickID id; QString name; QString guid; QString serial; };
 struct ControlState { uint32_t keys=0xFFF, touch=0; bool toggle=false, exit=false; };
+struct MenuState { bool accept=false, up=false, down=false; };
 class Controllers {
     std::array<SDL_GameController*,2> handles{{nullptr,nullptr}};
     std::array<SDL_JoystickID,2> assigned{{-1,-1}};
     std::array<QPointF,2> cursors{{{128,96},{128,96}}};
     std::array<bool,2> toggleHeld{{false,false}};
     std::array<Uint32,2> exitSince{{0,0}};
+    bool assignedBefore=false;
 public:
     // Standard SDL GameController buttons; configurable from launcher settings.
     std::array<int,12> buttons{{SDL_CONTROLLER_BUTTON_B,SDL_CONTROLLER_BUTTON_A,
@@ -57,11 +59,29 @@ public:
             if(!handles[p]) { clear(); throw std::runtime_error("Controller nicht mehr verfügbar."); }
             assigned[p]=wanted;
         }
+        assignedBefore=true;
     }
     SDL_JoystickID id(int p) const { return assigned.at(p); }
     bool connected(int p) const { return handles.at(p) && SDL_GameControllerGetAttached(handles.at(p)); }
     QPointF cursor(int p) const { return cursors.at(p); }
     void resetGestures() { toggleHeld={{false,false}}; exitSince={{0,0}}; }
+    MenuState menuState() const {
+        auto read=[](SDL_GameController* handle) -> MenuState {
+            if(!handle || !SDL_GameControllerGetAttached(handle)) return {};
+            return {SDL_GameControllerGetButton(handle,SDL_CONTROLLER_BUTTON_A)!=0,
+                    SDL_GameControllerGetButton(handle,SDL_CONTROLLER_BUTTON_DPAD_UP)!=0,
+                    SDL_GameControllerGetButton(handle,SDL_CONTROLLER_BUTTON_DPAD_DOWN)!=0};
+        };
+        // After assignment only player 1 owns menu input, even after unplugging.
+        if(assignedBefore) return read(handles[0]);
+        // Bootstrap navigation remains available before the first assignment.
+        for(int i=0;i<SDL_NumJoysticks();i++) if(SDL_IsGameController(i)) {
+            auto* handle=SDL_GameControllerOpen(i);auto state=read(handle);
+            if(handle) SDL_GameControllerClose(handle);
+            return state;
+        }
+        return {};
+    }
     ControlState read(int p, float seconds=1.0f/60) {
         ControlState out;
         auto* h=handles.at(p);

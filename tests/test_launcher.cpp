@@ -6,6 +6,7 @@
 #include <QScrollBar>
 #include <QTemporaryDir>
 #include <QThread>
+#include <QTextLayout>
 #include <cassert>
 #include <iostream>
 
@@ -49,11 +50,67 @@ static void backgroundMenu() {
         SDL_JoystickClose(pad);SDL_JoystickDetachVirtual(index);
     }
 }
+static void assignedMenu() {
+    QTemporaryDir data;Launcher launcher(data.path());
+    std::vector<SDL_Joystick*> pads;
+    auto attach=[&]{int index=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);assert(index>=0);auto* pad=SDL_JoystickOpen(index);assert(pad);pads.push_back(pad);return index;};
+    attach();const int firstPlayer=attach();attach();
+    launcher.show();QApplication::setActiveWindow(&launcher);spin(50);
+    auto assign=[&]{
+        bool selected=false;QTimer choose;choose.setInterval(10);
+        QObject::connect(&choose,&QTimer::timeout,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            if(!dialog || dialog->windowTitle()!="Controller zuordnen")return;
+            auto combos=dialog->findChildren<QComboBox*>();assert(combos.size()==2);
+            combos[0]->setCurrentIndex(1);combos[1]->setCurrentIndex(2);selected=true;dialog->accept();
+        });choose.start();
+        for(auto* button:launcher.findChildren<QPushButton*>())if(button->text()=="Controller zuordnen")button->click();
+        choose.stop();assert(selected);QApplication::setActiveWindow(&launcher);spin(50);
+    };
+    assign();auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit);
+    exit->setFocus();spin(40);assert(QApplication::focusWidget()==exit);
+    for(int p:{0,2}) { // Neither the unassigned pad nor player 2 owns the menu.
+        SDL_JoystickSetVirtualButton(pads[p],SDL_CONTROLLER_BUTTON_A,1);spin(70);assert(launcher.isVisible());
+        SDL_JoystickSetVirtualButton(pads[p],SDL_CONTROLLER_BUTTON_A,0);spin(50);
+    }
+    auto* start=launcher.findChildren<QPushButton*>().first();start->setFocus();spin(30);
+    SDL_JoystickSetVirtualButton(pads[1],SDL_CONTROLLER_BUTTON_DPAD_DOWN,1);spin(70);
+    assert(QApplication::focusWidget()!=start);
+    SDL_JoystickSetVirtualButton(pads[1],SDL_CONTROLLER_BUTTON_DPAD_DOWN,0);spin(50);exit->setFocus();
+    assert(SDL_JoystickDetachVirtual(firstPlayer)==0);spin(60);
+    attach(); // Device indices shifted; no automatic ownership transfer.
+    for(int p:{0,2,3}) {
+        SDL_JoystickSetVirtualButton(pads[p],SDL_CONTROLLER_BUTTON_A,1);spin(70);assert(launcher.isVisible());
+        SDL_JoystickSetVirtualButton(pads[p],SDL_CONTROLLER_BUTTON_A,0);spin(50);
+    }
+    assign(); // Explicitly choose the remaining original pad as the new player 1.
+    exit->setFocus();spin(50);SDL_JoystickSetVirtualButton(pads[2],SDL_CONTROLLER_BUTTON_A,1);spin(100);
+    assert(!launcher.isVisible());
+    for(auto* pad:pads)SDL_JoystickClose(pad);
+    for(int i=SDL_NumJoysticks()-1;i>=0;i--)if(SDL_JoystickIsVirtual(i))SDL_JoystickDetachVirtual(i);
+}
+static void playHelpFits() {
+    QTemporaryDir data;SaveStore saves(data.path());Session session(saves);Controllers controllers;Settings settings;
+    PlayView view(session,controllers,settings);view.show();
+    const QString expected="Touch: rechter Stick + Klick · Ansicht: Select + R · Ende: Start + Select (2 s)";
+    for(auto size:{QSize(640,360),QSize(1280,720),QSize(1366,768),QSize(1920,1080),QSize(3840,2160)})for(bool horizontal:{false,true}) {
+        settings.horizontal=horizontal;view.resize(size);view.update();spin(20);
+        for(int p=0;p<2;p++) {
+            auto* label=view.findChild<QLabel*>(QString("playHelp%1").arg(p+1));assert(label&&label->isVisible()&&label->wordWrap()&&label->text()==expected);
+            const auto area=playerArea(view.rect(),p,horizontal);assert(area.contains(QRectF(label->geometry())));
+            assert(label->geometry().top()>area.top()+64); // Space remains for the DS images.
+            QTextLayout text(label->text(),label->font());QTextOption option;option.setWrapMode(QTextOption::WordWrap);text.setTextOption(option);
+            qreal height=0;int characters=0;text.beginLayout();
+            while(true) {auto line=text.createLine();if(!line.isValid())break;line.setLineWidth(label->contentsRect().width());assert(line.naturalTextWidth()<=label->contentsRect().width()+1);height+=line.height();characters+=line.textLength();}
+            text.endLayout();assert(characters==expected.size()&&height<=label->contentsRect().height()+1);
+        }
+    }
+}
 
 int main(int argc,char** argv) {
     QApplication app(argc,argv);app.setQuitOnLastWindowClosed(false);
     QTemporaryDir mouseData,controllerData,sessionData;
-    menuFits();backgroundMenu();
+    menuFits();backgroundMenu();assignedMenu();playHelpFits();
     {
         Launcher launcher(mouseData.path());launcher.resize(1280,720);launcher.show();spin(50);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit&&exit->isVisible());
@@ -146,6 +203,6 @@ int main(int argc,char** argv) {
         }
         SDL_JoystickClose(ja);SDL_JoystickClose(jb);SDL_JoystickDetachVirtual(b);SDL_JoystickDetachVirtual(a);
     }
-    std::cout<<"PASS: scrollable menu at 360p/720p/768p/1080p/4K, controller focus scrolling, blocked hidden/minimized menu and held input on restore, blocked live ROM change, neutral minimized inputs and reset exit chord; launcher closes and fixture workers release saves\n";
+    std::cout<<"PASS: menu and full wrapped play help at 360p/720p/768p/1080p/4K in both splits; assigned player-one menu input, no unassigned/player-two/replacement takeover after disconnect, explicit reassignment; focus scrolling, blocked hidden/minimized menu and held input on restore, blocked live ROM change, neutral minimized input and reset exit chord; fixture workers release saves\n";
     return 0;
 }

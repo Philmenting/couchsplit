@@ -26,6 +26,7 @@ static void requestQuit(int) {quitRequested=1;}
 #include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QImage>
+#include <QtMath>
 #include "Session.h"
 #include "Controllers.h"
 #include "Layout.h"
@@ -37,10 +38,18 @@ class PlayView : public QWidget {
     std::array<bool,2> bottomOnly{{false,false}};
     std::array<uint32_t,2> lastFrames{{0,0}};
     QTimer timer; QElapsedTimer delta;
+    std::array<QLabel*,2> helpLabels;
 public:
     Settings& settings;
     std::function<void()> leave, endSession;
     PlayView(Session& s,Controllers& c,Settings& cfg):session(s),controllers(c),settings(cfg) {
+        for(int p=0;p<2;p++) {
+            auto* help=new QLabel("Touch: rechter Stick + Klick · Ansicht: Select + R · Ende: Start + Select (2 s)",this);
+            help->setObjectName(QString("playHelp%1").arg(p+1));
+            help->setWordWrap(true);help->setAlignment(Qt::AlignHCenter|Qt::AlignTop);
+            help->setStyleSheet("background:transparent; color:#a3b3ca; font-size:14pt;");
+            helpLabels[p]=help;
+        }
         setFocusPolicy(Qt::StrongFocus); timer.setInterval(16); delta.start();
         connect(&timer,&QTimer::timeout,this,[this]{
             if(!session.running()) return;
@@ -75,7 +84,11 @@ protected:
             QRectF label(area.x(),area.y(),area.width(),60);
             painter.setPen(QColor("#dce8ff")); painter.setFont(QFont("Sans",22,QFont::Bold));
             painter.drawText(label,Qt::AlignCenter,QString("Spieler %1%2").arg(p+1).arg(controllers.connected(p)?"":" · Controller getrennt"));
-            area.adjust(0,64,0,-44);
+            auto* help=helpLabels[p];
+            const int helpWidth=qMax(1,qFloor(area.width()));
+            const int helpHeight=qMax(help->fontMetrics().height(),help->heightForWidth(helpWidth));
+            help->setGeometry(qCeil(area.left()),qFloor(area.bottom())-helpHeight,helpWidth,helpHeight);
+            area.adjust(0,64,0,-helpHeight-8);
             auto dest=screens(area,settings.layout,bottomOnly[p]);
             if(!tops[p].isNull() && !dest[0].isEmpty()) painter.drawImage(dest[0],tops[p]);
             if(!bottoms[p].isNull() && !dest[1].isEmpty()) painter.drawImage(dest[1],bottoms[p]);
@@ -83,8 +96,6 @@ protected:
                 auto cursor=controllers.cursor(p); QPointF point(dest[1].x()+cursor.x()/256*dest[1].width(),dest[1].y()+cursor.y()/192*dest[1].height());
                 painter.setPen(QPen(QColor("#80ffe0"),2)); painter.drawEllipse(point,8,8);
             }
-            painter.setFont(QFont("Sans",14)); painter.setPen(QColor("#a3b3ca"));
-            painter.drawText(QRectF(area.x(),area.bottom()+8,area.width(),36),Qt::AlignCenter,"Touch: rechter Stick + Klick · Ansicht: Select + R · Ende: Start + Select (2 s)");
         }
         painter.setPen(QPen(QColor("#33415b"),2));
         if(settings.horizontal) painter.drawLine(0,height()/2,width(),height()/2); else painter.drawLine(width()/2,0,width()/2,height());
@@ -278,13 +289,11 @@ public:
                 menuHeld=true;return;
             }
             controllers.update();
-            SDL_GameController* h=nullptr;
-            for(int i=0;i<SDL_NumJoysticks();i++) if(SDL_IsGameController(i)){h=SDL_GameControllerOpen(i);break;}
-            if(!h)return;
-            bool a=SDL_GameControllerGetButton(h,SDL_CONTROLLER_BUTTON_A),up=SDL_GameControllerGetButton(h,SDL_CONTROLLER_BUTTON_DPAD_UP),down=SDL_GameControllerGetButton(h,SDL_CONTROLLER_BUTTON_DPAD_DOWN);
+            const auto input=controllers.menuState();
+            bool a=input.accept,up=input.up,down=input.down;
             bool any=a||up||down;
             if(any&&!menuHeld){ if(a) {if(auto* b=qobject_cast<QPushButton*>(QApplication::focusWidget()))b->click();}else {QKeyEvent event(QEvent::KeyPress,up?Qt::Key_Backtab:Qt::Key_Tab,up?Qt::ShiftModifier:Qt::NoModifier);QApplication::sendEvent(QApplication::focusWidget(),&event);} }
-            menuHeld=any;SDL_GameControllerClose(h);
+            menuHeld=any;
         });uiTimer.start();
     }
 protected:
