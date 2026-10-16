@@ -38,4 +38,5 @@ cp "$build_dir/launcher/platinum-coop$suffix" "$build_dir/bin/"
 ctest --test-dir "$build_dir/launcher" --output-on-failure
 python3 "$project_dir/tests/test_transport.py" --source "$source_dir"
 python3 "$project_dir/tests/test_save_paths.py" --source "$source_dir"
+python3 "$project_dir/tests/test_config_threads.py" --source "$source_dir"
 "$build_dir/bin/melonDS-coop$suffix" --coop-capabilities
