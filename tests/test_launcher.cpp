@@ -18,11 +18,14 @@ static void menuFits() {
     QTemporaryDir data;
     atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"rom",QString(250,'r')+".nds"}}).toJson());
     Launcher launcher(data.path());launcher.show();launcher.activateWindow();spin(50);
+    assert(theme::pixelFamily().contains("Silkscreen"));
     auto* scroll=launcher.findChild<QScrollArea*>("menuScroll");assert(scroll);
-    for(auto size:{QSize(1280,720),QSize(1366,768),QSize(640,360),QSize(1920,1080),QSize(3840,2160)}) {
+    for(auto size:{QSize(1280,720),QSize(1366,768),QSize(640,360),QSize(1040,720),QSize(1920,1080),QSize(3840,2160)}) {
         launcher.resize(size);spin(50);assert(launcher.size()==size);
         assert(scroll->horizontalScrollBar()->maximum()==0);
         for(auto* button:launcher.findChildren<QPushButton*>()) {
+            const int textWidth=button->fontMetrics().horizontalAdvance(button->text());
+            assert(textWidth+button->iconSize().width()+28<=button->width());
             button->setFocus();spin(20);
             auto position=button->mapTo(scroll->viewport(),QPoint());
             assert(scroll->viewport()->rect().contains(QRect(position,button->size())));
@@ -135,7 +138,8 @@ int main(int argc,char** argv) {
             assert(SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_DPAD_DOWN,0)==0);spin(70);
         }
         assert(QApplication::focusWidget()==exit);
-        auto* scroll=launcher.findChild<QScrollArea*>("menuScroll");assert(scroll->verticalScrollBar()->value()>0);
+        auto* scroll=launcher.findChild<QScrollArea*>("menuScroll");// A complete menu can now fit at 720p; scrolling is required only when needed.
+        if(scroll->widget()->height()>scroll->viewport()->height())assert(scroll->verticalScrollBar()->value()>0);
         assert(scroll->viewport()->rect().contains(QRect(exit->mapTo(scroll->viewport(),QPoint()),exit->size())));
         assert(SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,1)==0);spin(100);
         assert(!launcher.isVisible());

@@ -40,4 +40,12 @@ if(BUILD_TESTING)
     add_test(NAME launcher-ui COMMAND launcher-tests $<TARGET_FILE:worker-fixture>)
     set_tests_properties(launcher-ui PROPERTIES TIMEOUT 15 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;SDL_AUDIODRIVER=dummy")
 endif()
+# Embed the licensed pixel heading font in both production and native UI tests.
+foreach(ui_target platinum-coop launcher-tests)
+    if(TARGET ${ui_target})
+        qt_add_resources(${ui_target} "launcher_assets"
+            PREFIX "/launcher" BASE "assets"
+            FILES assets/fonts/Silkscreen-Regular.ttf)
+    endif()
+endforeach()
 install(TARGETS platinum-coop RUNTIME DESTINATION bin)

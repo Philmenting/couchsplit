@@ -2,7 +2,7 @@
 [Setup]
 AppId=PlatinumLocalCoop
 AppName=Pokémon Platinum Local Co-op
-AppVersion=0.2.0-alpha.4
+AppVersion=0.2.0-alpha.5
 VersionInfoVersion=0.2.0.4
 DefaultDirName={localappdata}\Programs\Pokemon-Platinum-Coop
 DefaultGroupName=Pokémon Platinum Local Co-op
