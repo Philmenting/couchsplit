@@ -92,6 +92,21 @@ void controllerTest() {
     assert((c.read(0).keys&1)==0);assert((c.read(1).keys&1)==1);
     SDL_JoystickSetVirtualButton(jb,SDL_CONTROLLER_BUTTON_RIGHTSTICK,1);c.update();assert(c.read(1).touch&0x80000000u);assert(!c.read(0).touch);
     SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_BACK,1);SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,1);c.update();assert(c.read(0).toggle);assert(!c.read(0).toggle);
+    const auto original=c.buttons;
+    for(bool toggle:{true,false})for(int mapped:{int(SDL_CONTROLLER_BUTTON_BACK),int(toggle?SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:SDL_CONTROLLER_BUTTON_START)}) {
+        for(int button=0;button<SDL_CONTROLLER_BUTTON_MAX;button++)SDL_JoystickSetVirtualButton(ja,button,0);
+        c.resetGestures();c.buttons.fill(mapped);
+        SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_BACK,1);
+        SDL_JoystickSetVirtualButton(ja,toggle?SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:SDL_CONTROLLER_BUTTON_START,1);c.update();
+        auto state=c.read(0);assert(state.keys==0xFFF&&state.toggle==toggle);
+        assert(!c.read(0).toggle);assert(c.read(0).keys==0xFFF);
+        assert(c.read(1).touch&0x80000000u); // Other player remains independent.
+        // Unrelated physical input mapped to DS Start/R must still reach the game.
+        c.buttons.fill(-1);c.buttons[toggle?3:8]=SDL_CONTROLLER_BUTTON_A;
+        SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_A,1);c.update();
+        assert(c.read(0).keys==(0xFFFu&~(1u<<(toggle?3:8))));
+    }
+    c.buttons=original;
     SDL_JoystickDetachVirtual(a);c.update();assert(!c.connected(0));assert(c.read(0).keys==0xFFF);assert(!c.read(0).touch);assert(c.connected(1));
     // Device indices shifted, but player 1 must never adopt player 2.
     assert(c.id(0)==ia);assert(c.id(1)==ib);

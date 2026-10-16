@@ -28,11 +28,32 @@ static void menuFits() {
         }
     }
 }
+static void backgroundMenu() {
+    for(bool hide:{false,true}) {
+        QTemporaryDir data;Launcher launcher(data.path());
+        int index=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);
+        assert(index>=0);auto* pad=SDL_JoystickOpen(index);assert(pad);
+        launcher.show();launcher.activateWindow();spin(60);
+        auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit);
+        int clicks=0;QObject::connect(exit,&QPushButton::clicked,[&]{clicks++;});exit->setFocus();spin(40);
+        if(hide)launcher.hide();else launcher.showMinimized();
+        SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,1);spin(100);
+        assert(clicks==0);assert(hide?!launcher.isVisible():launcher.isMinimized());
+        launcher.showNormal();launcher.activateWindow();spin(30);
+        QApplication::setActiveWindow(&launcher);exit->setFocus();spin(100);
+        assert(clicks==0&&launcher.isVisible()); // Held input must not fire on restore.
+        SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,0);spin(60);
+        SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,1);spin(100);
+        assert(clicks==1&&!launcher.isVisible());
+        SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,0);
+        SDL_JoystickClose(pad);SDL_JoystickDetachVirtual(index);
+    }
+}
 
 int main(int argc,char** argv) {
     QApplication app(argc,argv);app.setQuitOnLastWindowClosed(false);
     QTemporaryDir mouseData,controllerData,sessionData;
-    menuFits();
+    menuFits();backgroundMenu();
     {
         Launcher launcher(mouseData.path());launcher.resize(1280,720);launcher.show();spin(50);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit&&exit->isVisible());
@@ -100,6 +121,22 @@ int main(int argc,char** argv) {
         }
         QKeyEvent escape(QEvent::KeyPress,Qt::Key_Escape,Qt::NoModifier);
         QCoreApplication::sendEvent(pages->currentWidget(),&escape);assert(pages->currentIndex()==0);
+        // A live session must not silently diverge from the selected ROM/profile.
+        QFile settingsFile(sessionData.path()+"/settings.json");assert(settingsFile.open(QIODevice::ReadOnly));
+        const auto before=settingsFile.readAll();settingsFile.close();
+        bool warning=false,fileDialog=false;QTimer dismiss;dismiss.setInterval(10);
+        QObject::connect(&dismiss,&QTimer::timeout,[&]{
+            if(auto* message=qobject_cast<QMessageBox*>(QApplication::activeModalWidget())) {
+                warning=message->text().contains("Vor einem ROM-Wechsel")&&message->text().contains("Start + Select");message->accept();
+            } else if(auto* file=qobject_cast<QFileDialog*>(QApplication::activeModalWidget())) {fileDialog=true;file->reject();}
+        });dismiss.start();
+        for(auto* button:launcher.findChildren<QPushButton*>())if(button->text()=="ROM auswählen")button->click();
+        dismiss.stop();assert(warning&&!fileDialog&&pages->currentIndex()==0);
+        assert(settingsFile.open(QIODevice::ReadOnly));assert(settingsFile.readAll()==before);settingsFile.close();
+        assert(QFileInfo::exists(sessionData.path()+"/session.lock"));
+        for(auto* button:launcher.findChildren<QPushButton*>())if(button->text()=="Koop-Spiel starten")button->click();
+        assert(pages->currentIndex()==1);
+        QCoreApplication::sendEvent(pages->currentWidget(),&escape);assert(pages->currentIndex()==0);
         launcher.findChild<QPushButton*>("exitLauncher")->click();assert(!launcher.isVisible());
         SaveStore probe(sessionData.path());probe.acquire();probe.release();
         auto sessions=QDir(sessionData.path()+"/logs").entryList(QDir::Dirs|QDir::NoDotAndDotDot);assert(sessions.size()==1);
@@ -109,6 +146,6 @@ int main(int argc,char** argv) {
         }
         SDL_JoystickClose(ja);SDL_JoystickClose(jb);SDL_JoystickDetachVirtual(b);SDL_JoystickDetachVirtual(a);
     }
-    std::cout<<"PASS: scrollable menu at 360p/720p/768p/1080p/4K, controller focus scrolling, neutral minimized inputs and reset exit chord; launcher closes and fixture workers release saves\n";
+    std::cout<<"PASS: scrollable menu at 360p/720p/768p/1080p/4K, controller focus scrolling, blocked hidden/minimized menu and held input on restore, blocked live ROM change, neutral minimized inputs and reset exit chord; launcher closes and fixture workers release saves\n";
     return 0;
 }

@@ -211,6 +211,7 @@ class Launcher : public QWidget {
         saveSettings();session.start(settings);play->reset();pages->setCurrentWidget(play);play->setFocus();
     }
     void chooseRom() {
+        if(session.running()) fail("Vor einem ROM-Wechsel die laufende Sitzung beenden. Im Spiel Start + Select zwei Sekunden gedrückt halten.");
         auto rom=QFileDialog::getOpenFileName(this,"Project-PM-ROM hinzufügen",settings.rom,"Nintendo DS oder ROM-ZIP (*.nds *.srl *.zip)");if(rom.isEmpty())return;
         auto importer=QCoreApplication::applicationDirPath()+"/../../scripts/import-rom.py";
         if(QFileInfo::exists(importer)) {
@@ -272,7 +273,10 @@ public:
         start->setFocus();
         // UI navigation works through mapped controllers after assignment.
         uiTimer.setInterval(30);connect(&uiTimer,&QTimer::timeout,this,[this]{
-            if(pages->currentIndex()!=0 || QApplication::activeModalWidget())return;
+            if(!isVisible() || isMinimized() || pages->currentIndex()!=0 || QApplication::activeModalWidget()) {
+                // Require release before accepting a held button after returning.
+                menuHeld=true;return;
+            }
             controllers.update();
             SDL_GameController* h=nullptr;
             for(int i=0;i<SDL_NumJoysticks();i++) if(SDL_IsGameController(i)){h=SDL_GameControllerOpen(i);break;}
@@ -286,7 +290,10 @@ public:
 protected:
     void changeEvent(QEvent* e) override {
         QWidget::changeEvent(e);
-        if(e->type()==QEvent::WindowStateChange && isMinimized() && play) play->neutralInput();
+        if(e->type()==QEvent::WindowStateChange && isMinimized()) {
+            menuHeld=true;
+            if(play) play->neutralInput();
+        }
     }
     void resizeEvent(QResizeEvent* e) override {
         QWidget::resizeEvent(e);

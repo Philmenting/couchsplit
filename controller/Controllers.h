@@ -67,8 +67,15 @@ public:
         auto* h=handles.at(p);
         // Never fall back to another device when disconnected or indices shift.
         if(!h || !SDL_GameControllerGetAttached(h)) { toggleHeld[p]=false; exitSince[p]=0; return out; }
-        for(int k=0;k<12;k++) if(buttons[k]>=0 && buttons[k]<SDL_CONTROLLER_BUTTON_MAX && SDL_GameControllerGetButton(h,SDL_GameControllerButton(buttons[k]))) out.keys &= ~(1u<<k);
         auto down=[&](SDL_GameControllerButton b){ return SDL_GameControllerGetButton(h,b)!=0; };
+        bool toggle=down(SDL_CONTROLLER_BUTTON_BACK)&&down(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+        bool exit=down(SDL_CONTROLLER_BUTTON_BACK)&&down(SDL_CONTROLLER_BUTTON_START);
+        // Consume physical shortcut buttons before applying the user's mapping.
+        auto consumed=[&](int button){
+            return (toggle && (button==SDL_CONTROLLER_BUTTON_BACK || button==SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) ||
+                   (exit && (button==SDL_CONTROLLER_BUTTON_BACK || button==SDL_CONTROLLER_BUTTON_START));
+        };
+        for(int k=0;k<12;k++) if(buttons[k]>=0 && buttons[k]<SDL_CONTROLLER_BUTTON_MAX && !consumed(buttons[k]) && down(SDL_GameControllerButton(buttons[k]))) out.keys &= ~(1u<<k);
         float ax=SDL_GameControllerGetAxis(h,SDL_CONTROLLER_AXIS_LEFTX)/32768.0f;
         float ay=SDL_GameControllerGetAxis(h,SDL_CONTROLLER_AXIS_LEFTY)/32768.0f;
         if(ax>0.35f) out.keys &= ~(1u<<4);
@@ -81,12 +88,9 @@ public:
         cursors[p].setX(qBound(0.0,cursors[p].x()+dead(x)*180*qMin(seconds,0.05f),255.0));
         cursors[p].setY(qBound(0.0,cursors[p].y()+dead(y)*180*qMin(seconds,0.05f),191.0));
         out.touch=coop::touch(qRound(cursors[p].x()),qRound(cursors[p].y()),down(SDL_CONTROLLER_BUTTON_RIGHTSTICK));
-        bool toggle=down(SDL_CONTROLLER_BUTTON_BACK)&&down(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
         out.toggle=toggle&&!toggleHeld[p]; toggleHeld[p]=toggle;
-        bool exit=down(SDL_CONTROLLER_BUTTON_BACK)&&down(SDL_CONTROLLER_BUTTON_START);
         if(exit) { if(!exitSince[p]) exitSince[p]=SDL_GetTicks(); out.exit=SDL_GetTicks()-exitSince[p]>=2000; }
         else exitSince[p]=0;
-        if(toggle || exit) { out.keys|=(1u<<2)|(1u<<3)|(1u<<8); }
         return out;
     }
     void update() { SDL_PumpEvents(); SDL_GameControllerUpdate(); }
