@@ -326,7 +326,7 @@ public:
         menuBody->addWidget(actions,6);
         QWidget* previous=start;for(auto* b:menuActions){QWidget::setTabOrder(previous,b);previous=b;}
         statusLabel=new QLabel("Noch kein Spiel gestartet. Ersteinrichtung im Desktopmodus empfohlen.");statusLabel->setObjectName("sessionStatus");statusLabel->setWordWrap(true);contentLayout->addWidget(statusLabel);
-        auto* navigation=new QLabel("Steuerkreuz: Auswahl · A: Öffnen · Tastatur: Tab / Enter");navigation->setObjectName("navigationHelp");navigation->setWordWrap(true);contentLayout->addWidget(navigation);
+        auto* navigation=new QLabel("Steuerkreuz: Auswahl · A: Öffnen · Tastatur: Tab / Leertaste");navigation->setObjectName("navigationHelp");navigation->setWordWrap(true);contentLayout->addWidget(navigation);
         auto* menuScroll=new QScrollArea;
         menuScroll->setObjectName("menuScroll");menuScroll->setWidgetResizable(true);
         menuScroll->setFrameShape(QFrame::NoFrame);menuScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

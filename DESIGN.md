@@ -189,7 +189,7 @@ Line edits, combo boxes and log text use dark recessed surfaces, small rounded c
 
 ### Navigation
 
-Tab order starts with the primary action and follows the eight menu actions. The mapped controller moves focus through the same actions and opens the focused action. The on-screen instruction remains “Steuerkreuz: Auswahl · A: Öffnen · Tastatur: Tab / Enter”. Dialog dismissal labels are “Abbrechen” and “Schließen”; native focus behavior remains in charge of dialogs.
+Tab order starts with the primary action and follows the eight menu actions. The mapped controller moves focus through the same actions and opens the focused action. The on-screen instruction remains “Steuerkreuz: Auswahl · A: Öffnen · Tastatur: Tab / Leertaste”. Dialog dismissal labels are “Abbrechen” and “Schließen”; native focus behavior remains in charge of dialogs.
 
 ### Status / Player Chrome
 

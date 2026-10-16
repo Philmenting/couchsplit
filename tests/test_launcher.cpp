@@ -115,6 +115,13 @@ int main(int argc,char** argv) {
     QTemporaryDir mouseData,controllerData,sessionData;
     menuFits();backgroundMenu();assignedMenu();playHelpFits();
     {
+        QTemporaryDir keyboardData;Launcher launcher(keyboardData.path());launcher.show();spin(40);
+        auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit);exit->setFocus();
+        QKeyEvent press(QEvent::KeyPress,Qt::Key_Space,Qt::NoModifier),release(QEvent::KeyRelease,Qt::Key_Space,Qt::NoModifier);
+        QCoreApplication::sendEvent(exit,&press);QCoreApplication::sendEvent(exit,&release);spin(30);
+        assert(!launcher.isVisible()); // The advertised native keyboard activation must work.
+    }
+    {
         Launcher launcher(mouseData.path());launcher.resize(1280,720);launcher.show();spin(50);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit&&exit->isVisible());
         launcher.findChild<QScrollArea*>("menuScroll")->ensureWidgetVisible(exit);spin(30);
