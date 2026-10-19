@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
+#include "Language.h"
 #include <QApplication>
 #include <QFontDatabase>
 #include <QDialogButtonBox>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QIcon>
 #include <QPainter>
@@ -19,8 +21,15 @@ inline QString pixelFamily() {
     return family;
 }
 inline void labelButtons(QDialogButtonBox& box) {
-    if(auto* button=box.button(QDialogButtonBox::Cancel))button->setText("Abbrechen");
-    if(auto* button=box.button(QDialogButtonBox::Close))button->setText("Schließen");
+    if(auto* button=box.button(QDialogButtonBox::Cancel))button->setText(i18n::text("Abbrechen"));
+    if(auto* button=box.button(QDialogButtonBox::Close))button->setText(i18n::text("Schließen"));
+}
+inline QMessageBox::StandardButton question(QWidget* parent,const QString& title,const QString& text) {
+    QMessageBox box(QMessageBox::Question,title,text,QMessageBox::Yes|QMessageBox::No,parent);
+    box.button(QMessageBox::Yes)->setText(i18n::text("Ja"));
+    box.button(QMessageBox::No)->setText(i18n::text("Nein"));
+    box.setDefaultButton(QMessageBox::No);
+    return QMessageBox::StandardButton(box.exec());
 }
 enum class Glyph { Play, Controller, Screens, Cartridge, Save, Buttons, Settings, Logs, Exit };
 inline QIcon icon(Glyph glyph, QColor color=QColor("#f3eee0")) {
@@ -76,7 +85,7 @@ inline void apply(QWidget* root, bool large, bool compact) {
         QPushButton#startGame:focus { background:#b83f35; border:2px solid #f5cf67; }
         QPushButton#startGame:pressed { background:#92352e; }
         QPushButton#exitLauncher { color:#e5b4a8; }
-        QDialog, QMessageBox { background:#183442; }
+        QDialog, QMessageBox, QWidget#settingsFields { background:#183442; }
         QLineEdit, QComboBox, QTextEdit { background:#0e2532; color:#f3eee0;
             border:1px solid #8fa5aa; border-radius:4px; padding:%6px;
             selection-background-color:#f5cf67; selection-color:#213846; }

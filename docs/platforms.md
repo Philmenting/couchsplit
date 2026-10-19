@@ -10,7 +10,7 @@ Die Datei Pokemon-Platinum-Coop-ZorinOS 18-amd64.deb herunterladen und über die
 
     sudo apt install ./Pokemon-Platinum-Coop-ZorinOS 18-amd64.deb
 
-Der Launcher erscheint im Anwendungsmenü. Beim ersten Start die eigene vorbereitete ROM oder ihr ZIP auswählen. Kein Distrobox-Container. Laufzeitpakete werden durch APT aufgelöst. ZorinOS 17 mit Ubuntu-22.04-Basis wird von diesem Paket nicht unterstützt.
+Der Launcher erscheint im Anwendungsmenü. Beim ersten Start Deutsch oder English wählen, danach die eigene vorbereitete ROM oder ihr ZIP auswählen. Kein Distrobox-Container. Laufzeitpakete werden durch APT aufgelöst. ZorinOS 17 mit Ubuntu-22.04-Basis wird von diesem Paket nicht unterstützt.
 
 Programme/Quellen: /opt/pokemon-platinum-local-coop. Persönliche Daten: $XDG_DATA_HOME/pokemon-platinum-local-coop, standardmäßig ~/.local/share/pokemon-platinum-local-coop. Paketentfernung löscht diese persönlichen Daten nicht.
 
@@ -42,3 +42,10 @@ Quellen: https://help.zorin.com/docs/apps-games/install-apps/ (ZorinOS-18-Basis 
 ## Öffentliche Ausgabe 0.2.0 Alpha 6
 
 Die [Release-Seite](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.2.0-alpha.6) bündelt die zuvor lokal getesteten Alpha2–5-Verbesserungen und die eigenen ROM-Korrekturwerkzeuge. Pakete und Werkzeuge stammen vom selben Release-Commit; Veröffentlichung erfolgt erst nach nativen Linux-/Windows- und verpflichtenden ARM-Prüfungen. Kein ROM-Download enthalten. [Spielstände bei geändertem ROM-Hash übernehmen](save-transfer.md).
+
+
+## Sprachauswahl in 0.2.0 Alpha 7
+
+Beim ersten interaktiven Start erscheint „Language / Sprache“ vor der ROM-Einrichtung — auch nach einem Update, wenn das bisherige Profil noch keine Sprache enthält. Deutsch und English stehen zur Wahl. Die Auswahl wird im vorhandenen persönlichen `settings.json` als `language: de` oder `language: en` gespeichert. Abbrechen beendet die Ersteinrichtung ohne eine Auswahl zu speichern. Beim nächsten Start wird eine gültige gespeicherte Auswahl direkt verwendet.
+
+Unter **Einstellungen → Sprache / Settings → Language** lässt sich die Oberfläche später sofort umschalten. Eine laufende Sitzung und ihre getrennten Spielstände bleiben erhalten. Die Auswahl übersetzt den Launcher, seine Hilfe und eigenen Fehlermeldungen; die Sprache der ROM und rohe Betriebssystem-/Emulator-Logs ändern sich dadurch nicht. Native Dateiauswahldialoge können weiterhin der Systemsprache folgen. Beschädigte Einstellungen werden mit einem Hinweis abgelehnt und nicht überschrieben.

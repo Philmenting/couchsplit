@@ -1,10 +1,11 @@
 # Screenshot provenance
 
-All images are actual application captures, not generated artwork or mockups. The unchanged Alpha-5 interface also appears in Alpha 6. Screenshots use the German interface.
+All images are actual application captures, not generated artwork or mockups. The launcher and language selector show Alpha 7; older gameplay captures use Alpha 5 and the German ROM. Choosing an English launcher does not translate that ROM.
 
 | File | Context |
 |---|---|
-| `launcher.png` | Actual native launcher, fresh setup; no game or assigned controllers. |
+| `launcher.png` | Alpha-7 production launcher in English, fresh setup at 1280×720; no game or assigned controllers. |
+| `language-picker.png` | Actual bilingual first-launch language choice, before ROM setup. |
 | `shared-battle.png` | Real shared trainer battle against Sven, Linux, two actual emulator workers. |
 | `shared-world.png` | Route 202 immediately after the shared victory, before any movement; both own followers visible. |
 | `separate-saves.png` | Both trainer cards after normal saving and a fresh launch. Independent balances 1506/1556. |

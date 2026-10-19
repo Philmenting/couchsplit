@@ -128,7 +128,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')
     runs-on: ubuntu-24.04
     concurrency:
-      group: publish-alpha6
+      group: publish-alpha7
       cancel-in-progress: false
     permissions:
       contents: write
@@ -159,12 +159,12 @@ jobs:
                                                for n in sorted(expected)))
           PYVERIFY
           bash release/Pokemon-Platinum-Coop-Bazzite.run --check
-      - name: Publish Alpha 6 after every platform and ARM check passed
+      - name: Publish Alpha 7 after every platform and ARM check passed
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=v0.2.0-alpha.6
+          tag=v0.2.0-alpha.7
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,targetCommitish,assets > "$RUNNER_TEMP/existing-release.json"; then
             if [ "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["isDraft"])' "$RUNNER_TEMP/existing-release.json")" = False ]; then
               echo 'Published release already exists; preserving all existing assets.'
@@ -185,8 +185,8 @@ jobs:
             done < "$RUNNER_TEMP/missing-assets.txt"
           else
             gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-              --draft --prerelease --title 'Pokémon Platinum Local Co-op 0.2.0 Alpha 6 — Retro launcher & co-op fixes' \
-              --notes-file docs/releases/v0.2.0-alpha.6.md
+              --draft --prerelease --title 'Pokémon Platinum Local Co-op 0.2.0 Alpha 7 — English & German launcher' \
+              --notes-file docs/releases/v0.2.0-alpha.7.md
           fi
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets > "$RUNNER_TEMP/uploaded-assets.json"
           python3 - "$RUNNER_TEMP/uploaded-assets.json" <<'PYUPLOAD'

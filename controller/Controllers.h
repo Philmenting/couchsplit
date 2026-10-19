@@ -8,6 +8,7 @@
 #include <cmath>
 #include <stdexcept>
 #include "CoopIPC.h"
+#include "../launcher/Language.h"
 namespace coop {
 struct Pad { SDL_JoystickID id; QString name; QString guid; QString serial; };
 struct ControlState { uint32_t keys=0xFFF, touch=0; bool toggle=false, exit=false; };
@@ -51,12 +52,12 @@ public:
         return result;
     }
     void assign(SDL_JoystickID a, SDL_JoystickID b) {
-        if(a<0 || b<0 || a==b) throw std::runtime_error("Zwei unterschiedliche Controller auswählen.");
+        if(a<0 || b<0 || a==b) throw std::runtime_error(i18n::text("Zwei unterschiedliche Controller auswählen.").toStdString());
         clear(); 
         for(int p=0;p<2;p++) {
             const auto wanted=p?b:a;
             for(int i=0;i<SDL_NumJoysticks();i++) if(SDL_JoystickGetDeviceInstanceID(i)==wanted && SDL_IsGameController(i)) handles[p]=SDL_GameControllerOpen(i);
-            if(!handles[p]) { clear(); throw std::runtime_error("Controller nicht mehr verfügbar."); }
+            if(!handles[p]) { clear(); throw std::runtime_error(i18n::text("Controller nicht mehr verfügbar.").toStdString()); }
             assigned[p]=wanted;
         }
         assignedBefore=true;
