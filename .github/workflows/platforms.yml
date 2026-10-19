@@ -7,10 +7,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config extra-cmake-modules libsdl2-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive-dev libenet-dev libzstd-dev libcurl4-openssl-dev libfaad-dev libpcap-dev libegl-dev libwayland-dev xdelta3
+      - name: ARM test dependency
+        run: python -m pip install -r tests/requirements-romfix.txt
       - name: Build and verify
         env:
           QT_QPA_PLATFORM: offscreen
@@ -105,10 +110,26 @@ jobs:
           name: Windows-build-evidence
           path: |
             build/launcher/Testing/Temporary/LastTest.log
+  rom-corrections:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r tests/requirements-romfix.txt
+      - run: python -c "import unicorn"
+      - run: python -m unittest discover -s tests -p 'test_rom_*.py' -v
   release:
-    needs: [linux, windows]
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[release]')
+    needs: [linux, windows, rom-corrections]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')
     runs-on: ubuntu-24.04
+    concurrency:
+      group: publish-alpha6
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
@@ -118,16 +139,60 @@ jobs:
           pattern: '*-installers'
           path: release
           merge-multiple: true
-      - name: Publish only after every platform build passed
+      - name: Package authored ROM tools and verify complete asset set
+        run: |
+          python3 scripts/package-rom-tools.py --output release/Pokemon-PM-ROM-Korrekturen.zip
+          python3 - <<'PYVERIFY'
+          import hashlib, pathlib, zipfile
+          root = pathlib.Path('release')
+          expected = {'Pokemon-Platinum-Coop-Bazzite.run', 'Pokemon-Platinum-Coop-ZorinOS18-amd64.deb',
+                      'Pokemon-Platinum-Coop-Windows-Setup.exe', 'Pokemon-Platinum-Coop-Windows-Portable.zip',
+                      'Pokemon-PM-ROM-Korrekturen.zip'}
+          assert {p.name for p in root.iterdir()} == expected, 'Unexpected or missing release assets'
+          for name in expected:
+              assert (root/name).stat().st_size > 1000, name
+          with zipfile.ZipFile(root/'Pokemon-PM-ROM-Korrekturen.zip') as archive:
+              assert archive.testzip() is None
+              assert not any(pathlib.Path(n).suffix.lower() in ('.nds','.srl','.sav','.rom','.bios','.exe','.dll')
+                             for n in archive.namelist())
+          (root/'SHA256SUMS').write_text(''.join(hashlib.sha256((root/n).read_bytes()).hexdigest()+'  '+n+'\n'
+                                               for n in sorted(expected)))
+          PYVERIFY
+          bash release/Pokemon-Platinum-Coop-Bazzite.run --check
+      - name: Publish Alpha 6 after every platform and ARM check passed
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cd release
-          sha256sum * > SHA256SUMS
-          if gh release view v0.2.0-alpha.4 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo 'Release already exists; preserving its assets.'
-            exit 0
+          set -euo pipefail
+          tag=v0.2.0-alpha.6
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,targetCommitish,assets > "$RUNNER_TEMP/existing-release.json"; then
+            if [ "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["isDraft"])' "$RUNNER_TEMP/existing-release.json")" = False ]; then
+              echo 'Published release already exists; preserving all existing assets.'
+              exit 0
+            fi
+            python3 - "$RUNNER_TEMP/existing-release.json" > "$RUNNER_TEMP/missing-assets.txt" <<'PYRESUME'
+          import json, os, pathlib, sys
+          release = json.load(open(sys.argv[1]))
+          assert release['targetCommitish'] == os.environ['GITHUB_SHA'], 'Draft belongs to another commit'
+          local = {p.name: p.stat().st_size for p in pathlib.Path('release').iterdir()}
+          remote = {a['name']: a['size'] for a in release['assets']}
+          assert all(n in local and size == local[n] for n, size in remote.items()), 'Unexpected existing draft asset'
+          for name in sorted(local.keys() - remote.keys()):
+              print('release/' + name)
+          PYRESUME
+            while IFS= read -r asset; do
+              gh release upload "$tag" "$asset" --repo "$GITHUB_REPOSITORY"
+            done < "$RUNNER_TEMP/missing-assets.txt"
+          else
+            gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --draft --prerelease --title 'Pokémon Platinum Local Co-op 0.2.0 Alpha 6 — Retro launcher & co-op fixes' \
+              --notes-file docs/releases/v0.2.0-alpha.6.md
           fi
-          gh release create v0.2.0-alpha.4 * --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --prerelease --title 'Pokémon Platinum Local Co-op 0.2.0 Alpha 4 — Bazzite, ZorinOS, Windows' \
-            --notes-file ../docs/releases/v0.2.0-alpha.4.md
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets > "$RUNNER_TEMP/uploaded-assets.json"
+          python3 - "$RUNNER_TEMP/uploaded-assets.json" <<'PYUPLOAD'
+          import json, pathlib, sys
+          local = {p.name: p.stat().st_size for p in pathlib.Path('release').iterdir()}
+          remote = {a['name']: a['size'] for a in json.load(open(sys.argv[1]))['assets']}
+          assert remote == local, 'Incomplete or mismatched draft uploads; leaving release as draft'
+          PYUPLOAD
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease --latest=false

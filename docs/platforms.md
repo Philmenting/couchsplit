@@ -6,9 +6,9 @@
 
 ## ZorinOS 18 / Ubuntu 24.04, x86_64
 
-Die Datei Pokemon-Platinum-Coop-ZorinOS18-amd64.deb herunterladen und über die Softwareverwaltung installieren. Alternativ:
+Die Datei Pokemon-Platinum-Coop-ZorinOS 18-amd64.deb herunterladen und über die Softwareverwaltung installieren. Alternativ:
 
-    sudo apt install ./Pokemon-Platinum-Coop-ZorinOS18-amd64.deb
+    sudo apt install ./Pokemon-Platinum-Coop-ZorinOS 18-amd64.deb
 
 Der Launcher erscheint im Anwendungsmenü. Beim ersten Start die eigene vorbereitete ROM oder ihr ZIP auswählen. Kein Distrobox-Container. Laufzeitpakete werden durch APT aufgelöst. ZorinOS 17 mit Ubuntu-22.04-Basis wird von diesem Paket nicht unterstützt.
 
@@ -34,6 +34,11 @@ Die Programme erhalten den gemeinsam implementierten Handheld-/Retro-Stil mit Pi
 
 Bazzite fordert automatisch die Aufnahme an. Auf ZorinOS und Windows in Steam „Spiel hinzufügen → Steam-fremdes Spiel“ wählen und den Launcher hinzufügen. Bei doppelten Controller-Eingaben Steam Input nur für diesen Eintrag deaktivieren.
 
-Die CI baut beide Betriebssystemfamilien und führt native Tests sowie ROM-freie Emulator-Smoke-Tests aus. Die grafische Installation und physische Hardware auf ZorinOS/Windows bleiben manuell zu prüfen. Gemeinsame Sinnoh-Welt, kompletter deutscher Spieldurchlauf und Dauerbetrieb sind gesonderte Abnahmepunkte.
+Die CI baut beide Betriebssystemfamilien und führt native Tests sowie ROM-freie Emulator-Smoke-Tests aus. Automatisierte Windows-/Ubuntu-Installations-, Start- und Deinstallationsprüfungen sind Teil der CI; physische Hardware und interaktive Zielsystem-Abnahme bleiben separat. Tatsächliche Welt-Koop-/Wild-/Trainerkampfprüfungen stammen von Linux mit virtuellen SDL-Controllern. Ein kompletter deutscher Spieldurchlauf und Dauerbetrieb sind nicht bestätigt.
 
 Quellen: https://help.zorin.com/docs/apps-games/install-apps/ (ZorinOS-18-Basis Ubuntu 24.04), https://www.msys2.org/docs/ci/ , https://doc.qt.io/qt-6/windows-deployment.html .
+
+
+## Öffentliche Ausgabe 0.2.0 Alpha 6
+
+Die [Release-Seite](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.2.0-alpha.6) bündelt die zuvor lokal getesteten Alpha2–5-Verbesserungen und die eigenen ROM-Korrekturwerkzeuge. Pakete und Werkzeuge stammen vom selben Release-Commit; Veröffentlichung erfolgt erst nach nativen Linux-/Windows- und verpflichtenden ARM-Prüfungen. Kein ROM-Download enthalten. [Spielstände bei geändertem ROM-Hash übernehmen](save-transfer.md).

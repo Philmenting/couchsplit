@@ -1,0 +1,30 @@
+[
+  {
+    "file": "launcher.png",
+    "captured": "2026-10-16",
+    "origin": "Alpha-5 native Qt launcher, empty setup state; keyboard hint matches final Space activation. No game content.",
+    "original_pixel_file_sha256": "28fa74e15adc5df0ab33b8bf274bf45ce7597e59183aeec2e6e72f661580faea",
+    "launcher_source": "3173c16e61882c2727ed15e0f70fde225a841a3c"
+  },
+  {
+    "file": "shared-battle.png",
+    "captured": "2026-10-19",
+    "origin": "Two actual Alpha-5 Linux emulator workers running the final item-corrected German PM ROM, shared trainer battle against Sven. Separate prepared level-25 save copies, virtual SDL controllers.",
+    "original_pixel_file_sha256": "7f1f8bbad24bf03dd4c2956d6a56d1136ba098bf9d4ab85b6e2de1ae0c49ab2d",
+    "launcher_source": "3173c16e61882c2727ed15e0f70fde225a841a3c"
+  },
+  {
+    "file": "shared-world.png",
+    "captured": "2026-10-19",
+    "origin": "Actual corrected-ROM shared trainer victory, before movement. Both own followers visible on Route 202. Virtual SDL controllers, prepared level-25 save copies.",
+    "original_pixel_file_sha256": "5b1fd1c8747cbff6262d59ac77813f721faba7f536a076fe798957f70f2483e6",
+    "launcher_source": "3173c16e61882c2727ed15e0f70fde225a841a3c"
+  },
+  {
+    "file": "separate-saves.png",
+    "captured": "2026-10-19",
+    "origin": "Actual corrected-ROM trainer cards after normal save and fresh launch; balances1506/1556, previously1410/1460; same controlled test fixture.",
+    "original_pixel_file_sha256": "fd671e7b78b0eff2306fd07cc4bf9644a26fa37ca41e0f18556daaeb1aa928ab",
+    "launcher_source": "3173c16e61882c2727ed15e0f70fde225a841a3c"
+  }
+]

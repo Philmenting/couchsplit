@@ -9,3 +9,5 @@
 *.rom
 *.bios
 __pycache__/
+
+/.impeccable/review/
