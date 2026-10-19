@@ -10,7 +10,7 @@ jobs:
       - name: Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config extra-cmake-modules libsdl2-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive-dev libenet-dev libzstd-dev libcurl4-openssl-dev libfaad-dev libpcap-dev xdelta3
+          sudo apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config extra-cmake-modules libsdl2-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive-dev libenet-dev libzstd-dev libcurl4-openssl-dev libfaad-dev libpcap-dev libegl-dev libwayland-dev xdelta3
       - name: Build and verify
         env:
           QT_QPA_PLATFORM: offscreen
@@ -124,10 +124,10 @@ jobs:
         run: |
           cd release
           sha256sum * > SHA256SUMS
-          if gh release view v0.2.0-alpha.1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+          if gh release view v0.2.0-alpha.4 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo 'Release already exists; preserving its assets.'
             exit 0
           fi
-          gh release create v0.2.0-alpha.1 * --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --prerelease --title 'Pokémon Platinum Local Co-op 0.2.0 Alpha 1 — Bazzite, ZorinOS, Windows' \
-            --notes-file ../docs/releases/v0.2.0-alpha.1.md
+          gh release create v0.2.0-alpha.4 * --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --prerelease --title 'Pokémon Platinum Local Co-op 0.2.0 Alpha 4 — Bazzite, ZorinOS, Windows' \
+            --notes-file ../docs/releases/v0.2.0-alpha.4.md

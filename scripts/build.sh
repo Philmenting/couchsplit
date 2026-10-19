@@ -19,6 +19,8 @@ fi
 if git -C "$source_dir" apply --check "$patch_file"; then
   git -C "$source_dir" apply "$patch_file"
 elif ! git -C "$source_dir" apply --reverse --check "$patch_file"; then
+  # Upgrade a checkout already prepared by an older project release.
+  python3 "$project_dir/scripts/prepare-platform.py" "$source_dir"
   python3 "$project_dir/scripts/prepare-platform.py" --check "$source_dir"
 fi
 python3 "$project_dir/scripts/prepare-platform.py" "$source_dir"
@@ -35,4 +37,6 @@ cp "$build_dir/emulator/melonDS$suffix" "$build_dir/bin/melonDS-coop$suffix"
 cp "$build_dir/launcher/platinum-coop$suffix" "$build_dir/bin/"
 ctest --test-dir "$build_dir/launcher" --output-on-failure
 python3 "$project_dir/tests/test_transport.py" --source "$source_dir"
+python3 "$project_dir/tests/test_save_paths.py" --source "$source_dir"
+python3 "$project_dir/tests/test_config_threads.py" --source "$source_dir"
 "$build_dir/bin/melonDS-coop$suffix" --coop-capabilities

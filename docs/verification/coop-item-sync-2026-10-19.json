@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-19",
+  "source_rom_sha256": "dfe675837c5b935a684eb2e18c446dbc7865ba45bcb2343d2158892f6b720520",
+  "corrected_rom_sha256": "e90a53f4dd7c24d45e74c1854cfd5cb17fb4dc636179350fea6df8b9bfbd4a7f",
+  "rom_size": 141962768,
+  "authored_write_regions": [
+    {
+      "address": "0x02294af8",
+      "length": 112
+    },
+    {
+      "address": "0x02295f60",
+      "length": 4
+    }
+  ],
+  "actual_changed_bytes": 109,
+  "assembly_reassembled_exactly": true,
+  "independent_assembler_and_patch_tool_identical": true,
+  "local_python_tests": {
+    "passed": 55,
+    "skipped": 0,
+    "actual_xdelta": true,
+    "actual_unicorn_arm": true,
+    "hp_import_combinations": 320,
+    "hp_barrier_combinations": 240,
+    "previous_cursor_combinations": 128
+  },
+  "runtime": {
+    "platform": "Linux",
+    "actual_delivered_launcher_sha256": "511b77d4404fb7132e941723e6fe863f3c4f1784023e3cdacb84b7e5c32368d2",
+    "actual_delivered_worker_sha256": "af7230b57cbb4a8eda9a704c3db8f762b2bdc7ca05bb95ded6374e993ef82938",
+    "input": "External virtual SDL controllers operating actual delivered Qt launcher",
+    "memory_observation": "Read-only snapshots of descendant workers; no game RAM writes"
+  },
+  "fixture": {
+    "method": "Separate copied saves, prepared level-25 first party Pokemon with recalculated IV/EV/nature stats and partial HP",
+    "wallet_inventory_story_trainer_flags_positions_modified": false,
+    "original_rom_and_original_saves_preserved": true
+  },
+  "original_defect": {
+    "shared_trainer": "Sven, Route 202",
+    "after_absorb_both_peers_matched": true,
+    "after_guest_potion_player1_hp_by_peer": [
+      47,
+      48
+    ],
+    "both_controllers_idle_in_same_turn": true,
+    "hp_sequences": {
+      "owner": 5,
+      "remote_item_heal": 6,
+      "remote_next_hit": 7
+    }
+  },
+  "corrected_checks": {
+    "absorb_both_peers_matched": true,
+    "guest_potion_both_peers_matched": true,
+    "host_potion_both_peers_matched": true,
+    "actual_direct_parent_context_observed_on_both_roles": [
+      1,
+      1,
+      305
+    ],
+    "simultaneous_potions": {
+      "before_hp": [
+        42,
+        40
+      ],
+      "after_native_heals_before_hits": [
+        62,
+        60
+      ],
+      "after_round_hp_on_both_peers": [
+        62,
+        59
+      ],
+      "after_round_hp_sequences_on_both_peers": [
+        1,
+        1
+      ],
+      "stats_pp_status_boosts_also_matched": true
+    }
+  },
+  "baseline_money_win": {
+    "player1": [
+      1410,
+      1506
+    ],
+    "player2": [
+      1460,
+      1556
+    ],
+    "both_delta": 96,
+    "saved_reloaded_both_balances_and_trainer_victory": true,
+    "own_followers_visible_before_movement": true
+  },
+  "not_verified": [
+    "Physical controllers",
+    "Native Windows Pokemon gameplay",
+    "Bazzite/Wayland/Gamescope Pokemon gameplay",
+    "Complete playthrough"
+  ]
+}

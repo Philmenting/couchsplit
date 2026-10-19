@@ -38,6 +38,29 @@ public:
     void release() { lock.reset(); }
     bool locked() const { return bool(lock); }
     QString profile(int p, const QString& game) const { return base+"/players/"+QString::number(p+1)+"/"+game; }
+    // Keep the filename independent of the imported ROM's original name.
+    // Legacy files remain intact; different ROM hashes never share a profile.
+    void prepareSave(int p, const QString& game, const QString& romName) {
+        if(!locked()) fail("Spielstandübernahme benötigt Profilsperre");
+        const auto directory=profile(p,game)+"/saves";
+        const auto target=directory+"/game.sav";
+        QFileInfo stable(target);
+        if(stable.isSymLink() || (stable.exists() && !stable.isFile())) fail("Ungültige Spielstanddatei: "+target);
+        if(stable.exists()) return;
+        const auto preferred=QFileInfo(romName).completeBaseName()+".sav";
+        auto candidates=QDir(directory).entryList({"*.sav"},QDir::Files|QDir::NoSymLinks);
+        if(QFileInfo(directory+"/"+preferred).isSymLink()) fail("Ungültige ältere Spielstanddatei.");
+        if(candidates.isEmpty()) return;
+        QString selected;
+        if(candidates.contains(preferred)) selected=preferred;
+        else if(candidates.size()==1) selected=candidates.first();
+        else fail("Mehrere ältere Spielstände gefunden. Zuerst die ursprünglich verwendete ROM auswählen; die Dateien bleiben erhalten: "+directory);
+        QFile source(directory+"/"+selected);
+        if(!source.open(QIODevice::ReadOnly)) fail("Älterer Spielstand nicht lesbar: "+source.fileName());
+        const auto bytes=source.readAll();
+        if(source.error()!=QFileDevice::NoError) fail("Älterer Spielstand konnte nicht vollständig gelesen werden.");
+        atomicWrite(target,bytes);
+    }
     QString backup(int p,const QString& game) {
         if(!locked()) fail("Backup benötigt Profilsperre");
         const auto source=profile(p,game)+"/saves";
@@ -52,7 +75,7 @@ public:
         atomicWrite(target+"/manifest.json",QJsonDocument(manifest).toJson());
         return target;
     }
-    void restore(int p,const QString& game,const QString& backupPath) {
+    void restore(int p,const QString& game,const QString& backupPath,const QString& romName={}) {
         if(!locked()) fail("Wiederherstellung benötigt Profilsperre");
         const auto allowed=QFileInfo(profile(p,game)+"/backups").canonicalFilePath();
         auto chosen=QFileInfo(backupPath).canonicalFilePath();
@@ -67,10 +90,24 @@ public:
             auto name=it.key();
             if(name!=QFileInfo(name).fileName() || !name.endsWith(".sav") || QFileInfo(chosen+"/"+name).isSymLink() || hashFile(chosen+"/"+name)!=it.value().toString()) fail("Beschädigtes Backup");
         }
+        // Older backups contain ROM-dependent names. Restoring one must also
+        // update the stable save used by the current launcher.
+        QString selected="game.sav";
+        if(!entries.contains(selected)) {
+            const auto preferred=QFileInfo(romName).completeBaseName()+".sav";
+            if(entries.contains(preferred)) selected=preferred;
+            else if(entries.size()==1) selected=entries.begin().key();
+            else fail("Backup enthält mehrere ältere Spielstände. Zuerst die ursprünglich verwendete ROM auswählen.");
+        }
         backup(p,game);
         for(auto it=entries.begin();it!=entries.end();++it) {
             QFile f(chosen+"/"+it.key()); if(!f.open(QIODevice::ReadOnly)) fail("Backup nicht lesbar");
             atomicWrite(profile(p,game)+"/saves/"+it.key(),f.readAll());
+        }
+        if(selected!="game.sav") {
+            QFile source(chosen+"/"+selected);
+            if(!source.open(QIODevice::ReadOnly)) fail("Backup nicht lesbar");
+            atomicWrite(profile(p,game)+"/saves/game.sav",source.readAll());
         }
     }
 };

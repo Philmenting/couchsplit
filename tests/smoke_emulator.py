@@ -46,7 +46,8 @@ def homebrew():
 
 def smoke(binary):
     binary=Path(binary).resolve()
-    subprocess.run([str(binary),'--coop-capabilities'],check=True,timeout=5)
+    capabilities=subprocess.check_output([str(binary),'--coop-capabilities'],timeout=5)
+    assert b'STABLE_SAVE=1' in capabilities, 'Update the launcher and emulator together'
     with tempfile.TemporaryDirectory(prefix='coop-emulator-ä-') as temp:
         base=Path(temp);rom=base/'self-authored-homebrew.nds';rom.write_bytes(homebrew())
         probe=socket.socket();probe.bind(('127.0.0.1',0));port=probe.getsockname()[1];probe.close()
@@ -59,7 +60,7 @@ def smoke(binary):
                 ipc=base/(role+'.ipc')
                 ipc.write_bytes(struct.pack('<10I',0x434F5031,2,0,0xFFF,0,0,0,0,0,0)+bytes(256*192*4*2));ipc.chmod(0o600);maps.append(ipc)
                 env={k:v for k,v in os.environ.items() if not k.startswith(('MELONDS_AP','PMCOOP_'))}
-                env.update(QT_QPA_PLATFORM='offscreen',SDL_AUDIODRIVER='dummy',PMCOOP_PROFILE=str(profile),PMCOOP_IPC=str(ipc),PMCOOP_ROLE=role,PMCOOP_PORT=str(port))
+                env.update(QT_QPA_PLATFORM='offscreen',SDL_AUDIODRIVER='dummy',PMCOOP_PROFILE=str(profile),PMCOOP_IPC=str(ipc),PMCOOP_ROLE=role,PMCOOP_PORT=str(port),PMCOOP_SAVE_NAME='game')
                 log=open(base/(role+'.log'),'wb');logs.append(log)
                 processes.append(subprocess.Popen([str(binary),str(rom)],env=env,cwd=profile,stdout=log,stderr=subprocess.STDOUT))
             end=time.monotonic()+20

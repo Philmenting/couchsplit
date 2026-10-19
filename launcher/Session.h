@@ -128,8 +128,10 @@ public:
         if(!binary.isFile()||!binary.isExecutable()) fail("Gepatchtes Emulator-Binary fehlt: "+s.emulator);
         // Reject unrelated binaries before acquiring locks or launching sessions.
         QProcess capability; capability.start(s.emulator,{"--coop-capabilities"});
-        if(!capability.waitForFinished(5000) || capability.exitCode()!=0 || !capability.readAllStandardOutput().contains("PMCOOP_ABI=2")) {
-            capability.kill(); capability.waitForFinished(1000); fail("Emulator unterstützt die Co-op-Schnittstelle nicht. scripts/build.sh ausführen.");
+        const bool ready=capability.waitForFinished(5000) && capability.exitCode()==0;
+        const auto features=capability.readAllStandardOutput();
+        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1")) {
+            capability.kill(); capability.waitForFinished(1000); fail("Emulator unterstützt die benötigte Co-op-Spielstandschnittstelle nicht. Launcher und Emulator gemeinsam aktualisieren.");
         }
         saves.acquire();
         failed=false; stopping=false; elapsed.start(); lastFrame={{0,0}}; lastProgress={{0,0}};
@@ -148,10 +150,15 @@ public:
             auto port=probe.serverPort(); probe.close();
             logDir=saves.root()+"/logs/"+QDateTime::currentDateTimeUtc().toString("yyyyMMddTHHmmsszzz")+"-"+QUuid::createUuid().toString(QUuid::Id128);
             if(!QDir().mkpath(logDir)) fail("Logordner nicht anlegbar.");
+            // Complete both profiles before either worker can modify a save.
             for(int i=0;i<2;i++) {
                 const auto profile=saves.profile(i,game);
                 for(const auto& name:{"saves","states","cheats"}) if(!QDir().mkpath(profile+"/"+name)) fail("Spielerprofil nicht anlegbar.");
                 saves.backup(i,game);
+                saves.prepareSave(i,game,s.rom);
+            }
+            for(int i=0;i<2;i++) {
+                const auto profile=saves.profile(i,game);
                 QString toml="LimitFPS = true\nTargetFPS = 60.0\n[Emu]\nDirectBoot = true\nExternalBIOSEnable = "+QString(s.bios9.isEmpty()?"false":"true")+"\n[Screen]\nUseGL = false\n[\"3D\"]\nRenderer = 0\n[DS]\nBIOS9Path = "+quoted(s.bios9)+"\nBIOS7Path = "+quoted(s.bios7)+"\nFirmwarePath = "+quoted(s.firmware)+"\n[Instance0]\nJoystickID = -1\nSaveFilePath = "+quoted(profile+"/saves")+"\nSavestatePath = "+quoted(profile+"/states")+"\nCheatFilePath = "+quoted(profile+"/cheats")+"\n[Instance0.Audio]\nVolume = 128\n[Instance0.Firmware]\nUsername = "+quoted("Spieler "+QString::number(i+1))+"\n";
                 atomicWrite(profile+"/melonDS.toml",toml.toUtf8());
                 auto ipc=runtime->path()+"/player"+QString::number(i+1)+".ipc";
@@ -168,6 +175,7 @@ public:
                 for(const auto& key:env.keys()) if(key.startsWith("MELONDS_AP")||key.startsWith("PMCOOP_")) env.remove(key);
                 env.insert("PMCOOP_ROLE",i?"join":"host"); env.insert("PMCOOP_PORT",QString::number(port));
                 env.insert("PMCOOP_IPC",ipc); env.insert("PMCOOP_PROFILE",profile);
+                env.insert("PMCOOP_SAVE_NAME","game");
                 env.insert("QT_QPA_PLATFORM","offscreen");
                 workers[i]->setProcessEnvironment(env);
                 workers[i]->setProcessChannelMode(QProcess::MergedChannels);

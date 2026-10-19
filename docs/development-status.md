@@ -1,6 +1,8 @@
-# Entwicklungsstatus — 14.10.2026
+# Entwicklungsstatus — 16.10.2026
 
-**Ergebnis:** vollständiger Linux-Build von Project PM + eigenem Launcher, bestandene ROM-freie Tests und reale Starts zweier Emulatorprozesse mit selbst geschriebenem ARM-Homebrew, einer deutschen Original-ROM sowie der erfolgreich gepatchten US-PM-ROM 0.4.5. Die PM-Ausgabe ist englisch. Noch keine erfolgreiche Pokémon-Sinnoh-Welt-Synchronisation, deutsche Lokalisierung oder Bazzite-Hardwareabnahme. [Original-ROM-Test](rom-boot-check.md) · [PM-Patch-/Starttest](project-pm-045.md).
+**Aktueller Nachtrag:** Alpha 4 wurde mit der bereitgestellten deutschen PM-0.4.5-ROM tatsächlich bis zum Pokédex gespielt. Zwei Figuren und ihre Begleiter bewegen sich synchron; ein gemeinsamer Wildkampf mit getrennten Befehlen, identischen Gegnerzuständen, Sieg/EP/Levelaufstieg und anschließendem Ingame-Speichern/-Laden wurde unter Linux geprüft. Native Windows-/Bazzite-Spielabnahme, Trainer-Koop, Tausch und mehrstündiger Dauertest bleiben offen. Die älteren Abschnitte unten beschreiben den damaligen Prüfstand.
+
+Am 16.10.2026 wurde die veraltete Zielauswahl nach besiegtem Gegner erneut im tatsächlichen Koop-Kampf reproduziert und eine separate, exakt hashgebundene ROM-Korrektur erstellt. Der vermutete dauerhafte Begleiterverlust bestätigte sich im Nachtest nicht. [Korrektur und Prüfgrenzen](rom-target-cursor-fix.md).
 
 ## Implementiert
 
@@ -71,8 +73,8 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 ## Nicht verifiziert / offen
 
 1. Patch 0.4.5 und passende US-Rev-1-Basis wurden bereitgestellt und erfolgreich gepatcht. Die US-basierte deutsche Text-Alpha ist inzwischen implementiert und gestartet; ein nativer CPUD-Patch und vollständige Spielprüfung fehlen. [Pakettest](project-pm-045.md).
-2. Wichtigstes Akzeptanzkriterium: zwei Spielfiguren interagieren synchron in derselben Sinnoh-Welt. US-PM und die darauf aufbauende deutsche Text-Alpha starten. Die ROM-seitige Funkspiel-Aktivierung und tatsächliche gemeinsame Welt wurden noch nicht geprüft.
-3. Tatsächliche Ingame-Save-Write/Load-Vorgänge von Pokémon; die Sicherungs-/Wiederherstellungsmechanik ist geprüft, aber nicht ein kompletter Pokémon-Spielzyklus.
+2. Die gemeinsame Welt, Funkspiel-Aktivierung und gemeinsame Wildkämpfe sind inzwischen unter Linux mit der Nutzer-ROM geprüft. Trainer-Koop, Tausch und Zielhardware bleiben offen.
+3. Tatsächliches Ingame-Speichern und erneutes Laden beider Pokémon-Spielstände sind unter Linux geprüft; kein vollständiger Spieldurchlauf.
 4. Physische USB-/Bluetooth-Controller, Steam-Input-Konflikte, Gerätetrennung und Neuverbindung auf dem Zielsystem.
 5. KDE Plasma Wayland, Steam Gamescope, Distrobox-GUI/Audio/Gerätezugriff auf Bazzite, Desktop/Gaming-Mode-Wechsel.
 6. 4K/60-Hz-Ausgabe und Performance/Thermik auf RTX 4060; Bildgeometrie und 4K-Menürendering sind geprüft, tatsächliche TV-Ausgabe nicht.
@@ -119,3 +121,67 @@ Bazzite 0.1.0-alpha.1 ist als unveränderter GitHub-Prerelease veröffentlicht. 
 Die Freigabe ist in `.github/workflows/platforms.yml` an erfolgreiche native Linux-/Windows-Builds, Komponenten- und ROM-freie Emulatorprüfungen gebunden. Zusätzlich werden DEB und Windows-Setup in der CI installiert, der installierte Launcher gestartet und anschließend deinstalliert; persönliche Daten müssen erhalten bleiben. Details und tatsächliche Ergebnisse stehen beim jeweiligen Release-Commit in GitHub Actions. Das ersetzt keine manuelle Abnahme auf ZorinOS/Windows, mit Bluetooth-Controllern oder einer synchronen Sinnoh-Spielwelt.
 
 Windows-Nativtests bestätigen die Komponenten einschließlich kontrollierter Worker-Abschaltung. Die Transportprüfung deckte außerdem den Windows-Firewall-Helfer im PM-Upstream auf: Eigene lokale Sitzungen überspringen ihn jetzt ausdrücklich; es werden keine Firewall-Regeln oder Administratorprompts für Loopback eingerichtet.
+
+
+## Plattformübergreifende Fehlerkorrekturen 0.2.0 Alpha 2
+
+Implementiert am 15.10.2026: fester Koop-Speichername `game.sav` innerhalb des unveränderten Spieler-/ROM-Hash-Profils. Der Launcher sichert vor der Übernahme, kopiert einen eindeutig zugeordneten alten Save und erhält die Quelldatei. Mehrdeutige Altbestände verlangen die ursprüngliche ROM-Auswahl. Das Wiederherstellen älterer Backups aktualisiert ebenfalls den festen Save. Die neue Emulatorfähigkeit `STABLE_SAVE=1` verhindert das Mischen mit alten Emulator-Binaries; IPC bleibt ABI 2. Der eigene Emulatorpfad verändert nur Koop-DS-Saves, keine Savestate-, Cheat-, GBA- oder regulären melonDS-Dateinamen.
+
+Das Hauptmenü besitzt einen Scrollbereich und folgt dem Fokus bei Tastatur-/Controllerbedienung. Lange ROM-/Controllernamen erzwingen keine überbreiten Fenster. Minimieren neutralisiert Tasten und Touch sofort und bei jedem weiteren Timerlauf; verborgene Zeit zählt nicht zur Beenden-Kombination.
+
+Lokal auf Zorin OS 18.1 bestanden: 38 Python-Tests mit xdelta3, beide nativen CTest-Ziele, produktiver Transport und die aus dem echten Emulatorquellcode kompilierte Speicherpfadprüfung. Neue native Regressionen decken Save-Übernahme, umbenannte ROMs, Altbackups, unveränderte aktuelle Saves bei Mehrdeutigkeit, getrennte Spieler/ROM-Hashes sowie 360p/720p/768p/1080p/4K-Menüs, Scrollen per virtuellem SDL-Controller und Eingaben im minimierten Fenster ab. Auch der neu gebaute Launcher bei 1280 × 720 und zwei neu gebaute echte Emulatoren mit selbst erzeugtem ARM-Homebrew bestehen den Bild-/TCP-/geordneten Abschalttest. Windows- und Bazzite-Zielsystembedienung sowie echte Pokémon-Spielstände/Sinnoh-Synchronisation werden dadurch nicht behauptet. Native Plattform-Builds und Paketprüfungen bleiben vor Veröffentlichung erforderlich.
+
+
+Zusätzlicher Integrationsbefund vom 16.10.2026: Ein echter wiederholter Session-Start mit umbenanntem ARM-Homebrew reproduzierte einen TOML-Serialisierungsabsturz. Die Konfigurations-Getter legen fehlende Werte an, während ein anderer Emulator-Thread den Baum speichert. Ein separater Test gegen den echten `Config.cpp` reproduziert denselben Fehler vor der Korrektur. Die öffentlichen Tabellen-/Arrayzugriffe sowie Laden/Speichern teilen jetzt einen rekursiven Mutex; nach der Korrektur besteht der gleichzeitige Getter/Setter/Array-/Serialisierungstest. Die Dateioperationen des Testprogramms sind ausdrücklich lokale Platform-Testgrenzen. Nach dem Neubau bestehen auch zwei echte vollständige Session-Starts mit identischen, unterschiedlich benannten Test-ROMs und getrennten, aktualisierten Save-Markern für beide Spieler; beide Sitzungen beenden ihre Worker geordnet und geben die Sperre frei.
+
+## Aktive Fehlerfälle und Korrekturen 0.2.0 Alpha 3
+
+Am 16.10.2026 mit virtuellen SDL-Controllern und zwei echten Linux-Emulatoren reproduziert: Das minimierte Hauptmenü führte noch Controller-Aktionen aus; eine neue ROM-Auswahl änderte die Anzeige trotz weiterlaufender alter Sitzung; frei belegte Tasten der Ansichts-/Beenden-Kombination gelangten zusätzlich als DS-Eingabe zum Spiel.
+
+Korrigiert im gemeinsamen Plattformcode: Das minimierte/verborgene Menü nimmt keine Aktion an und verlangt nach der Rückkehr zunächst das Loslassen gehaltener Tasten. Die ROM-Auswahl wird vor dem Dateidialog mit einem Hinweis auf das reguläre Sitzungsende blockiert. Tastenkombinationen verbrauchen ihre physischen Tasten vor der frei gewählten DS-Zuordnung; andere Tasten und Spieler bleiben unabhängig.
+
+Lokal bestätigt: beide nativen CTest-Ziele und alle 38 Python-Tests erfolgreich. Neue native Regressionen prüfen minimiertes/verborgenes Menü, gehaltene Taste beim Wiederherstellen, weiterhin funktionierende neue Tastendrücke, blockierte ROM-Auswahl mit unveränderten Einstellungen und fortsetzbarer Sitzung, beide Kombinationen mit allen zwölf DS-Belegungen sowie unbeteiligte DS-Start-/R-Eingaben. Die Tests verwenden produktive Widgets und virtuelle Controller; die nativen Sitzungstests verwenden ausdrücklich Test-Worker.
+
+Zusätzlich besteht der isolierte Aktivtest mit unveränderten produktiven Widget-/Session-Funktionen und zwei echten Emulatorprozessen: alle drei ursprünglichen Fehlerfälle, zulässiger Import und tatsächlicher Start von ROM B nach Ende der Sitzung A, Trennung ohne Geräteübernahme, Minimieren im Spiel, Prozessausfall sowie zwölf vollständige Starts und Beendigungen. Unterschiedliche vorbereitete Test-Spielstände beider Spieler bleiben dabei bytegenau erhalten; die Homebrew-ROM schreibt keine Pokémon-Saves. Die drei Korrekturen wurden mit frischen Profilen unter Qt offscreen und auf einem virtuellen X11-Bildschirm erneut erfolgreich geprüft. 720p-Menüaufnahme sowie der separate Produktions-Emulator-Test mit Bildausgabe, TCP-Rollen und geordneter Abschaltung bestehen ebenfalls.
+
+Pakete werden als 0.2.0-alpha.3 gekennzeichnet. Native Windows-/Linux-Neubauten und Paketinstallationsprüfungen sind vor Auslieferung abzuwarten. Physische Controller, Bazzite/Wayland/Gamescope und tatsächliche Pokémon-Spielwelt bleiben davon getrennte offene Abnahmen.
+
+## Controller-Menü und Spielhilfe 0.2.0 Alpha 4
+
+Der aktive Nachtest von Alpha 3 reproduzierte zwei weitere Fehler: Nach ausdrücklicher Zuordnung steuerte weiterhin das erste SDL-Gerät das Menü, und die einzeilige Bedienhilfe wurde bei 1280 × 720 abgeschnitten. Beide Korrekturen gelten im gemeinsamen Code für Linux und Windows.
+
+Die Menüabfrage gehört nach der ersten erfolgreichen Live-Zuordnung ausschließlich Spieler 1. Ein abgezogener Spieler-1-Controller bleibt ohne Eingabe; andere Geräte und neue Ersatzgeräte übernehmen nicht automatisch. Auch eine fehlgeschlagene Neuzuordnung schaltet den anfänglichen Geräte-Fallback nicht wieder frei. Vor der ersten Live-Zuordnung bleibt die ursprüngliche Navigation zur Einrichtung erhalten. Nach ausdrücklicher Neuzuordnung funktioniert die Menübedienung wieder.
+
+Die Bedienhilfe verwendet zwei echte Qt-Textlabels mit Wortumbruch. Jeder Spielerbereich reserviert die anhand seiner Breite benötigte Höhe und hält die DS-Bilder oberhalb. Lokale native Regressionen bestätigen vollständigen Text bei 360p/720p/768p/1080p/4K in beiden Spieleraufteilungen, verfügbaren Bildbereich, fremde/Spieler-2-Eingaben ohne Aktion, Menü-Navigation durch Spieler 1, Trennung mit verschobenen Geräteindizes, keine Ersatzübernahme und erfolgreiche ausdrückliche Neuzuordnung.
+
+Lokal bestehen beide CTest-Ziele und alle 38 Python-Tests. Der isolierte Aktivtest mit produktiven Widgets, virtuellen SDL-Controllern und zwei echten Emulatoren bestätigt beide neuen Korrekturen einschließlich fortlaufender Sitzung, Eingabe nach Neuzuordnung und Menü-Beenden mit Freigabe der Sperre. Die nativen Tests verwenden für Sitzungen ausdrücklich Test-Worker; der zusätzliche Aktivtest verwendet selbst erzeugte ARM-ROMs und die echten Emulator-Binaries des letzten nativen Linux-Pakets. Native Windows-/Linux-Neubauten und Installationsprüfungen sind vor Auslieferung erforderlich. Physische Controller, Bazzite/Wayland/Gamescope, Pokémon-Spielstände und die gemeinsame Sinnoh-Welt bleiben getrennte offene Abnahmen.
+
+
+## Nachuntersuchung der ROM-Auffälligkeiten, 16.10.2026
+
+Die unveränderte Nutzer-ROM reproduzierte die leere Zielauswahl in einem zweiten gemeinsamen Wildkampf. Die passende Cursorinitialisierung im Kampf-Overlay wurde mit dem ursprünglichen PRET-Code abgeglichen. Ein separates Python-Werkzeug erzeugt eine neue, hashgebundene ROM-Kopie mit Prüfung auf weiterhin verfügbare gespeicherte Ziele. Original-ROM und Saves bleiben erhalten; neue ROM-Hashes erzeugen eigene Profile. Die Lokalisierung selbst behält weiterhin ihre bisherigen Programmbyte-Invarianten.
+
+Alle 46 Python-Tests einschließlich Ausführung der tatsächlichen neuen Thumb-Instruktionen in 128 Zustandskombinationen bestehen lokal; beide vorhandenen nativen CTest-Ziele bestehen ebenfalls. Der zusätzliche ARM-Test prüft Register-/Stackerhaltung und ausschließlich die beabsichtigten Cursor-Schreibzugriffe; eine eigene Linux-/Windows-CI macht ihn verpflichtend. Die Begleiter wurden ohne Codeänderung beim Weitergehen wieder sichtbar und blieben nach einem weiteren gemeinsamen Kampf sichtbar. Ein dauerhafter Verlust wird nicht mehr als bestätigter Fehler geführt.
+
+Der aktive Korrektur-Nachtest mit zwei echten Alpha-4-Emulatorprozessen bestand: nach dem ersten besiegten Staralili sprang der Cursor beider Spieler auf das verbleibende Staralili; A wurde ohne zusätzliche Richtungseingabe angenommen. Gemeinsame Runde, Sieg, EP und beiderseitiger Aufstieg auf Lv. 7 sowie Rückkehr mit sichtbaren Begleitern wurden geprüft. Der Codefix gilt in der ROM für alle Plattformen; dieser Spielnachweis stammt ausschließlich von Linux. Ingame-Speichern/-Laden der korrigierten ROM ist ebenfalls mit einer regulären Wiederholung und geänderter Position beider Figuren bestätigt. Ein zuvor zu früh beendeter Speichervorgang im Testtreiber lud den alten Checkpoint; daraus wird kein Produktfehler abgeleitet. Alle Sitzungen endeten geordnet ohne verbleibende Worker oder Sperre. Details und Fingerabdrücke in der verlinkten Korrekturdokumentation.
+
+
+## Launcher im Handheld-/Retro-Stil, 0.2.0 Alpha 5
+
+Auf ausdrücklichen Wunsch des Nutzers: modernere native Qt-Oberfläche mit stärkerem Pokémon-/Retro-Bezug. Eingebettete Silkscreen-Überschriften (SIL OFL 1.1), gut lesbare Systemschrift für Bedienelemente, dunkles Gehäuse, helle Spiel-/Controllerinformationen, roter Start und goldene Fokusmarkierung. Eigene geometrische Symbole, keine Nintendo-Grafiken oder -Schriften. Alle Funktionen sind bei 1280 × 720 ohne Scrollen erreichbar. Schmale Fenster stapeln die Bereiche und behalten Fokus-Scrollen; 4K nutzt größere Schrift und Bedienelemente. Dialoge folgen derselben Gestaltung; Abbrechen/Schließen werden deutsch beschriftet.
+
+Produkt- und Designkontext stehen in PRODUCT.md, DESIGN.md und .impeccable/design.json. Der Quellcode der Gestaltung ist gemeinsam für Windows und Linux; bestehende Controller-/Spielstand-/Sitzungslogik bleibt erhalten. Die Bildschirmanzeige trägt Koralle/Cyan für Spieler 1/2 und erhält den vollständigen umgebrochenen Hilfetext.
+
+Lokal erfolgreich: beide nativen CTest-Ziele (inklusive Controllerbesitz, Trennung, Fokus, Minimieren, blockiertem ROM-Wechsel und Session-Abschaltung) sowie alle 46 Python-Tests mit echtem xdelta-Decoder und ARM-Regressionsengine. Zusätzliche native Prüfung bestätigt Font-Einbettung, passende Beschriftungsbreiten und Aktivierung per Leertaste entsprechend dem angezeigten Tastaturhinweis. Gebündelte X11-Aufnahmen prüfen 360p, 720p, 1080p, 4K, eingerichteten/leeren Zustand und einen tatsächlichen Dialog. Zwei echte Worker mit selbst geschriebenem ARM-Homebrew liefern die Frames für beide Spieleraufteilungen; beide enden geordnet und geben die Sperre frei. Diese roten/grünen Testbilder sind ausdrücklich kein Pokémon-Spielnachweis.
+
+Die unabhängige Designkontrolle gibt das geprüfte Hauptmenü frei. Native Windows-/Linux-Neubauten, Installationsprüfungen und Paketausgabe werden vor Auslieferung separat abgewartet. Physische Controller, tatsächliche Bazzite-/Wayland-/Gamescope-Bedienung und Pokémon-Dauertests bleiben offen. Der separate Zielfix der ROM gehört nicht in die Installer und wird nicht durch ein Launcher-Update automatisch angewendet.
+
+## Koop-KP-Synchronisierung und Geldtest, 19.10.2026
+
+Der aktive Trainerkampf-Nachtest mit der bisherigen deutschen Zielfix-1-ROM reproduziert unterschiedliche KP trotz weiterhin verbundener Worker und beiderseits beendeter Runde. Der Partner verarbeitet einen Trank über ein zusätzliches ROM-Unterprogramm; dessen einseitiger KP-Netzwerkabgleich verschiebt die folgenden KP-Sequenzen. Der neue, separat hashgebundene [Koop-Kampffix 1](rom-coop-item-fix.md) filtert genau diesen direkten Partner-Item-KP-Unteraufruf. Die native Heilung bleibt zuständig; der ursprüngliche Item-Ausschluss beim allgemeinen KP-Import und alle anderen Freigabeprüfungen bleiben erhalten. Geschrieben werden zwei selbst verfasste Codebereiche von insgesamt 116 Byte Länge im Overlay 122; ROM, Saves und Nintendo-Code sind nicht Bestandteil des Git-Pakets.
+
+Lokal bestehen alle 55 Python-Tests mit echtem xdelta-Decoder und ARM-Engine ohne Skips. 320 neue ARM-KP-Importfälle, 240 Filter-/ABI-Fälle und die bestehenden 128 Cursorfälle sind enthalten. Unabhängiger Assembler, gespeicherte eigene Assembly und Standardbibliothek-Patchwerkzeug erzeugen exakt denselben Code und ROM-Fingerabdruck. Die dedizierte ROM-CI verlangt diese Tests unter Windows und Linux.
+
+Zwei tatsächliche Alpha-5-Linux-Emulatorprozesse bestätigen Absorber, Tränke beider Spieler nacheinander und gleichzeitige Tränke mit übereinstimmenden KP, Statuswerten, PP und Kampfwertänderungen. Im gleichzeitigen Fall heilen die Pokémon vor einem Treffer genau 42 → 62 und 40 → 60 KP; nach dem gegnerischen Treffer stehen auf beiden Seiten 62/59 KP und dieselbe KP-Sequenz 1. Die gezielten Szenarien nutzen ausdrücklich getrennte Spielstandkopien mit vorbereitetem Level-25-Team; Geld, Beutel, Geschichte, Siegmarkierungen und Positionen wurden bei dieser Vorbereitung nicht bearbeitet.
+
+Der separate Geldtest mit der bisherigen ROM bestätigt einen echten gemeinsamen Trainersieg über Sven: beide Spieler erhalten 96 ₽, die Kontostandsdifferenz bleibt erhalten und beide Geldstände/Siegmarkierungen überstehen reguläres Speichern und Neuladen. Ein früherer regulärer Level-6-Test bestätigt bei einer Niederlage getrennte Abzüge von je 48 ₽. Beide eigenen Begleiter waren im Siegszenario unmittelbar nach der Rückkehr vor einer Bewegung sichtbar; dafür wurde kein Code geändert. Original-ROM und Originalspielstände sind unverändert. Tatsächliches Pokémon-Gameplay dieser Prüfung stammt von Linux mit virtuellen SDL-Controllern; native Windows-/Bazzite-Spielabnahme, physische Controller und ein vollständiger Durchlauf bleiben offen. Die Alpha-5-Launcherprogramme wurden für diese ROM-Korrektur nicht geändert.
