@@ -60,3 +60,7 @@ GPL-3.0-or-later. melonDS und der Project-PM-Bridgecode bleiben Werke ihrer jewe
 - [mGBA SplitScreen](https://github.com/Spuds0588/mgba-splitscreen) und [CouchPlay](https://github.com/hikaps/couchplay): untersuchte Architekturvorbilder; kein Code daraus übernommen.
 
 Dieses inoffizielle Projekt ist nicht mit Nintendo, Game Freak oder The Pokémon Company verbunden.
+
+## Separate ROM-Korrekturen
+
+Für die exakt geprüfte deutsche PM-0.4.5-ROM: [Zielauswahl nach besiegtem Gegner](docs/rom-target-cursor-fix.md) und anschließend [Koop-KP-Abgleich nach Tränken](docs/rom-coop-item-fix.md). Die Werkzeuge erzeugen neue ROM-Kopien mit festen Prüfsummen; ROM und Spielstände sind nicht Teil des Quellpakets. Neue ROM-Hashes verwenden eigene Profile ohne automatische Spielstandübertragung.
