@@ -14,6 +14,93 @@ static void spin(int ms) {
     QElapsedTimer elapsed; elapsed.start();
     while(elapsed.elapsed()<ms) {QCoreApplication::processEvents();QThread::msleep(5);}
 }
+// Optional captures use real production widgets and no ROM or personal profile.
+static void capture(QWidget& widget,const QString& name) {
+    const auto directory=qEnvironmentVariable("COOP_UI_CAPTURE_DIR");
+    if(directory.isEmpty())return;
+    assert(QDir().mkpath(directory));assert(widget.grab().save(directory+"/"+name+".png"));
+}
+static QJsonObject preferences(const QString& root) {
+    QFile file(root+"/settings.json");assert(file.open(QIODevice::ReadOnly));
+    return QJsonDocument::fromJson(file.readAll()).object();
+}
+static bool chooseLanguage(Launcher& launcher,const QString& choice) {
+    bool prompted=false;QTimer select;select.setInterval(10);
+    QObject::connect(&select,&QTimer::timeout,[&]{
+        auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+        if(!dialog || dialog->objectName()!="languageDialog")return;
+        prompted=true;capture(*dialog,"language-picker");
+        if(choice.isEmpty())dialog->reject();
+        else {auto* button=dialog->findChild<QPushButton*>("language-"+choice);assert(button);button->click();}
+    });select.start();
+    const bool accepted=launcher.ensureLanguageSelected();select.stop();
+    assert(accepted==!choice.isEmpty());return prompted;
+}
+static void configureLanguage(Launcher& launcher,const QString& choice,bool accept=true) {
+    bool prompted=false;QTimer select;select.setInterval(10);
+    QObject::connect(&select,&QTimer::timeout,[&]{
+        auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+        if(!dialog)return;
+        auto* combo=dialog->findChild<QComboBox*>("languageCombo");if(!combo)return;
+        prompted=true;select.stop();spin(50);assert(combo->count()==2);combo->setCurrentIndex(combo->findData(choice));
+        for(auto* label:dialog->findChildren<QLabel*>())if(label->wordWrap()) {
+            assert(label->height()>=label->heightForWidth(label->width()));
+        }
+        capture(*dialog,"settings-"+i18n::language()+(launcher.width()<760?"-compact":""));
+        auto* scroll=dialog->findChild<QScrollArea*>("settingsScroll");assert(scroll);
+        assert(scroll->horizontalScrollBar()->maximum()==0);
+        if(launcher.width()<760)assert(scroll->verticalScrollBar()->maximum()>0);
+        if(accept)dialog->accept();else dialog->reject();
+    });select.start();
+    launcher.findChild<QPushButton*>("settingsAction")->click();select.stop();assert(prompted);spin(30);
+}
+static void languagePreferences() {
+    for(const auto& choice:{QString("en"),QString("de")}) {
+        QTemporaryDir data;
+        const QJsonObject original{{"rom","unchanged-ROM.nds"},{"emulator","custom-emulator"},{"layout",2},{"horizontal",true},
+            {"pad1",QJsonObject{{"guid","TEST_ONLY"},{"name","Test pad"}}},{"futureSetting",QJsonArray{1,"untouched"}}};
+        atomicWrite(data.path()+"/settings.json",QJsonDocument(original).toJson());
+        {Launcher launcher(data.path());assert(chooseLanguage(launcher,choice));
+            auto expected=original;expected["language"]=choice;assert(preferences(data.path())==expected);
+            assert(i18n::language()==choice);assert(launcher.findChild<QPushButton*>("settingsAction")->text()==(choice=="en"?"Settings":"Einstellungen"));}
+        {Launcher again(data.path());assert(again.ensureLanguageSelected());assert(i18n::language()==choice);}
+    }
+    {
+        QTemporaryDir data;Launcher launcher(data.path());assert(chooseLanguage(launcher,QString()));
+        assert(!QFileInfo::exists(data.path()+"/settings.json"));assert(!QFileInfo::exists(data.path()+"/session.lock"));
+    }
+    {
+        QTemporaryDir data;atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"language","fr"}}).toJson());
+        Launcher launcher(data.path());assert(chooseLanguage(launcher,"en"));assert(preferences(data.path())["language"]=="en");
+        launcher.show();configureLanguage(launcher,"de",false);assert(i18n::language()=="en");assert(preferences(data.path())["language"]=="en");
+        configureLanguage(launcher,"de");assert(i18n::language()=="de");assert(preferences(data.path())["language"]=="de");
+        assert(launcher.findChild<QPushButton*>("startGame")->text()=="Koop-Spiel starten");
+        assert(launcher.findChild<QLabel*>("playHelp1")->text().contains("rechter Stick"));
+        configureLanguage(launcher,"en");assert(launcher.findChild<QPushButton*>("startGame")->text()=="Start co-op game");
+        assert(launcher.findChild<QLabel*>("playHelp1")->text().contains("right stick"));
+        assert(launcher.findChild<QLabel*>("navigationHelp")->text().contains("D-pad"));
+        assert(launcher.findChild<QLabel*>("sessionStatus")->text().contains("No game running"));
+        assert(launcher.findChild<QLabel*>("romLabel")->text()=="No Project PM ROM selected");
+        launcher.resize(640,360);spin(30);configureLanguage(launcher,"de");configureLanguage(launcher,"en");
+    }
+    {
+        QTemporaryDir data;const QByteArray corrupt="{broken settings";atomicWrite(data.path()+"/settings.json",corrupt);
+        bool rejected=false;try{Launcher launcher(data.path());}catch(const std::exception& e){rejected=QString::fromUtf8(e.what()).contains("Settings are corrupted");}
+        assert(rejected);QFile file(data.path()+"/settings.json");assert(file.open(QIODevice::ReadOnly)&&file.readAll()==corrupt);
+    }
+    {
+        QTemporaryDir data;Launcher launcher(data.path());assert(QDir().mkdir(data.path()+"/settings.json"));
+        bool failed=false;try{chooseLanguage(launcher,"de");}catch(const std::exception&){failed=true;}
+        assert(failed&&i18n::language()=="en");assert(QFileInfo(data.path()+"/settings.json").isDir());
+        assert(QDir().rmdir(data.path()+"/settings.json"));assert(chooseLanguage(launcher,"de")); // rollback still prompts
+    }
+    // Validation messages follow the app language while diagnostic file paths stay intact.
+    i18n::setLanguage("en");
+    bool failed=false;try{validateRom("MISSING-TEST-ROM.nds");}catch(const std::exception& e){failed=QString::fromUtf8(e.what())=="ROM is missing or unreadable.";}assert(failed);
+    QDialogButtonBox buttons(QDialogButtonBox::Cancel|QDialogButtonBox::Close);theme::labelButtons(buttons);
+    assert(buttons.button(QDialogButtonBox::Cancel)->text()=="Cancel");
+    i18n::setLanguage("de");theme::labelButtons(buttons);assert(buttons.button(QDialogButtonBox::Close)->text()=="Schließen");
+}
 static void menuFits() {
     QTemporaryDir data;
     atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"rom",QString(250,'r')+".nds"}}).toJson());
@@ -22,6 +109,7 @@ static void menuFits() {
     auto* scroll=launcher.findChild<QScrollArea*>("menuScroll");assert(scroll);
     for(auto size:{QSize(1280,720),QSize(1366,768),QSize(640,360),QSize(1040,720),QSize(1920,1080),QSize(3840,2160)}) {
         launcher.resize(size);spin(50);assert(launcher.size()==size);
+        capture(launcher,"menu-"+i18n::language()+"-"+QString::number(size.width())+"x"+QString::number(size.height()));
         assert(scroll->horizontalScrollBar()->maximum()==0);
         for(auto* button:launcher.findChildren<QPushButton*>()) {
             const int textWidth=button->fontMetrics().horizontalAdvance(button->text());
@@ -95,9 +183,10 @@ static void assignedMenu() {
 static void playHelpFits() {
     QTemporaryDir data;SaveStore saves(data.path());Session session(saves);Controllers controllers;Settings settings;
     PlayView view(session,controllers,settings);view.show();
-    const QString expected="Touch: rechter Stick + Klick · Ansicht: Select + R · Ende: Start + Select (2 s)";
+    const QString expected=i18n::text("Touch: rechter Stick + Klick · Ansicht: Select + R · Ende: Start + Select (2 s)");
     for(auto size:{QSize(640,360),QSize(1280,720),QSize(1366,768),QSize(1920,1080),QSize(3840,2160)})for(bool horizontal:{false,true}) {
         settings.horizontal=horizontal;view.resize(size);view.update();spin(20);
+        if(size.width()==1280)capture(view,"play-help-"+i18n::language()+"-"+(horizontal?"stacked":"side-by-side"));
         for(int p=0;p<2;p++) {
             auto* label=view.findChild<QLabel*>(QString("playHelp%1").arg(p+1));assert(label&&label->isVisible()&&label->wordWrap()&&label->text()==expected);
             const auto area=playerArea(view.rect(),p,horizontal);assert(area.contains(QRectF(label->geometry())));
@@ -113,7 +202,9 @@ static void playHelpFits() {
 int main(int argc,char** argv) {
     QApplication app(argc,argv);app.setQuitOnLastWindowClosed(false);
     QTemporaryDir mouseData,controllerData,sessionData;
-    menuFits();backgroundMenu();assignedMenu();playHelpFits();
+    languagePreferences();
+    for(auto language:{"en","de"}) {i18n::setLanguage(language);menuFits();playHelpFits();}
+    backgroundMenu();assignedMenu();
     {
         QTemporaryDir keyboardData;Launcher launcher(keyboardData.path());launcher.show();spin(40);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit);exit->setFocus();
@@ -205,6 +296,14 @@ int main(int argc,char** argv) {
         for(auto* button:launcher.findChildren<QPushButton*>())if(button->text()=="Koop-Spiel starten")button->click();
         assert(pages->currentIndex()==1);
         QCoreApplication::sendEvent(pages->currentWidget(),&escape);assert(pages->currentIndex()==0);
+        const auto runBefore=QDir(sessionData.path()).entryList({"run-*"},QDir::Dirs|QDir::NoDotAndDotDot);
+        configureLanguage(launcher,"en");
+        assert(QDir(sessionData.path()).entryList({"run-*"},QDir::Dirs|QDir::NoDotAndDotDot)==runBefore);
+        assert(QFileInfo::exists(sessionData.path()+"/session.lock"));
+        launcher.findChild<QPushButton*>("startGame")->click();spin(60);assert(pages->currentIndex()==1);
+        assert(launcher.findChild<QLabel*>("playHelp1")->text().contains("right stick"));
+        QCoreApplication::sendEvent(pages->currentWidget(),&escape);assert(pages->currentIndex()==0);
+        configureLanguage(launcher,"de");
         launcher.findChild<QPushButton*>("exitLauncher")->click();assert(!launcher.isVisible());
         SaveStore probe(sessionData.path());probe.acquire();probe.release();
         auto sessions=QDir(sessionData.path()+"/logs").entryList(QDir::Dirs|QDir::NoDotAndDotDot);assert(sessions.size()==1);
@@ -214,6 +313,6 @@ int main(int argc,char** argv) {
         }
         SDL_JoystickClose(ja);SDL_JoystickClose(jb);SDL_JoystickDetachVirtual(b);SDL_JoystickDetachVirtual(a);
     }
-    std::cout<<"PASS: menu and full wrapped play help at 360p/720p/768p/1080p/4K in both splits; assigned player-one menu input, no unassigned/player-two/replacement takeover after disconnect, explicit reassignment; focus scrolling, blocked hidden/minimized menu and held input on restore, blocked live ROM change, neutral minimized input and reset exit chord; fixture workers release saves\n";
+    std::cout<<"PASS: first choice, cancel, invalid/malformed settings, atomic failure, legacy preservation, live language switch without worker restart; DE/EN menu and full wrapped play help at 360p/720p/768p/1080p/4K in both splits; assigned player-one menu input, no unassigned/player-two/replacement takeover after disconnect, explicit reassignment; focus scrolling, blocked hidden/minimized menu and held input on restore, blocked live ROM change, neutral minimized input and reset exit chord; fixture workers release saves\n";
     return 0;
 }

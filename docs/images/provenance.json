@@ -1,10 +1,17 @@
 [
   {
+    "file": "language-picker.png",
+    "captured": "2026-10-19",
+    "origin": "Alpha-7 actual bilingual first-launch Qt language dialog, Deutsch/English. Production chooser captured during native UI tests; no game content.",
+    "original_pixel_file_sha256": "7b06f850e55c03ab29b453936aa806af2d5fb028c149237be6d37a2fbea360d6",
+    "launcher_source": "Alpha-7 language feature; matching source in this release"
+  },
+  {
     "file": "launcher.png",
-    "captured": "2026-10-16",
-    "origin": "Alpha-5 native Qt launcher, empty setup state; keyboard hint matches final Space activation. No game content.",
-    "original_pixel_file_sha256": "28fa74e15adc5df0ab33b8bf274bf45ce7597e59183aeec2e6e72f661580faea",
-    "launcher_source": "3173c16e61882c2727ed15e0f70fde225a841a3c"
+    "captured": "2026-10-19",
+    "origin": "Alpha-7 native Qt production launcher, English, fresh empty setup at 1280x720; --smoke-test with only language=en saved. No ROM or assigned controllers.",
+    "original_pixel_file_sha256": "01d71139afc2766ca08be79007a43ab31ea8c4adc49fac2d752fa8c72d247237",
+    "launcher_source": "Alpha-7 language feature; matching source in this release"
   },
   {
     "file": "shared-battle.png",

@@ -38,7 +38,7 @@ if(BUILD_TESTING)
     target_link_libraries(launcher-tests PRIVATE Qt6::Widgets Qt6::Network ${COOP_SDL_TARGET})
     target_compile_options(launcher-tests PRIVATE -UNDEBUG)
     add_test(NAME launcher-ui COMMAND launcher-tests $<TARGET_FILE:worker-fixture>)
-    set_tests_properties(launcher-ui PROPERTIES TIMEOUT 15 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;SDL_AUDIODRIVER=dummy")
+    set_tests_properties(launcher-ui PROPERTIES TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;SDL_AUDIODRIVER=dummy")
 endif()
 # Embed the licensed pixel heading font in both production and native UI tests.
 foreach(ui_target platinum-coop launcher-tests)
