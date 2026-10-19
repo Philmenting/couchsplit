@@ -1,66 +1,121 @@
+<div align="center">
+
 # Pokémon Platinum Local Co-op
 
-Ein nativer Launcher für Linux und Windows mit zwei **getrennte Project-PM/melonDS-Prozesse**, zwei Controller und ein gemeinsames Split-Screen-Fenster. Hauptziel: Bazzite, KDE Plasma und Steam Gaming Mode, 3840 × 2160 bei 60 Hz. Zusätzliche Pakete: ZorinOS 18 und Windows 10/11 x64; siehe [Plattformausgaben](docs/platforms.md).
+**Two players. Two controllers. One shared screen.**
 
-**Entwicklungsstand:** implementierter Prototyp mit reproduzierbaren ROM-freien Tests. Ein passender Project-PM-Multiplayer-Patch und eine eigene Platin-ROM werden für das gewünschte Spielerlebnis benötigt. Gemeinsames Sinnoh-Gameplay wurde hier nicht geprüft. Ein normales Pokémon Platin erhält durch diesen Launcher keinen freien Welt-Koop.
+A native retro launcher for local Project PM co-op on Windows and Linux.
 
-Eine bereitgestellte deutsche Original-ROM wurde inzwischen in zwei echten Emulatorprozessen gestartet und geprüft: [ROM-Startprüfung](docs/rom-boot-check.md). Sie ist ungepatcht; ihre Multiplayer-Bridge bleibt inaktiv. Die App erklärt bei diesem bekannten Original-Fingerabdruck ausdrücklich den fehlenden Patch.
+[![Release](https://img.shields.io/badge/Release-0.2.0%20Alpha%206-b83f35?style=flat-square)](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.2.0-alpha.6)
+[![Native builds](https://github.com/Philmenting/pokemon-platinum-local-coop/actions/workflows/platforms.yml/badge.svg?branch=main)](https://github.com/Philmenting/pokemon-platinum-local-coop/actions/workflows/platforms.yml)
+[![License](https://img.shields.io/badge/License-GPL--3.0--or--later-325666?style=flat-square)](LICENSE)
 
-[Deutsche Lokalisierung](docs/german-localization.md): Eine **US-basierte deutsche PM-0.4.5-Alpha** kann jetzt reproduzierbar aus den drei eigenen ROM-Dateien erzeugt werden. Deutsche Originaltexte, zusätzliche PM-Übersetzungen und ab Alpha 2 die originalen JA/NEIN-Touchgrafiken werden übernommen, die PM-Programmbytes bleiben erhalten. Die deutsche Einführung wurde im Emulator visuell geprüft. Ein vollständiger deutscher Spieldurchlauf und die gemeinsame Sinnoh-Welt sind offen. Das ist kein nativer CPUD-Port.
+[Download](#download) · [Get started](#get-started) · [Screenshots](#play-together) · [Test status](#what-has-been-tested) · [Deutsch](#deutsch)
 
-Die bereitgestellte **US-Rev-1-ROM wurde erfolgreich mit PM 0.4.5 gepatcht** und in zwei echten Emulatoren gestartet. Für diesen bekannten Build genügt `python3 scripts/prepare-rom.py --rom ORIGINAL.nds --patch BUILD.zip --output GEPATCHT.nds`; Prüfsummen werden automatisch geprüft. Dieses erste Ergebnis ist englisch. Anschließend erzeugt `scripts/localize-pm.py` daraus zusammen mit beiden Original-ROMs die deutsche Alpha. [Basisanforderungen und Paketprüfung](docs/project-pm-045.md).
+![The actual retro launcher, with a clear setup menu and a prominent co-op start button.](docs/images/launcher.png)
 
-## Veröffentlichungen und Plattformen
+</div>
 
-Die erste Bazzite-Ausgabe ist als [v0.1.0-alpha.1](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.1.0-alpha.1) verfügbar. Native ZorinOS-18-/Windows-Pakete und ihr tatsächlicher Prüfstand: [Plattformanleitung](docs/platforms.md). Alle Ausgaben bleiben Alpha; keine ROM enthalten.
+## Download
 
-## Start auf Bazzite
+**[Get 0.2.0 Alpha 6](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.2.0-alpha.6)** — the retro interface, independent saves, improved controller handling and separate tools for the verified ROM battle bugs.
 
-**Einfachster Weg:** `Pokemon-Platinum-Coop-Bazzite.run` im Desktop herunterladen, in den Dateieigenschaften als ausführbar markieren und doppelklicken. Der Installer richtet eine eigene Laufzeit ein, legt den Startmenüeintrag an, fordert automatisch die Aufnahme in Steam an und öffnet danach die ROM-Auswahl. Die vorbereitete ROM oder ihr ZIP hinzufügen. Beide fertigen Programme sind enthalten; kein Kompilieren und kein GitHub-Login. Internet und 3 GiB freier Speicher erforderlich. [Anleitung und tatsächlicher Prüfstatus](docs/one-file-installer.md).
+| Your system | Download | Start here |
+|---|---|---|
+| **Windows 10/11 · x64** | [Installer (.exe)](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.6/Pokemon-Platinum-Coop-Windows-Setup.exe) · [Portable ZIP](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.6/Pokemon-Platinum-Coop-Windows-Portable.zip) | Install, or fully extract the ZIP and open `Start.bat`. |
+| **Bazzite · x86_64** | [Installer (.run)](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.6/Pokemon-Platinum-Coop-Bazzite.run) | Run from desktop mode after marking it executable. Uses its own Distrobox runtime. |
+| **Zorin OS 18 / Ubuntu 24.04 · x86_64** | [Debian package (.deb)](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.6/Pokemon-Platinum-Coop-ZorinOS18-amd64.deb) | Install through your software manager. |
 
-Für Entwickler bleibt der Quellbuild verfügbar:
+[Checksums](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.6/SHA256SUMS) · [ROM correction tools](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.6/Pokemon-PM-ROM-Korrekturen.zip) · [Release notes](docs/releases/v0.2.0-alpha.6.md) · [Platform guide](docs/platforms.md)
+
+You need **two controllers and your own compatible Project-PM-patched Platinum ROM**. No games, Nintendo BIOS, proprietary firmware or user saves are included. The launcher does not add world co-op to an unmodified Platinum ROM. All packages are alpha releases. The launcher interface is currently German.
+
+## Play together
+
+Two separate Project PM/melonDS processes share one window. Each player controls their own game and keeps their own save. The launcher handles controller assignment, screen layout, the local connection and orderly shutdown.
+
+![Two real emulator processes in a shared trainer battle, each with an independent battle menu.](docs/images/shared-battle.png)
+
+*An actual trainer battle on Linux with virtual SDL controllers. This targeted healing test uses separate copied saves with a prepared level-25 team. It is not a mockup or evidence of physical-controller or Windows gameplay testing.*
+
+![Both players and their followers on Route 202 immediately after their shared victory.](docs/images/shared-world.png)
+
+*Two views of the same route, directly after victory and before any movement. Both players' own followers are visible. [Screenshot origins and test context](docs/images/README.md).*
+
+### Built for a shared screen
+
+- **One window, multiple layouts:** players side by side or stacked; large top screen with a smaller touch screen, adjacent DS screens, or a switchable single-screen view.
+- **Independent input:** explicit controller assignment, remappable DS buttons and right-stick touch control. Game inputs are neutral while the launcher menu is open.
+- **Separate progress:** player/ROM-specific profiles, backups before each start and verified backup restoration.
+- **Local connection:** a direct loopback host/client bridge, with no public relay or port forwarding.
+- **A readable retro menu:** pixel headings, native body text, visible keyboard/controller focus and layouts that scale from small windows to 4K.
+
+## Get started
+
+1. **Install your platform package.** Use desktop mode for initial setup. Bazzite needs Distrobox/Podman, internet access and about 3 GiB of free space for its runtime.
+2. **Select a prepared ROM.** Use **ROM auswählen** to add a compatible `.nds` or ROM ZIP. [PM 0.4.5 requirements](docs/project-pm-045.md) · [German localization](docs/german-localization.md).
+3. **Assign two controllers.** Open **Controller zuordnen**, assign players 1/2 and choose your screen layout under **Bildschirmaufteilung**.
+4. **Enable co-op in the game.** Select **Koop-Spiel starten**. PM 0.4.5 unlocks Wireless Play after receiving the Pokédex; shared trainer battles also require the in-game co-op setting.
+5. **Save normally.** Each player saves their own progress in the game. Then end the session together.
+
+| Input | Action |
+|---|---|
+| Left stick / D-pad | Move |
+| Right stick + stick click | Move and press the touch cursor |
+| Select + R | Switch the single-screen view |
+| Start + Select · hold 2 seconds | Stop both emulators cleanly |
+| Escape | Open launcher menu; **Koop-Spiel starten** resumes the session |
+| Tab / Space | Navigate and activate launcher menu actions |
+
+If Steam produces duplicate inputs, disable Steam Input **for this game entry**. Bazzite requests its Steam entry through the host helper; the application-menu action can retry if it is missing. [Bazzite setup](docs/one-file-installer.md) · [Troubleshooting](docs/troubleshooting.md). Detailed platform documents are currently in German.
+
+### ROM corrections and existing saves
+
+Separate tools correct two reproduced bugs in the **exact verified German PM 0.4.5 ROM**: [target selection after an opponent faints](docs/rom-target-cursor-fix.md), followed by [HP synchronization after Potions](docs/rom-coop-item-fix.md). They check the input, overlay and result against fixed fingerprints and create a new ROM copy. Updating the launcher does not automatically apply a ROM correction.
+
+**A new ROM fingerprint gets separate save directories.** Previous profiles remain intact and are not automatically merged. Back up both players' saves before switching. [Explicit save-transfer instructions](docs/save-transfer.md).
+
+## What has been tested?
+
+| Area | Evidence |
+|---|---|
+| Linux and Windows | Native builds, controller/session/UI tests, two real emulator processes and package/installation checks in [GitHub Actions](https://github.com/Philmenting/pokemon-platinum-local-coop/actions/workflows/platforms.yml). ROM-free smoke tests use our own homebrew. |
+| Actual Pokémon co-op | On Linux: shared-world views, movement, wild/trainer battles and independent commands. Virtual SDL controllers; no physical-hardware certification. |
+| ROM battle corrections | Actual before/after gameplay checks, plus ARM instruction tests on Linux and Windows. [Technical results](docs/verification/coop-item-sync-2026-10-19.json). |
+| Money and saving | In the tested shared victory over Sven, **each player receives 96 ₽**. Both balances and victory flags survive normal saving and a fresh launch. |
+
+<details>
+<summary>See both trainer cards after restarting</summary>
+
+![Independent balances of 1506 and 1556 Pokédollars after saving and restarting.](docs/images/separate-saves.png)
+
++96 ₽ each: 1,410 → 1,506 and 1,460 → 1,556. The targeted victory test uses prepared level-25 team copies; wallet, inventory, story and trainer-victory flags were not edited during that preparation. The measured reward applies to this battle.
+
+</details>
+
+Still pending: physical controllers, actual Windows/Bazzite Pokémon gameplay, KDE Wayland/Gamescope on target hardware, trading, a complete German playthrough and long sessions. [Development status](docs/development-status.md) · [Manual acceptance tests](docs/acceptance-tests.md).
+
+## Development and documentation
+
+C++17, CMake, Qt 6 and SDL2; see the [build guide](docs/bazzite-installation.md) for dependencies. The script checks out the pinned upstream and applies our patches.
 
 ```bash
-./scripts/bazzite-build.sh
-~/.local/bin/pokemon-platinum-local-coop
+scripts/build.sh
+python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Das Skript legt einen Fedora-44-Distrobox-Container an, installiert die Abhängigkeiten **im Container**, baut beide Programme und erzeugt einen eigenen Launcher/Desktop-Eintrag. Bestehende Steam-, Gamescope- und NVIDIA-Einstellungen werden nicht verändert.
+For all ARM tests, also install `tests/requirements-romfix.txt`; decoder tests require `xdelta3`. Output: `build/bin/platinum-coop` and `build/bin/melonDS-coop`. There is no verified universal AppImage; Bazzite uses its own runtime. Emulator packages include matching GPL source, including the pinned, patched upstream.
 
-Ersteinrichtung im Desktopmodus: kompatible gepatchte ROM auswählen, Emulatorpfad kontrollieren, Controller zuordnen. Die Installation fordert über Bazzites Funktion automatisch einen Nicht-Steam-Eintrag an. Falls dieser fehlt: Startmenü-Rechtsklick → „Erneut zu Steam hinzufügen“. **Steam Input für dieses Spiel deaktivieren**, damit die SDL-Eingaben eindeutig bleiben. [Vollständige Anleitung](docs/bazzite-installation.md).
+[Architecture](docs/architecture.md) · [Platforms](docs/platforms.md) · [ROM preparation](docs/project-pm-045.md) · [Localization](docs/german-localization.md) · [Report a bug](https://github.com/Philmenting/pokemon-platinum-local-coop/issues/new)
 
-## Funktionen im Code
+## Deutsch
 
-- Zwei überwachte Emulatorprozesse mit getrennten Konfigurationen und Spielständen.
-- Automatische lokale TCP-Host-/Client-Bridge; kein öffentlicher Relayserver, keine Portweiterleitung.
-- Ein Qt-Fenster für beide Spieler; links/rechts oder oben/unten, unverändertes DS-Seitenverhältnis 4:3.
-- Großer oberer Bildschirm mit kleinem Touchscreen, DS-Bildschirme nebeneinander oder umschaltbare Einzelansicht.
-- Zentrale SDL-Controller-Zuordnung nach Instanz-ID, sichere Trennung, remappbare DS-Tasten, Stick-Touch.
-- Vor jedem Start Save-Backup, Prüfsummen und Wiederherstellung; Sperre gegen parallele Sitzungen.
-- TV-Oberfläche, Einstellungen, Spielstandverwaltung, Logs und gemeinsames Beenden.
+Zwei Spieler, zwei Controller, ein gemeinsames Fenster: Der native Retro-Launcher startet zwei getrennte Project-PM/melonDS-Prozesse für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 6 herunterladen](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.2.0-alpha.6)**, eine eigene kompatible Project-PM-ROM auswählen und beide Controller zuordnen. Die Oberfläche und ausführlichen Anleitungen sind auf Deutsch.
 
-Steuerung: linker Stick/D-Pad bewegen, rechter Stick Touch-Cursor, rechter Stick-Klick berühren. **Select + R** schaltet die Einzelansicht um; **Start + Select für 2 Sekunden** beendet beide Emulatoren. Escape öffnet das Launchermenü; dort „Koop-Spiel starten“ kehrt zur laufenden Sitzung zurück. Im Menü werden Spieleingaben neutral gesetzt.
+Welt-Koop und gemeinsame Kämpfe wurden unter Linux mit virtuellen SDL-Controllern geprüft. Windows-/Linux-CI prüft Builds, native Tests und Pakete. Gezielte Heilungs-/Siegszenarien nutzen vorbereitete Level-25-Spielstandkopien. Physische Hardware und ein vollständiger Durchlauf bleiben offen. ROM-Korrekturen sind separate, hashgebundene Werkzeuge; ein neuer ROM-Hash verwendet eigene Spielstandordner. [Spielstände übernehmen](docs/save-transfer.md) · [Einrichtung](docs/platforms.md).
 
-## Dateien und Build
+## Credits and license
 
-ROMs, Nintendo-BIOS und proprietäre Firmware sind nicht enthalten. Der Direktstart nutzt standardmäßig die freie melonDS-BIOS-Implementierung und generierte Firmware. Eigene vollständige DS-Dumps sind optional konfigurierbar; bei Kompatibilitätsproblemen separat testen.
+Our launcher and changes: **[GPL-3.0-or-later](LICENSE)**. [Project PM / platinum-mp](https://github.com/ComicartOlie/melonDS-Project-PM/tree/platinum-mp) provides the emulator core, ROM mailbox bridge and SaveManager, based on [melonDS](https://github.com/melonDS-emu/melonDS). Silkscreen uses the [SIL Open Font License](assets/fonts/OFL.txt). mGBA SplitScreen and CouchPlay were architectural references; no code was taken from them.
 
-Auf einer Entwicklungsdistribution: [Abhängigkeiten installieren](docs/bazzite-installation.md), danach `scripts/build.sh`. Ausgabe: `build/bin/platinum-coop` und `build/bin/melonDS-coop`. Eine generische, verifizierte AppImage ist noch nicht verfügbar; die Distrobox-Ausführung hält Laufzeitbibliotheken konsistent.
-
-Ein Übergabepaket kann außerdem die hier kompilierten Linux-Binaries und den dazugehörigen GPL-Quellcode enthalten. Diese Binaries sind keine verifizierte portable Bazzite-Version; auf Bazzite den Distrobox-Build verwenden.
-
-[Architektur](docs/architecture.md) · [Machbarkeit und Upstream-Prüfung](docs/technical-feasibility.md) · [Teststatus](docs/development-status.md) · [Fehlerbehebung](docs/troubleshooting.md) · [Manuelle Abnahme](docs/acceptance-tests.md)
-
-## Herkunft und Lizenz
-
-GPL-3.0-or-later. melonDS und der Project-PM-Bridgecode bleiben Werke ihrer jeweiligen Autoren. Dieses Projekt liefert eigene Launcherkomponenten und einen Patch für den fixierten Fork:
-
-- [Project PM / platinum-mp](https://github.com/ComicartOlie/melonDS-Project-PM/tree/platinum-mp): Emulationskern, ROM-Mailbox-Bridge, SaveManager.
-- [melonDS Upstream](https://github.com/melonDS-emu/melonDS): ursprünglicher Emulator und Qt/SDL-Frontend.
-- [mGBA SplitScreen](https://github.com/Spuds0588/mgba-splitscreen) und [CouchPlay](https://github.com/hikaps/couchplay): untersuchte Architekturvorbilder; kein Code daraus übernommen.
-
-Dieses inoffizielle Projekt ist nicht mit Nintendo, Game Freak oder The Pokémon Company verbunden.
-
-## Separate ROM-Korrekturen
-
-Für die exakt geprüfte deutsche PM-0.4.5-ROM: [Zielauswahl nach besiegtem Gegner](docs/rom-target-cursor-fix.md) und anschließend [Koop-KP-Abgleich nach Tränken](docs/rom-coop-item-fix.md). Die Werkzeuge erzeugen neue ROM-Kopien mit festen Prüfsummen; ROM und Spielstände sind nicht Teil des Quellpakets. Neue ROM-Hashes verwenden eigene Profile ohne automatische Spielstandübertragung.
+An unofficial project, not affiliated with Nintendo, Game Freak or The Pokémon Company. Game screenshots document the tests; game-content rights remain with their respective owners.
