@@ -19,10 +19,10 @@ def package(project, upstream, output):
         for name in filter(None,tracked):
             path=project/name
             if path.suffix.lower() in forbidden:raise SystemExit('Unexpected protected/binary file: '+name)
-            z.write(path,'pokemon-platinum-local-coop/'+name)
+            z.write(path,'couchsplit/'+name)
         # This repository has no remote credentials. Preserve its reviewable commits.
         for path in (project/'.git').rglob('*'):
-            if path.is_file() and path.name not in {'index.lock','COMMIT_EDITMSG'}:z.write(path,'pokemon-platinum-local-coop/'+str(path.relative_to(project)))
+            if path.is_file() and path.name not in {'index.lock','COMMIT_EDITMSG'}:z.write(path,'couchsplit/'+str(path.relative_to(project)))
         for path in binaries:z.write(path,'linux-build/'+path.name)
         tracked_upstream=subprocess.check_output(['git','-C',str(upstream),'ls-files','-z']).decode().split('\0')
         for name in filter(None,tracked_upstream):
@@ -31,20 +31,20 @@ def package(project, upstream, output):
         for name in ('SocketCompat.h','CoopIPC.h'):
             z.write(upstream/'src/frontend/qt_sdl'/name,'upstream-corresponding-source/src/frontend/qt_sdl/'+name)
         z.writestr('upstream-corresponding-source/UPSTREAM_COMMIT','4d9785468bbefc8d08002f16df4d85a12f9611f7\nwith patches/project-pm-linux-coop.patch applied\n')
-        z.writestr('START-HERE.txt','''Pokémon Platinum Local Co-op — Linux prototype
+        z.writestr('START-HERE.txt','''CouchSplit — Linux prototype
 
-1. Read pokemon-platinum-local-coop/README.md and docs/development-status.md.
-2. On Bazzite run pokemon-platinum-local-coop/scripts/bazzite-build.sh.
+1. Read couchsplit/README.md and docs/development-status.md.
+2. On Bazzite run couchsplit/scripts/bazzite-build.sh.
 3. Use your own legally provided compatible Project-PM patched Platinum ROM.
 
 The linux-build binaries were compiled/tested on Ubuntu 24.04 x86_64 with
 Qt6.4 / SDL2.30. Runtime libraries are NOT bundled. These binaries are NOT
 claimed to be portable to Bazzite; build in Distrobox for the target system.
 Their matching GPL corresponding source is provided in
-upstream-corresponding-source and pokemon-platinum-local-coop.
+upstream-corresponding-source and couchsplit.
 
-The owned project directory includes its .git history and can be pushed once
-an empty GitHub repository exists. No GitHub repository has yet been created.
+The owned project directory includes its .git history.
+Repository: https://github.com/Philmenting/couchsplit
 Do not claim shared Sinnoh-world gameplay or Bazzite hardware validation:
 those tests require the compatible ROM, physical controllers and target PC.
 

@@ -8,7 +8,7 @@ Native desktop application: Qt 6 on Linux and Windows. Bazzite runs the Linux ap
 
 ## Users
 
-Two players sharing one screen and two controllers. The conversation establishes German language and an emphasis on simple couch use; developer tools remain secondary.
+Two players sharing one screen and two controllers. The launcher offers English and German. Simple couch use comes first; developer tools remain secondary.
 
 ## Product Purpose
 
@@ -24,7 +24,7 @@ ROM selection/import, explicit controller assignment, button mapping, screen lay
 
 ## Brand Commitments
 
-The user requests a modern, attractive launcher and explicitly selected: “Stärker im Pokémon-/Retro-Stil”. Keep the product name Pokémon Platinum Local Co-op and German UI. No further visual preference or global build-workflow preference was supplied.
+The user requests a modern, attractive launcher and explicitly selected: “Stärker im Pokémon-/Retro-Stil”. The user subsequently requested the name to focus on couch co-op and split screen rather than Platinum. The project is now CouchSplit; the interface offers English and German. Preserve the established retro identity. No global build-workflow preference was supplied.
 
 ## Evidence on Hand
 

@@ -9,9 +9,9 @@
   {
     "file": "launcher.png",
     "captured": "2026-10-19",
-    "origin": "Alpha-7 native Qt production launcher, English, fresh empty setup at 1280x720; --smoke-test with only language=en saved. No ROM or assigned controllers.",
-    "original_pixel_file_sha256": "01d71139afc2766ca08be79007a43ab31ea8c4adc49fac2d752fa8c72d247237",
-    "launcher_source": "Alpha-7 language feature; matching source in this release"
+    "origin": "CouchSplit Alpha-8 native Qt production launcher, English, fresh setup at 1280x720. Actual --smoke-test capture; no ROM or assigned controller.",
+    "original_pixel_file_sha256": "b372c0c4ef371e1fcec8ac78b7cfbf408a551c427bad83229c23376dbfc58d8c",
+    "launcher_source": "CouchSplit Alpha-8 naming update; matching source in this release"
   },
   {
     "file": "shared-battle.png",

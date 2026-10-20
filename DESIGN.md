@@ -1,5 +1,5 @@
 ---
-name: Pokémon Platinum Local Co-op
+name: CouchSplit
 description: Native two-player launcher with a restrained handheld-game character.
 colors:
   casing: "#142c3b"
@@ -103,18 +103,18 @@ components:
     padding: "{spacing.field}"
 ---
 
-# Design System: Pokémon Platinum Local Co-op
+# Design System: CouchSplit
 
 ## Overview
 
 **Creative North Star: "The Shared Handheld"**
 
-A modern native launcher with a stronger Pokémon/retro character, as selected by the user. Graphite-teal casing, warm ivory information and compact pixel headings recall a handheld game menu while platform body text keeps German labels readable.
+A modern native launcher with a stronger Pokémon/retro character, as selected by the user. Graphite-teal casing, warm ivory information and compact pixel headings recall a handheld game menu while platform body text keeps English and German labels readable.
 
 The interface prioritizes two-player couch use: one coral start action, real ROM/controller/session information, and a consistent gold selection edge. Retro character comes from type, color and original geometric icons; there is no Nintendo artwork or ripped game font.
 
 **Key Characteristics:**
-- Native Qt desktop utility with German labels.
+- Native Qt desktop utility with English and German labels.
 - Pixel headings paired with readable platform controls.
 - Coral primary action and gold keyboard/controller focus.
 - Honest status and independent player identifiers.

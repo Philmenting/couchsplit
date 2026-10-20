@@ -28,6 +28,7 @@ def install(project, data_home, bin_home, box=None):
     if not binary.is_file():
         raise SystemExit('Build fehlt: scripts/build.sh oder scripts/bazzite-build.sh ausführen.')
     bin_home.mkdir(parents=True, exist_ok=True)
+    # Stable desktop/wrapper IDs preserve updates and Steam registration.
     wrapper = bin_home / 'pokemon-platinum-local-coop'
     desktop = data_home / 'applications/pokemon-platinum-local-coop.desktop'
     steam = steam_command(project, data_home)
@@ -44,8 +45,8 @@ def install(project, data_home, bin_home, box=None):
     if box: options += ' --data-dir ' + shlex.quote(str(data_home / 'pokemon-platinum-local-coop'))
     atomic_text(wrapper, '#!/usr/bin/env bash\nset -euo pipefail\n' + steam_action + environment + 'exec ' + shlex.join(args) + options + ' "$@"\n', 0o755)
     desktop.parent.mkdir(parents=True, exist_ok=True)
-    atomic_text(desktop, '[Desktop Entry]\nType=Application\nName=Pokémon Platinum Local Co-op\n'
-                + 'Comment=Zwei Spieler · Project PM · ROM hinzufügen und starten\n'
+    atomic_text(desktop, '[Desktop Entry]\nType=Application\nName=CouchSplit\n'
+                + 'Comment=Split-screen couch co-op with Project PM\nComment[de]=Couch-Koop und Splitscreen mit Project PM\n'
                 + 'Exec="' + desktop_escape(str(wrapper)) + '"\nTerminal=false\nIcon=applications-games\nCategories=Game;Emulator;\n'
                 + 'Actions=AddToSteam;\n\n[Desktop Action AddToSteam]\nName=Erneut zu Steam hinzufügen\n'
                 + 'Exec="' + desktop_escape(str(wrapper)) + '" --add-to-steam\n')

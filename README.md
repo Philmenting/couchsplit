@@ -1,13 +1,15 @@
 <div align="center">
 
-# Pokémon Platinum Local Co-op
+# CouchSplit
 
-**Two players. Two controllers. One shared screen.**
+**Two players. One couch. One shared screen.**
 
-A native retro launcher for local Project PM co-op on Windows and Linux.
+A split-screen couch co-op launcher for Windows and Linux.
 
-[![Release](https://img.shields.io/badge/Release-0.2.0%20Alpha%207-b83f35?style=flat-square)](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.2.0-alpha.7)
-[![Native builds](https://github.com/Philmenting/pokemon-platinum-local-coop/actions/workflows/platforms.yml/badge.svg?branch=main)](https://github.com/Philmenting/pokemon-platinum-local-coop/actions/workflows/platforms.yml)
+**Currently supports Project PM / Pokémon Platinum.**
+
+[![Release](https://img.shields.io/badge/Release-0.2.0%20Alpha%208-b83f35?style=flat-square)](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)
+[![Native builds](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml/badge.svg?branch=main)](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml)
 [![License](https://img.shields.io/badge/License-GPL--3.0--or--later-325666?style=flat-square)](LICENSE)
 
 [Download](#download) · [Get started](#get-started) · [Screenshots](#play-together) · [Test status](#what-has-been-tested) · [Deutsch](#deutsch)
@@ -18,15 +20,15 @@ A native retro launcher for local Project PM co-op on Windows and Linux.
 
 ## Download
 
-**[Get 0.2.0 Alpha 7](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.2.0-alpha.7)** — English/German language selection, the retro interface, independent saves and separate tools for the verified ROM battle bugs.
+**[Get 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)** — the new CouchSplit name, English/German language selection, independent saves and the existing ROM correction tools.
 
 | Your system | Download | Start here |
 |---|---|---|
-| **Windows 10/11 · x64** | [Installer (.exe)](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.7/Pokemon-Platinum-Coop-Windows-Setup.exe) · [Portable ZIP](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.7/Pokemon-Platinum-Coop-Windows-Portable.zip) | Install, or fully extract the ZIP and open `Start.bat`. |
-| **Bazzite · x86_64** | [Installer (.run)](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.7/Pokemon-Platinum-Coop-Bazzite.run) | Run from desktop mode after marking it executable. Uses its own Distrobox runtime. |
-| **Zorin OS 18 / Ubuntu 24.04 · x86_64** | [Debian package (.deb)](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.7/Pokemon-Platinum-Coop-ZorinOS18-amd64.deb) | Install through your software manager. |
+| **Windows 10/11 · x64** | [Installer (.exe)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.8/CouchSplit-Windows-Setup.exe) · [Portable ZIP](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.8/CouchSplit-Windows-Portable.zip) | Install, or fully extract the ZIP and open `Start.bat`. |
+| **Bazzite · x86_64** | [Installer (.run)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.8/CouchSplit-Bazzite.run) | Run from desktop mode after marking it executable. Uses its own Distrobox runtime. |
+| **Zorin OS 18 / Ubuntu 24.04 · x86_64** | [Debian package (.deb)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.8/CouchSplit-ZorinOS18-amd64.deb) | Install through your software manager. |
 
-[Checksums](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.7/SHA256SUMS) · [ROM correction tools](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.7/Pokemon-PM-ROM-Korrekturen.zip) · [Release notes](docs/releases/v0.2.0-alpha.7.md) · [Platform guide](docs/platforms.md)
+[Checksums](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.8/SHA256SUMS) · [ROM correction tools](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.8/Pokemon-PM-ROM-Korrekturen.zip) · [Release notes](docs/releases/v0.2.0-alpha.8.md) · [Platform guide](docs/platforms.md)
 
 You need **two controllers and your own compatible Project-PM-patched Platinum ROM**. No games, Nintendo BIOS, proprietary firmware or user saves are included. The launcher does not add world co-op to an unmodified Platinum ROM. All packages are alpha releases. Choose **English or Deutsch** at first launch; change it later in **Settings / Einstellungen**. This does not change the language of your game ROM.
 
@@ -82,7 +84,7 @@ Separate tools correct two reproduced bugs in the **exact verified German PM 0.4
 
 | Area | Evidence |
 |---|---|
-| Linux and Windows | Native builds, controller/session/UI tests, two real emulator processes and package/installation checks in [GitHub Actions](https://github.com/Philmenting/pokemon-platinum-local-coop/actions/workflows/platforms.yml). ROM-free smoke tests use our own homebrew. |
+| Linux and Windows | Native builds, controller/session/UI tests, two real emulator processes and package/installation checks in [GitHub Actions](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml). ROM-free smoke tests use our own homebrew. |
 | Language selection | Native UI tests cover both languages, first launch, saved choice, cancellation, existing profiles, write failures and switching during a running fixture session; compact windows through 4K. |
 | Actual Pokémon co-op | On Linux: shared-world views, movement, wild/trainer battles and independent commands. Virtual SDL controllers; no physical-hardware certification. |
 | ROM battle corrections | Actual before/after gameplay checks, plus ARM instruction tests on Linux and Windows. [Technical results](docs/verification/coop-item-sync-2026-10-19.json). |
@@ -110,11 +112,11 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 
 For all ARM tests, also install `tests/requirements-romfix.txt`; decoder tests require `xdelta3`. Output: `build/bin/platinum-coop` and `build/bin/melonDS-coop`. There is no verified universal AppImage; Bazzite uses its own runtime. Emulator packages include matching GPL source, including the pinned, patched upstream.
 
-[Architecture](docs/architecture.md) · [Platforms](docs/platforms.md) · [ROM preparation](docs/project-pm-045.md) · [Localization](docs/german-localization.md) · [Report a bug](https://github.com/Philmenting/pokemon-platinum-local-coop/issues/new)
+[Architecture](docs/architecture.md) · [Platforms](docs/platforms.md) · [ROM preparation](docs/project-pm-045.md) · [Localization](docs/german-localization.md) · [Report a bug](https://github.com/Philmenting/couchsplit/issues/new)
 
 ## Deutsch
 
-Zwei Spieler, zwei Controller, ein gemeinsames Fenster: Der native Retro-Launcher startet zwei getrennte Project-PM/melonDS-Prozesse für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 7 herunterladen](https://github.com/Philmenting/pokemon-platinum-local-coop/releases/tag/v0.2.0-alpha.7)**, eine eigene kompatible Project-PM-ROM auswählen und beide Controller zuordnen. Beim ersten Start zwischen **Deutsch und Englisch** wählen; später unter **Einstellungen → Sprache** ändern. Die Auswahl wird gespeichert und verändert die Spiel-ROM nicht. Die ausführlichen Anleitungen bleiben auf Deutsch.
+**CouchSplit** bringt Couch-Koop und Splitscreen in ein gemeinsames Fenster. Aktuell unterstützt es Project PM / Pokémon Platin: Der native Retro-Launcher startet zwei getrennte Project-PM/melonDS-Prozesse für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 8 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, eine eigene kompatible Project-PM-ROM auswählen und beide Controller zuordnen. Beim ersten Start zwischen **Deutsch und Englisch** wählen; später unter **Einstellungen → Sprache** ändern. Die Auswahl wird gespeichert und verändert die Spiel-ROM nicht. Die ausführlichen Anleitungen bleiben auf Deutsch.
 
 Welt-Koop und gemeinsame Kämpfe wurden unter Linux mit virtuellen SDL-Controllern geprüft. Windows-/Linux-CI prüft Builds, native Tests und Pakete. Gezielte Heilungs-/Siegszenarien nutzen vorbereitete Level-25-Spielstandkopien. Physische Hardware und ein vollständiger Durchlauf bleiben offen. ROM-Korrekturen sind separate, hashgebundene Werkzeuge; ein neuer ROM-Hash verwendet eigene Spielstandordner. [Spielstände übernehmen](docs/save-transfer.md) · [Einrichtung](docs/platforms.md).
 

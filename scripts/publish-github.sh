@@ -12,4 +12,4 @@ if [[ "${1:-}" == --public ]]; then visibility=--public; elif [[ $# -ne 0 ]]; th
 if git -C "$project_dir" remote get-url origin >/dev/null 2>&1; then
   echo 'origin ist bereits gesetzt. Ziel vor einem manuellen Push prüfen.' >&2; exit 1
 fi
-gh repo create pokemon-platinum-local-coop "$visibility" --description 'Two-player Project PM / melonDS couch launcher for Bazzite Linux; shared-world gameplay pending ROM verification' --source "$project_dir" --remote origin --push
+gh repo create couchsplit "$visibility" --description 'Split-screen couch co-op launcher for Windows and Linux; currently supports Project PM / Pokemon Platinum' --source "$project_dir" --remote origin --push
