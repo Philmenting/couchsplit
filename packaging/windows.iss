@@ -2,6 +2,7 @@
 [Setup]
 AppId=PlatinumLocalCoop
 AppName=CouchSplit
+UninstallDisplayName=CouchSplit
 AppVersion=0.2.0-alpha.8
 VersionInfoVersion=0.2.0.8
 DefaultDirName={localappdata}\Programs\Pokemon-Platinum-Coop
