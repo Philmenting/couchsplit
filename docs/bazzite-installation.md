@@ -13,7 +13,7 @@ Ein normaler Platin-Spielstand und ein normaler ROM-Header beweisen keine Multip
 Quellprojekt an einem dauerhaften Ort im eigenen Benutzerverzeichnis entpacken bzw. klonen; danach:
 
 ```bash
-cd pokemon-platinum-local-coop
+cd couchsplit
 ./scripts/bazzite-build.sh
 ~/.local/bin/pokemon-platinum-local-coop
 ```
