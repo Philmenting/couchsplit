@@ -62,3 +62,6 @@ User-selected `de`/`en` is independent of ROM/firmware language. Keep both in th
 
 ## CouchSplit identity
 The visible project is CouchSplit and the repository is Philmenting/couchsplit. Current game support remains Project PM / Pokemon Platinum; do not infer other game support from the broader name. Retain the legacy executable/app/organization/profile/desktop/installer/runtime IDs for compatible upgrades. New distribution filenames use CouchSplit. Native CI must upgrade the exact published Alpha 7 Windows/Debian packages and preserve owned test profile/save bytes; Windows replaces only known old application shortcuts. Keep historical release assets immutable.
+
+## Documentation languages
+English is the default for public documentation at the existing `docs/*.md` URLs. Keep German counterparts under `docs/de/` and reciprocal language links on every guide. English README sections and English guides must lead to English local documentation; the German README summary uses German guide links. Keep commands, fingerprints, technical requirements, dated evidence and limitations consistent across languages. Historical reports must not be presented as current certification. Released assets remain immutable; documentation-only updates do not require a binary release.

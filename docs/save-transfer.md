@@ -1,15 +1,17 @@
-# Spielstände beim ROM-Wechsel übernehmen
+# Transfer saves when changing ROMs
 
-Der Launcher trennt Spielstände nach Spieler und vollständiger ROM-Prüfsumme. Ein neuer Dateiname bei identischem Inhalt nutzt denselben Stand; eine korrigierte ROM mit anderem Inhalt erhält ein eigenes Profil. Die bisherigen Profile bleiben erhalten.
+**English** · [Deutsch](de/save-transfer.md) · [Documentation](README.md)
 
-Diese Anleitung beschreibt die bewusste Kopie von der geprüften deutschen PM-0.4.5-ROM zur passenden ROM mit Zielfix bzw. Koop-Kampffix. Sie ist keine allgemeine Zusage für fremde ROM-Mods oder unterschiedliche Spielversionen.
+The launcher separates saves by player and the complete ROM checksum. Renaming a byte-identical ROM keeps the same profile; a corrected ROM with different bytes gets a separate profile. Previous profiles remain intact.
 
-1. Beide bisherigen Spiele regulär speichern. Die Sitzung geordnet beenden; während des Kopierens dürfen keine Worker laufen.
-2. Die **bisherige ROM** auswählen. Unter **Spielstände → Profilordner öffnen** für Spieler 1/2 jeweils `saves/game.sav` getrennt an einen sicheren Ort kopieren. Spielerzuordnung beibehalten und Originale aufbewahren.
-3. Die **neue ROM** auswählen, eine Sitzung einmal starten und wieder geordnet beenden. Dadurch entstehen die neuen Spielerprofile.
-4. Für die ausgewählte neue ROM unter **Spielstände → Profilordner öffnen** die neuen Profile öffnen. Die passende Kopie jeweils als `saves/game.sav` einsetzen: Spieler 1 zu Spieler 1, Spieler 2 zu Spieler 2. Bereits vorhandene Zieldateien vorher ebenfalls separat sichern.
-5. Neu starten und beide Spielstände, Geldstände und Positionen kontrollieren. Bei Problemen die bisherigen Profile über die bisherige ROM weiterverwenden.
+These instructions describe an explicit copy from the verified German PM 0.4.5 ROM to its matching target-corrected or co-op-battle-corrected version. They do not promise compatibility between unrelated ROM mods or game versions.
 
-„Backup wiederherstellen“ verwaltet Sicherungen innerhalb des ausgewählten Spieler-/ROM-Profils. Ein Backup eines anderen ROM-Hashes wird dadurch nicht automatisch übertragen. Niemals beide Spieler auf dieselbe laufende Save-Datei verweisen lassen.
+1. Save normally inside both existing games. Stop the session cleanly. No worker may be running during the copy.
+2. Select the **old ROM**. Under **Saves → Open profile folder**, copy each player's `saves/game.sav` to a safe, separate location. Keep the player assignments and retain the originals.
+3. Select the **new ROM**, start a session once and stop it cleanly. This creates the new player profiles.
+4. With the new ROM selected, open its profiles under **Saves → Open profile folder**. Place the corresponding copy at `saves/game.sav`: player 1 to player 1, player 2 to player 2. Back up any existing destination files separately first.
+5. Restart and check both saves, balances and positions. If anything is wrong, select the old ROM to continue using the preserved old profiles.
 
-Installer ersetzen keine ROM durch eine korrigierte Variante. Die [ROM-Werkzeuge](rom-coop-item-fix.md) verändern keine Spielstände und überschreiben keine vorhandenen Ausgabedateien.
+**Restore backup** manages backups within the selected player/ROM profile. It does not automatically transfer a backup belonging to another ROM hash. Never point both players at the same active save file.
+
+Installers do not replace your ROM with a corrected version. The [ROM tools](rom-coop-item-fix.md) do not alter saves or overwrite existing output files.

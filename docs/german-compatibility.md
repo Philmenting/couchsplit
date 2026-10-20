@@ -1,59 +1,59 @@
-# Deutsche Ausgabe: Patchbeschaffung und Kompatibilität
+# German edition: patch availability and compatibility
 
-Aktueller Stand 15.10.2026: Eine **US-basierte deutsche Text-Alpha ist implementiert und auf Start geprüft**; siehe [deutsche Lokalisierung](german-localization.md). Vollständiger Spieldurchlauf und Welt-Koop bleiben unbestätigt. Der folgende historische Bericht vom 14.10.2026 dokumentiert die Beschaffung und erklärt den weiterhin nicht implementierten nativen CPUD-Port.
+**English** · [Deutsch](de/german-compatibility.md) · [Documentation](README.md)
 
-Historischer Prüfstand 14.10.2026: Die deutsche Original-ROM `CPUD`, Revision 0, wurde bereits in zwei realen Emulatoren gestartet; siehe [ROM-Startprüfung](rom-boot-check.md). Die fehlende Komponente ist weiterhin der ROM-seitige Multiplayer-Mod.
+Historical research of 14 October 2026, updated 15 October. A **US-based German text alpha was implemented and boot-tested**; see [localization](german-localization.md). Full playthrough and world co-op were unverified at that time. Later gameplay results are in [Development status](development-status.md). A native CPUD engine port remains unimplemented.
 
-**Update nach Dateibereitstellung:** Das Paket `Build V0.4.5.zip` liegt jetzt vor. Seine Anleitung verlangt USA Revision 1; der echte xdelta-Test auf der deutschen Original-ROM scheitert mit einem Prüfsummenfehler. Die direkte Patchbeschaffung ist damit erledigt, aber ein CPUD-Port und die ROM-Mod-Quelle fehlen weiter. [Vollständiger Pakettest](project-pm-045.md). Die folgende öffentliche Quellenrecherche beschreibt den Stand vor diesem Upload.
+The original German `CPUD` Revision 0 ROM had already booted in two real emulators; see the [boot report](rom-boot-check.md). That did not supply the missing ROM-side multiplayer mod.
 
-**Weiteres Update:** Die passende US-Rev-1-Basis wurde ebenfalls bereitgestellt und PM 0.4.5 erfolgreich mit aktiven xdelta-Prüfungen angewendet. Das englische Ergebnis startet in zwei echten Emulatorprozessen. Die inzwischen implementierte deutsche Sprachübernahme ist separat dokumentiert. Tatsächliche Sinnoh-Welt-Synchronisation bleibt unbestätigt.
+The user then supplied `Build V0.4.5.zip`. Its guide requires USA Revision 1, and a real xdelta attempt on the original German ROM failed its checksum. Patch acquisition was resolved, but neither a CPUD patch nor ROM-mod source was provided. See the [package report](project-pm-045.md). The matching US base was subsequently supplied and patched with xdelta checks enabled; the English output booted in two real processes. German text transfer was implemented separately.
 
-## Erneut geprüfte Primärquellen
+## Primary sources inspected at the time
 
-| Quelle | Tatsächlich gefunden |
+| Source | What was actually found |
 |---|---|
-| [ComicartOlie, GitHub](https://github.com/ComicartOlie?tab=repositories) | Zwei öffentliche Emulatorrepositories; kein öffentliches ROM-Mod-Repository. Project-PM-Branch weiterhin auf dem gepinnten Commit. |
-| [Emulatorrelease v1.4.1-beta](https://github.com/ComicartOlie/melonDS-Project-PM/releases/tag/v1.4.1-beta) | Windows-Emulatorarchiv und README; keine xdelta/BPS-ROM-Patchdatei. |
-| [Offizieller Setup Guide von ComicartOlie](https://www.youtube.com/watch?v=LgCSqOyCN3A) | Beschreibung nennt Entwickler-Discord, xdelta-Webpatcher und vier Emulatorlinks. Kein direkter ROM-Patchdownload und keine Aussage zur deutschen Basis-ROM. Beschreibung direkt aus den YouTube-Videometadaten gelesen. |
-| [Neuerer Entwicklerbeitrag zur 8-Spieler-Erweiterung](https://www.reddit.com/r/PokemonROMhacks/comments/1wduy8y/project_platinum_multiplayer_8_player_expansion/) | Testteilnahme über https://discord.com/invite/bTZfjHqbVd. Keine Patchdatei oder deutsche Kompatibilitätszusage im gelesenen Beitrag. |
-| [pret/pokeplatinum](https://github.com/pret/pokeplatinum) | README nennt ausschließlich US-Builds, Revision 0 und 1. Das beweist nicht, welche Sprachversionen der nicht vorliegende Project-PM-Mod unterstützt. |
-| [Vom Tutorial verlinkter Linuxport](https://github.com/fdelavega02/melonDS-Project-PM/releases/tag/project-pm-linux-v1.4.1-beta) | x86_64-AppImage des Emulators; weder ROM-Patch noch ROM-Mod-Quelle in den geprüften Release-/Tree-Daten. Kein Ersatz für die ROM-Abhängigkeit. |
+| [ComicartOlie on GitHub](https://github.com/ComicartOlie?tab=repositories) | Two public emulator repositories; no public ROM-mod repository. The Project PM branch remained at the pinned commit. |
+| [Emulator v1.4.1-beta](https://github.com/ComicartOlie/melonDS-Project-PM/releases/tag/v1.4.1-beta) | Windows emulator archive and README, with no xdelta/BPS ROM patch. |
+| [ComicartOlie's setup guide](https://www.youtube.com/watch?v=LgCSqOyCN3A) | Video metadata description listed developer Discord, an xdelta web patcher and four emulator links. No direct ROM patch or German-base compatibility statement. |
+| [Developer's eight-player expansion post](https://www.reddit.com/r/PokemonROMhacks/comments/1wduy8y/project_platinum_multiplayer_8_player_expansion/) | Testing invitation at https://discord.com/invite/bTZfjHqbVd. The read post included no patch file or German compatibility promise. |
+| [pret/pokeplatinum](https://github.com/pret/pokeplatinum) | README listed only US revisions 0/1. That does not establish supported languages of the unavailable PM ROM mod. |
+| [Linux port linked by the tutorial](https://github.com/fdelavega02/melonDS-Project-PM/releases/tag/project-pm-linux-v1.4.1-beta) | An x86_64 emulator AppImage; no ROM patch/mod source in the inspected release/tree. |
 
-Öffentliche Repositorysuche nach `pokeplatinum multiplayer` fand keinen passenden Mod-Quellcode. Diese Recherche belegt, was öffentlich geprüft wurde; sie beweist nicht, dass nirgendwo eine weitere Quelle existiert. Der öffentliche Discord-Einladungsendpunkt war aus dieser Ausführungsumgebung nicht lesbar (HTTP 403); Serverkanäle/Anhänge wurden nicht gelesen. Keine Nachricht an Entwickler gesendet und keine Nintendo-ROM aus dem Internet beschafft.
+A public repository search for `pokeplatinum multiplayer` found no matching mod source. This records the inspected sources, rather than proving no other source exists. The public Discord invitation endpoint returned HTTP 403; no channels/attachments were read. No developer was messaged and no Nintendo ROM was downloaded during this research.
 
-## Was für einen deutschen Port fehlt
+## What a native German port needs
 
-Erforderlich ist entweder ein für `CPUD` veröffentlichter Patch samt exakter Basis-/Ergebnis-Prüfsumme oder der ROM-Mod-Quellcode mit Nutzungsbedingungen und Buildanleitung. Ein US-xdelta-Patch ist nicht automatisch ein deutscher Port. Die Emulator-Bridge findet ihre Mailbox dynamisch über Discovery-Magics; im geprüften Bridgecode gibt es dafür keine CPUE-Sprachvoraussetzung. Der ROM-Mod muss diese Mailbox jedoch selbst bereitstellen und mit seinem Spielcode verbinden.
+Either a CPUD-specific patch with exact base/output checksums, or ROM-mod source with usage terms and build instructions. A US xdelta is not automatically a German port. The inspected emulator bridge finds its mailbox dynamically through discovery magics and imposes no CPUE language requirement for that lookup, but the ROM mod must publish the mailbox and connect it to game code.
 
-Mit der ROM-Mod-Quelle können die deutschen Spielressourcen, ROM-Hooks/Overlays und zusätzlichen Multiplayertexte angepasst und getestet werden. Für einen nativen CPUD-Spielcode-Port reicht der Emulatorrelease allein nicht. Die neue US-basierte Textlokalisierung benötigt diesen Spielcode-Port nicht. Nur die Headerkennung zu ändern oder xdelta-Prüfungen abzuschalten erzeugt keine belastbare Sprachunterstützung.
+Mod source would allow adapting German resources, game hooks/overlays and added multiplayer text. An emulator release alone cannot provide a native CPUD game-code port. US-based text localization does not require that engine port. Changing the header or disabling xdelta checks does not establish language support.
 
-## Implementierte lokale Patchvorbereitung
+## Local patch preparation
 
-`scripts/prepare-rom.py` verwendet den vorhandenen xdelta3-Decoder. Es prüft ausdrücklich:
+`scripts/prepare-rom.py` uses the existing xdelta3 decoder and checks:
 
-- deutsche `CPUD`-Kennung bei unbekannten deutschen Patches; für den verifizierten US-PM-Build 0.4.5 die katalogisierten `CPUE`-Kennungen;
-- erwartete SHA-256-Werte von Basis-ROM, Patch und Ergebnis;
-- vorhandene Zieldateien werden nicht überschrieben;
-- Original-ROM bleibt erhalten, Ausgabe mit privaten Dateirechten außerhalb des Repositories;
-- fehlerhafte oder unpassende Patches veröffentlichen keine teilweise erzeugte Datei.
+- `CPUD` for unknown German patches, or cataloged `CPUE` codes for verified US PM 0.4.5;
+- expected source, patch and result SHA-256 values;
+- no overwriting existing outputs;
+- preservation of the original, with privately permissioned output outside the repository;
+- no partially published file after an invalid or mismatched patch.
 
-Die erwarteten Prüfsummen müssen aus vertrauenswürdigen Release-Metadaten oder einem reproduzierbar geprüften Build stammen. Fehlende Werte sind ein Blocker; sie werden nicht durch frei gewählte Werte ersetzt. CPUD ist nur eine Kennung, kein Beweis deutscher Texte oder funktionierender Multiplayerlogik. Dieses Hilfsprogramm enthält **keinen Project-PM-ROM-Patch** und portiert keine englische Version automatisch.
+Expected hashes must come from trusted release metadata or a reproducibly verified build. Missing hashes are a blocker; they are not replaced by invented values. CPUD identifies a version, rather than proving German text or working multiplayer. The helper includes **no Project PM ROM patch** and does not automatically port English code.
 
-Bazzite: Das Buildskript installiert das Fedora-Paket `xdelta` ausschließlich in Distrobox; dieses liefert `xdelta3`. Auf Ubuntu heißt das Paket `xdelta3`. Sobald ein tatsächlich passender deutscher Patch vorliegt:
+On Bazzite, the build script installs Fedora's `xdelta` package only inside Distrobox; it provides `xdelta3`. Ubuntu calls the package `xdelta3`. If a genuinely matching German patch becomes available:
 
 ```bash
 distrobox enter platinum-coop-build -- python3 scripts/prepare-rom.py \
-  --rom /pfad/zur/eigenen-deutschen.nds \
-  --patch /pfad/zum/geprueften-deutschen.xdelta \
-  --output /pfad/ausserhalb-des-repos/platin-project-pm-de.nds \
+  --rom /path/to/your-german.nds \
+  --patch /path/to/verified-german.xdelta \
+  --output /path/outside-the-repo/platinum-project-pm-de.nds \
   --source-sha256 9ffc28ff2b2d8fab60454548f92e60dd5d44f0dcc456e6e00e756424b3259217 \
   --patch-sha256 "$PATCH_SHA256" --target-sha256 "$TARGET_SHA256"
 ```
 
-Der Beispielaufruf setzt einen Patch voraus, dessen dokumentierte Basis exakt diese deutsche Original-ROM ist. Die beiden Variablen müssen die echten verifizierten Releasewerte enthalten. Anschließend mit `tests/verify_user_rom.py` starten und die [Spielweltabnahme](acceptance-tests.md) durchführen: deutsche Einführung/Namen/Dialoge, beide Spielfiguren, Bewegungen/Interaktionen, Speichern/Laden und Wiederverbinden. Erst nach diesen Tests darf deutsche Koop-Unterstützung behauptet werden.
+This example requires a patch documented against exactly that German original. Both variables must contain genuine verified release hashes. Then boot with `tests/verify_user_rom.py` and perform [world acceptance](acceptance-tests.md): German introduction/names/dialogue, both characters, independent movement/interactions, save/load and reconnect. Only actual testing can establish German co-op support.
 
-## Automatisierte Tests und verbleibender Blocker
+## Tests and remaining limitation
 
-Die Patchvorbereitung wird mit echten xdelta3-Encoding-/Decoding-Vorgängen auf selbst erstellten synthetischen Daten geprüft. Keine Nintendo-Spielbytes in Tests. Prüfungen umfassen erfolgreiche Rekonstruktion, Pfade mit Leerzeichen, Originalerhalt, Schreibrechte, Verweigerung vorhandener Ziele, falsche Basis-/Patch-/Ergebnis-Prüfsummen, englische Kennungen, kaputte Patches und fehlenden Decoder. Das ist ein Test der Patchvorbereitung; **kein Test eines deutschen Project-PM-Patches**.
+Real xdelta encoding/decoding of self-authored synthetic data tests reconstruction, spaces in paths, original preservation, permissions, existing-output refusal, incorrect source/patch/result hashes, English codes, broken patches and missing decoder. Tests contain no Nintendo game data. They verify preparation tooling, rather than a native German PM patch.
 
-Der nun bereitgestellte Patch 0.4.5 hat als Basis CPUE USA Revision 1. Er passt nicht auf die deutsche Datei. Die ebenfalls bereitgestellte passende US-Basis wurde erfolgreich gepatcht und auf Start-/TCP-Funktion geprüft. Die Lokalisierung des US-PM-Ergebnisses ist inzwischen als Alpha vorhanden; ein nativer CPUD-Port bleibt offen. Ein SHA-1-/Kennungsabgleich ist mit `scripts/prepare-rom.py --inspect` möglich.
+Supplied patch 0.4.5 requires CPUE USA Revision 1 and does not fit the German original. The matching US base was successfully patched and boot/TCP-tested. US-based German localization now exists as an alpha; a native CPUD port remains open. `scripts/prepare-rom.py --inspect` checks the base identity/fingerprint.

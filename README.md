@@ -12,7 +12,7 @@ A split-screen couch co-op launcher for Windows and Linux.
 [![Native builds](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml/badge.svg?branch=main)](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml)
 [![License](https://img.shields.io/badge/License-GPL--3.0--or--later-325666?style=flat-square)](LICENSE)
 
-[Download](#download) · [Get started](#get-started) · [Screenshots](#play-together) · [Test status](#what-has-been-tested) · [Deutsch](#deutsch)
+[Download](#download) · [Get started](#get-started) · [Screenshots](#play-together) · [Test status](#what-has-been-tested) · [Documentation](docs/README.md) · [Deutsch](#deutsch)
 
 ![The actual retro launcher, with a clear setup menu and a prominent co-op start button.](docs/images/launcher.png)
 
@@ -72,7 +72,7 @@ Two separate Project PM/melonDS processes share one window. Each player controls
 | Escape | Open launcher menu; **Start co-op game / Koop-Spiel starten** resumes the session |
 | Tab / Space | Navigate and activate launcher menu actions |
 
-If Steam produces duplicate inputs, disable Steam Input **for this game entry**. Bazzite requests its Steam entry through the host helper; the application-menu action can retry if it is missing. [Bazzite setup](docs/one-file-installer.md) · [Troubleshooting](docs/troubleshooting.md). Detailed platform documents are currently in German.
+If Steam produces duplicate inputs, disable Steam Input **for this game entry**. Bazzite requests its Steam entry through the host helper; the application-menu action can retry if it is missing. [Bazzite setup](docs/one-file-installer.md) · [Troubleshooting](docs/troubleshooting.md). Detailed guides are available in [English](docs/README.md) and [German](docs/de/README.md).
 
 ### ROM corrections and existing saves
 
@@ -116,9 +116,9 @@ For all ARM tests, also install `tests/requirements-romfix.txt`; decoder tests r
 
 ## Deutsch
 
-**CouchSplit** bringt Couch-Koop und Splitscreen in ein gemeinsames Fenster. Aktuell unterstützt es Project PM / Pokémon Platin: Der native Retro-Launcher startet zwei getrennte Project-PM/melonDS-Prozesse für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 8 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, eine eigene kompatible Project-PM-ROM auswählen und beide Controller zuordnen. Beim ersten Start zwischen **Deutsch und Englisch** wählen; später unter **Einstellungen → Sprache** ändern. Die Auswahl wird gespeichert und verändert die Spiel-ROM nicht. Die ausführlichen Anleitungen bleiben auf Deutsch.
+**CouchSplit** bringt Couch-Koop und Splitscreen in ein gemeinsames Fenster. Aktuell unterstützt es Project PM / Pokémon Platin: Der native Retro-Launcher startet zwei getrennte Project-PM/melonDS-Prozesse für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 8 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, eine eigene kompatible Project-PM-ROM auswählen und beide Controller zuordnen. Beim ersten Start zwischen **Deutsch und Englisch** wählen; später unter **Einstellungen → Sprache** ändern. Die Auswahl wird gespeichert und verändert die Spiel-ROM nicht. Ausführliche Anleitungen gibt es auf [Deutsch](docs/de/README.md) und [Englisch](docs/README.md).
 
-Welt-Koop und gemeinsame Kämpfe wurden unter Linux mit virtuellen SDL-Controllern geprüft. Windows-/Linux-CI prüft Builds, native Tests und Pakete. Gezielte Heilungs-/Siegszenarien nutzen vorbereitete Level-25-Spielstandkopien. Physische Hardware und ein vollständiger Durchlauf bleiben offen. ROM-Korrekturen sind separate, hashgebundene Werkzeuge; ein neuer ROM-Hash verwendet eigene Spielstandordner. [Spielstände übernehmen](docs/save-transfer.md) · [Einrichtung](docs/platforms.md).
+Welt-Koop und gemeinsame Kämpfe wurden unter Linux mit virtuellen SDL-Controllern geprüft. Windows-/Linux-CI prüft Builds, native Tests und Pakete. Gezielte Heilungs-/Siegszenarien nutzen vorbereitete Level-25-Spielstandkopien. Physische Hardware und ein vollständiger Durchlauf bleiben offen. ROM-Korrekturen sind separate, hashgebundene Werkzeuge; ein neuer ROM-Hash verwendet eigene Spielstandordner. [Spielstände übernehmen](docs/de/save-transfer.md) · [Einrichtung](docs/de/platforms.md).
 
 ## Credits and license
 

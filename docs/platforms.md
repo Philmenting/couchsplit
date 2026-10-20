@@ -1,56 +1,53 @@
-# Native Plattformausgaben
+# Platform packages
+
+**English** · [Deutsch](de/platforms.md) · [Documentation](README.md)
 
 ## Bazzite
 
-.run im Desktop ausführen. Vorhandene Distrobox/Podman erforderlich. Die eigene Ubuntu-Laufzeit wird eingerichtet. Steam-Anfrage und Spielstände entsprechen der bisherigen Anleitung.
+Run `CouchSplit-Bazzite.run` in desktop mode. Existing Distrobox/Podman is required. The installer creates its own Ubuntu runtime; see the [single-file installation guide](one-file-installer.md) for Steam registration and save locations.
 
-## ZorinOS 18 / Ubuntu 24.04, x86_64
+## Zorin OS 18 / Ubuntu 24.04, x86_64
 
-Die Datei CouchSplit-ZorinOS18-amd64.deb herunterladen und über die Softwareverwaltung installieren. Alternativ:
+Download `CouchSplit-ZorinOS18-amd64.deb` and install it through the software manager, or run:
 
-    sudo apt install ./CouchSplit-ZorinOS18-amd64.deb
+```bash
+sudo apt install ./CouchSplit-ZorinOS18-amd64.deb
+```
 
-Der Launcher erscheint im Anwendungsmenü. Beim ersten Start Deutsch oder English wählen, danach die eigene vorbereitete ROM oder ihr ZIP auswählen. Kein Distrobox-Container. Laufzeitpakete werden durch APT aufgelöst. ZorinOS 17 mit Ubuntu-22.04-Basis wird von diesem Paket nicht unterstützt.
+Open CouchSplit from the application menu. Choose English or Deutsch on first launch, then select your prepared ROM or ROM ZIP. No Distrobox container is used; APT resolves runtime dependencies. Zorin OS 17, based on Ubuntu 22.04, is not supported by this package.
 
-Programme/Quellen: /opt/pokemon-platinum-local-coop. Persönliche Daten: $XDG_DATA_HOME/pokemon-platinum-local-coop, standardmäßig ~/.local/share/pokemon-platinum-local-coop. Paketentfernung löscht diese persönlichen Daten nicht.
+Programs and source: `/opt/pokemon-platinum-local-coop`. Personal data: `$XDG_DATA_HOME/pokemon-platinum-local-coop`, normally `~/.local/share/pokemon-platinum-local-coop`. Removing the package does not remove personal data.
 
 ## Windows 10/11 x64
 
-CouchSplit-Windows-Setup.exe ausführen. Standard: Installation im eigenen lokalen Programmeordner, ohne Administratorrechte. Startmenü-/Desktop-Verknüpfungen werden angelegt. Die portable ZIP ist eine Alternative: vollständig entpacken und Start.bat öffnen. Die ZIP nicht direkt im Archiv starten.
+Run `CouchSplit-Windows-Setup.exe`. By default it installs in your local Programs folder without administrator privileges and creates Start menu/desktop shortcuts. Alternatively, fully extract `CouchSplit-Windows-Portable.zip` and open `Start.bat`. Do not launch it from inside the ZIP viewer.
 
-Beide echten Emulatoren und Qt/SDL-Laufzeitbibliotheken sind enthalten. Ein eingebetteter CPython-Interpreter führt ausschließlich das geprüfte ROM-/ZIP-Importskript aus; keine separate Python-Installation erforderlich. Daten liegen im von Qt ermittelten persönlichen Datenordner unter AppData/Local/pokemon-platinum-local-coop. Die Deinstallation entfernt keine dortigen ROMs/Saves.
+Both real emulators and the Qt/SDL runtime libraries are included. An embedded CPython interpreter runs the verified ROM/ZIP import script; no separate Python installation is needed. Qt places personal data under `AppData/Local/pokemon-platinum-local-coop`. Uninstallation leaves ROMs and saves there.
 
-Die Anwendung schreibt keine gemeinsamen Saves. Normales Beenden sendet eine IPC-Abschaltanforderung und wartet auf beide Worker. Eine Windows-Job-Gruppe beendet verbleibende eigene Worker bei einem Launcherabsturz. Nach erzwungenem Prozessabbruch lässt sich ungespeicherter Fortschritt nicht wiederherstellen.
+Each player has a separate save. Normal exit requests cooperative IPC shutdown and waits for both workers. A Windows job object terminates remaining owned workers if the launcher crashes. Forced termination cannot recover unsaved progress.
 
-## Update auf 0.2.0 Alpha 2
+## Updating from early releases
 
-Launcher und Emulator gemeinsam aktualisieren. Der Launcher verlangt neben IPC ABI 2 die Emulatorfähigkeit `STABLE_SAVE=1`. Koop-Spielstände heißen innerhalb des bisherigen Spieler-/ROM-Hash-Profils jetzt `game.sav`, damit ein geänderter ROM-Dateiname den Fortschritt nicht mehr versteckt. Vor der ersten Übernahme wird ein Backup angelegt, die alte Datei bleibt erhalten. Bei mehreren älteren Saves zuerst die ursprünglich verwendete ROM auswählen; der Launcher rät keine Zuordnung. Ältere Backups werden beim Wiederherstellen auf den festen Speichernamen übernommen. Unterschiedliche ROM-Hashes werden weiterhin nicht automatisch zusammengeführt.
+Update the launcher and emulator together. Since 0.2.0 Alpha 2 the launcher requires IPC ABI 2 and `STABLE_SAVE=1`. Within the existing player/ROM-hash profile, co-op saves use the fixed name `game.sav`, so renaming a ROM no longer hides progress. Before importing a uniquely identified old save, the launcher makes a backup and retains the source. If several old saves exist, select the originally used ROM; the launcher does not guess. Restoring old backups also uses the fixed save name. Different ROM hashes are not merged automatically.
 
-## Oberfläche in 0.2.0 Alpha 5
+Alpha 5 introduced the shared handheld/retro interface with pixel headings, readable system text, a clear start action and visible controller/keyboard focus. The font and its OFL license are included. ROMs, profiles, saves and controller assignments keep their existing locations. A launcher update does not install the separate ROM target correction.
 
-Die Programme erhalten den gemeinsam implementierten Handheld-/Retro-Stil mit Pixel-Überschriften, lesbarer Systemschrift, klarer Startaktion und sichtbarem Controller-/Tastaturfokus. Die Schrift ist samt OFL-Lizenz enthalten. ROMs, Profile, Spielstände und Controllerzuordnungen verwenden weiter ihre bisherigen Verzeichnisse. Die bisherige vorbereitete ROM bleibt verwendbar; ein separater ROM-Zielfix wird nicht automatisch installiert.
+## Language selection — Alpha 7 onward
 
-## Steam und Tests
+**Language / Sprache** appears before ROM setup on the first interactive start, including after an update if the profile has no saved language. Choose English or Deutsch. The existing personal `settings.json` stores `language: en` or `language: de`. Cancel exits setup without saving a choice. A valid saved choice is used directly on subsequent starts.
 
-Bazzite fordert automatisch die Aufnahme an. Auf ZorinOS und Windows in Steam „Spiel hinzufügen → Steam-fremdes Spiel“ wählen und den Launcher hinzufügen. Bei doppelten Controller-Eingaben Steam Input nur für diesen Eintrag deaktivieren.
+Change language immediately under **Settings → Language / Einstellungen → Sprache**. Running sessions and independent saves remain intact. This translates launcher controls, help and owned errors; it does not change ROM language or raw operating-system/emulator logs. Native file dialogs may follow the system language. Corrupted settings are reported and not overwritten.
 
-Die CI baut beide Betriebssystemfamilien und führt native Tests sowie ROM-freie Emulator-Smoke-Tests aus. Automatisierte Windows-/Ubuntu-Installations-, Start- und Deinstallationsprüfungen sind Teil der CI; physische Hardware und interaktive Zielsystem-Abnahme bleiben separat. Tatsächliche Welt-Koop-/Wild-/Trainerkampfprüfungen stammen von Linux mit virtuellen SDL-Controllern. Ein kompletter deutscher Spieldurchlauf und Dauerbetrieb sind nicht bestätigt.
+## Updating to CouchSplit — Alpha 8
 
-Quellen: https://help.zorin.com/docs/apps-games/install-apps/ (ZorinOS-18-Basis Ubuntu 24.04), https://www.msys2.org/docs/ci/ , https://doc.qt.io/qt-6/windows-deployment.html .
+The project is now CouchSplit. New downloads use `CouchSplit-…`; historical release assets retain their names. Install the new package over the existing installation. Legacy executable, profile and installer identifiers (`platinum-coop`, `pokemon-platinum-local-coop`, the Windows AppId/default folder and Bazzite runtime identity) remain for compatible upgrades. Existing settings, ROMs and saves stay in place; there is no automatic migration or merging. Launcher and application-menu names are CouchSplit. Existing Steam entries can retain the old name because their configuration is not directly rewritten.
 
+## Steam and verification
 
-## Öffentliche Ausgabe 0.2.0 Alpha 6
+Bazzite automatically requests a Steam entry. On Zorin OS and Windows, use Steam's **Add a Game → Add a Non-Steam Game** and select the launcher. Disable Steam Input for this entry if inputs are duplicated.
 
-Die [Release-Seite](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.6) bündelt die zuvor lokal getesteten Alpha2–5-Verbesserungen und die eigenen ROM-Korrekturwerkzeuge. Pakete und Werkzeuge stammen vom selben Release-Commit; Veröffentlichung erfolgt erst nach nativen Linux-/Windows- und verpflichtenden ARM-Prüfungen. Kein ROM-Download enthalten. [Spielstände bei geändertem ROM-Hash übernehmen](save-transfer.md).
+CI builds both operating-system families and runs native tests and ROM-free emulator smoke tests. Windows/Ubuntu checks install packages, start the installed launcher, upgrade from Alpha 7 and uninstall while retaining owned test data. Physical hardware and interactive target-system acceptance remain separate. Actual shared-world, wild-battle and trainer-battle evidence comes from Linux with virtual SDL controllers. A complete German playthrough and long sessions remain unverified.
 
+[Alpha 6](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.6) first bundled the earlier Alpha 2–5 improvements and authored ROM correction tools. Release publication requires native Linux/Windows and mandatory ARM checks; no game download is included. See [save transfer when changing ROM hashes](save-transfer.md).
 
-## Sprachauswahl in 0.2.0 Alpha 7
-
-Beim ersten interaktiven Start erscheint „Language / Sprache“ vor der ROM-Einrichtung — auch nach einem Update, wenn das bisherige Profil noch keine Sprache enthält. Deutsch und English stehen zur Wahl. Die Auswahl wird im vorhandenen persönlichen `settings.json` als `language: de` oder `language: en` gespeichert. Abbrechen beendet die Ersteinrichtung ohne eine Auswahl zu speichern. Beim nächsten Start wird eine gültige gespeicherte Auswahl direkt verwendet.
-
-Unter **Einstellungen → Sprache / Settings → Language** lässt sich die Oberfläche später sofort umschalten. Eine laufende Sitzung und ihre getrennten Spielstände bleiben erhalten. Die Auswahl übersetzt den Launcher, seine Hilfe und eigenen Fehlermeldungen; die Sprache der ROM und rohe Betriebssystem-/Emulator-Logs ändern sich dadurch nicht. Native Dateiauswahldialoge können weiterhin der Systemsprache folgen. Beschädigte Einstellungen werden mit einem Hinweis abgelehnt und nicht überschrieben.
-
-
-## CouchSplit — Alpha 8
-
-Das Projekt heißt jetzt CouchSplit. Die neuen Downloads verwenden `CouchSplit-…`; ältere Release-Dateien behalten ihre bisherigen Namen. Bestehende Installationen lassen sich darüber aktualisieren. Zur Kompatibilität bleiben die bisherigen technischen Kennungen (`platinum-coop`, `pokemon-platinum-local-coop`, Windows-AppId/Installationsordner und Bazzite-Laufzeit) erhalten. Vorhandene Einstellungen, ROMs und Spielstände werden weiter am bisherigen Ort verwendet; keine automatische Migration oder Zusammenführung. Die sichtbaren Launcher- und Startmenünamen sind CouchSplit. Bestehende Steam-Verknüpfungen können noch den alten Namen zeigen; ihre Konfiguration wird nicht direkt bearbeitet.
+References: [Zorin installation](https://help.zorin.com/docs/apps-games/install-apps/), [MSYS2 CI](https://www.msys2.org/docs/ci/), [Qt Windows deployment](https://doc.qt.io/qt-6/windows-deployment.html).

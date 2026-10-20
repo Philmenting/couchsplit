@@ -1,75 +1,77 @@
-# Prüfung des bereitgestellten Project-PM-Pakets 0.4.5
+# Project PM 0.4.5: ROM requirements and package verification
 
-Historischer Pakettest vom 14.10.2026; Update 15.10.2026: Die spätere [deutsche US-basierte Text-Alpha](german-localization.md) wurde erzeugt und gestartet. Ein nativer CPUD-Port und Welt-Synchronisation bleiben unbestätigt.
+**English** · [Deutsch](de/project-pm-045.md) · [Documentation](README.md)
 
-Das vom Nutzer bereitgestellte `Build V0.4.5.zip` enthält einen echten ROM-Binärpatch. **Der Patch ist für Pokémon Platinum USA Revision 1 vorgesehen und auf der bereitgestellten deutschen Original-ROM nicht direkt anwendbar.** Beim damaligen direkten deutschen Patchversuch wurde keine funktionierende Ausgabe erzeugt.
+This records the package tests of 14 October 2026 and the localization update of 15 October. Later gameplay results are in [Development status](development-status.md). A native German CPUD engine port remains unimplemented; the [German text alpha](german-localization.md) uses the US engine.
 
-## Update: US-Basis bereitgestellt und erfolgreich gepatcht
+The supplied `Build V0.4.5.zip` contains a real binary ROM patch. **It requires Pokémon Platinum USA Revision 1 and cannot be applied directly to the original German ROM.** The initial German patch attempt produced no working output.
 
-Die passende eigene USA-Rev-1-ROM wurde anschließend vom Nutzer bereitgestellt. SHA-1 stimmt exakt mit der verlangten Basis überein. SHA-256 der Originaldatei: `fbce4c4def0c7797f8dd238a3d7a5e48b4a7e3abd86890ac65f6321cef781bdb`.
+## Verified US base and successful patch
 
-Reguläres `xdelta3 -d -s ORIGINAL.nds PATCH.xdelta ERGEBNIS.nds` gelang mit Exitcode 0 und **allen Zielfensterprüfsummen aktiv**. Ein Abschalten war bei diesen Dateien nicht erforderlich. Ergebnis: 134217728 Byte, CPUE Revision 1, SHA-256 `8ef9d4eeee81513f2d6e13c36125cdbfa4c6f498b039ef4b99faa7095d39cfa5`. Originaldatei unverändert. Das neue Patchskript reproduzierte dieses Ergebnis zusätzlich direkt aus dem Build-ZIP mit denselben drei SHA-256-Fingerabdrücken.
+The user subsequently supplied the matching USA Rev 1 base. Its SHA-1 matches the required base exactly; its SHA-256 is `fbce4c4def0c7797f8dd238a3d7a5e48b4a7e3abd86890ac65f6321cef781bdb`.
 
-Zwei echte gepatchte Emulatorprozesse liefen 35 Sekunden mit dieser ROM: je 2075 Frames, nach Sekunde 5 nochmals 1797/1796 Frames, TCP-Rollen 1/2 verbunden, A-Eingaben nur an Spieler 1, unterschiedliche Intro-/Einführungsbilder, beide SIGTERM-Exitcodes 0. Die Bilder wurden privat visuell geprüft. Die ROM-Wireless-Bridge blieb vor Erhalt des Pokédex inaktiv. **Kein gemeinsames Sinnoh-Gameplay, Ingame-Speichern oder deutscher Port damit verifiziert.**
+Standard `xdelta3 -d -s ORIGINAL.nds PATCH.xdelta RESULT.nds` completed with exit code 0 and **all target-window checksums enabled**. No checksum bypass was needed. The result is 134217728 bytes, CPUE Revision 1, SHA-256 `8ef9d4eeee81513f2d6e13c36125cdbfa4c6f498b039ef4b99faa7095d39cfa5`. The original was unchanged. The preparation script reproduced it directly from the build ZIP with the same three SHA-256 fingerprints.
 
-Das englische Ergebnis wurde dem Nutzer als eigenes ZIP mit Anleitung und Prüfsumme bereitgestellt. ROM, ZIP, Patchbytes und Spielbilder bleiben außerhalb von GitHub. Die folgenden Abschnitte dokumentieren die zuvor durchgeführte deutsche Fehlversuch-Prüfung.
+Two real patched emulator processes ran this ROM for 35 seconds: 2075 frames each, another 1797/1796 frames after second 5, connected TCP roles 1/2, A input directed only to player 1, different intro states and both SIGTERM exit codes 0. Their private images were visually checked. The ROM wireless bridge remained inactive before receiving the Pokédex. **That initial test did not verify shared-world gameplay, in-game saving or a German port.**
 
-## Auf Bazzite selbst reproduzieren
+The English result was delivered privately with instructions and a checksum. The ROM, ZIP and patch bytes are not published in the repository. The following sections retain the earlier failed German-base test.
 
-Die Original-US-ROM zuerst aus ihrem ZIP entpacken. Das Build-ZIP kann direkt übergeben werden; keine Windows-Programme erforderlich. Der bekannte Releasekatalog enthält die verifizierten Basis-, Patch- und Ergebnisprüfsummen. Eine deutsche oder andere falsche Basis wird weiterhin abgelehnt.
+## Prepare it on Bazzite
+
+Extract your original US ROM from its ZIP first. Pass the build ZIP directly; no Windows program is needed. The known-release catalog supplies the verified base, patch and output checksums. German and other incorrect bases are rejected.
 
 ```bash
 distrobox enter platinum-coop-build -- python3 scripts/prepare-rom.py \
-  --rom /pfad/zur/Pokemon-Platinum-USA-Rev1.nds \
-  --patch '/pfad/Build V0.4.5.zip' \
-  --output /pfad/ausserhalb-des-repos/Pokemon-Platinum-PM-0.4.5-USA.nds
+  --rom /path/to/Pokemon-Platinum-USA-Rev1.nds \
+  --patch '/path/to/Build V0.4.5.zip' \
+  --output /path/outside-the-repo/Pokemon-Platinum-PM-0.4.5-USA.nds
 ```
 
-Die Ausgabe ist **englisch**. Eine vorhandene Datei wird nicht überschrieben. Unbekannte deutsche Patches benötigen weiterhin unabhängig verifizierte Quelle-/Patch-/Ergebnisprüfsummen; bekannte Releasewerte können nicht durch abweichende Argumente überschrieben werden.
+The output is **English**. Existing files are never overwritten. Unknown German patches still require independently verified source, patch and target checksums; arguments cannot override known release fingerprints.
 
-## Geprüfte Dateien
+## Inspected files
 
-- `PlatinumMultiplayerV0.4.5.xdelta`: 2519982 Byte, SHA-256 `70c0808f2400e3fb2cbaa0624364b0ac1ae9ace1177043cae8a74a5b616349a0`.
-- `SETUP_GUIDE.md`: verlangt in Abschnitt 1 ausdrücklich eine saubere **Pokémon Platinum Rev 1 USA**. SHA-256 der gelesenen Datei: `81d3ecebeeddf88af6748661988b7b3b091c7742905d68484045d146e385498c`.
-- Changelog 0.4.5, Datenschutzbeschreibung und Drittlizenzen gelesen. Das übrige Paket enthält ein gebündeltes Windows-Setup mit Python/Tcl/Tk-Laufzeit und Assets. Kein ROM-Mod-Quellcode und kein deutscher Patch gefunden.
-- Windows-Programme wurden nicht ausgeführt. Nur Patch und Textdokumente wurden außerhalb dieses Repositories für die Prüfung entpackt. Paket, Patchbytes, Nintendo-ROM und Spielstände werden nicht ins Repository übertragen.
+- `PlatinumMultiplayerV0.4.5.xdelta`: 2519982 bytes, SHA-256 `70c0808f2400e3fb2cbaa0624364b0ac1ae9ace1177043cae8a74a5b616349a0`.
+- `SETUP_GUIDE.md`: section 1 explicitly requires clean **Pokémon Platinum Rev 1 USA**. SHA-256 of the inspected guide: `81d3ecebeeddf88af6748661988b7b3b091c7742905d68484045d146e385498c`.
+- The 0.4.5 changelog, privacy description and third-party licenses were read. The remaining package includes a Windows setup program with Python/Tcl/Tk and assets. No ROM-mod source or German patch was found.
+- No Windows program was executed. Only the patch and text documents were extracted privately for inspection. The package, Nintendo ROM and saves are not committed.
 
-Der passende [No-Intro-Eintrag](https://github.com/libretro/libretro-database/blob/master/metadat/no-intro/Nintendo%20-%20Nintendo%20DS.dat) für USA Revision 1 hat `CPUE`, 134217728 Byte, SHA-1 `0862ec35b24de5c7e2dcb88c9eea0873110d755c`, CRC32 `69D628E8`. Diese Basis lag bei der ersten Prüfung noch nicht vor. Die deutsche Datei hat `CPUD`, Revision 0 und SHA-1 `d40f19ac24d67c721a4ab25e1c013154443d75b4`.
+The corresponding [No-Intro entry](https://github.com/libretro/libretro-database/blob/master/metadat/no-intro/Nintendo%20-%20Nintendo%20DS.dat) for USA Revision 1 has code `CPUE`, size 134217728 bytes, SHA-1 `0862ec35b24de5c7e2dcb88c9eea0873110d755c`, CRC32 `69D628E8`. This base was unavailable during the first test. The German file is `CPUD`, Revision 0, SHA-1 `d40f19ac24d67c721a4ab25e1c013154443d75b4`.
 
-## Tatsächlicher Patchversuch
+## Actual German-base patch attempt
 
-Echter xdelta3 3.0.11, reguläre Decodierung mit unveränderten Prüfungen:
+Real xdelta3 3.0.11, normal decoding with its checks unchanged:
 
 ```bash
-xdelta3 -d -s /pfad/zur/eigenen-deutschen.nds \
-  /pfad/PlatinumMultiplayerV0.4.5.xdelta /privater-testordner/versuch.nds
+xdelta3 -d -s /path/to/your-german.nds \
+  /path/to/PlatinumMultiplayerV0.4.5.xdelta /private-test-folder/attempt.nds
 ```
 
-Ergebnis: Exitcode 1, `target window checksum mismatch: XD3_INVALID_INPUT`. Kein Datenblock erfolgreich veröffentlicht, Ausgabedatei 0 Byte, anschließend entfernt. Die SHA-256-Prüfung der deutschen Original-ROM blieb `9ffc28ff2b2d8fab60454548f92e60dd5d44f0dcc456e6e00e756424b3259217`. Das war ein realer Kompatibilitätstest mit den bereitgestellten Dateien, keine Simulation.
+Result: exit code 1, `target window checksum mismatch: XD3_INVALID_INPUT`. No data block was successfully published; the empty output was removed. The original German ROM retained SHA-256 `9ffc28ff2b2d8fab60454548f92e60dd5d44f0dcc456e6e00e756424b3259217`. This was an actual compatibility test with the supplied files.
 
-`xdelta3 printhdr` bestätigt VCDIFF v0, LZMA-Sekundärkompression, kopierende Quelldatenfenster und Adler32-Zielfensterprüfungen. Bereits Fenster 0 referenziert Quelldaten aus einem Bereich von 66763370 Byte. Dieser Patch ist ein Delta gegen seine konkreten Basisbytes; er ersetzt nicht einfach die ROM durch ein sprachunabhängiges Multiplayerprogramm.
+`xdelta3 printhdr` reports VCDIFF v0, LZMA secondary compression, source-copy windows and Adler32 target-window checks. Window 0 already references source data spanning 66763370 bytes. This is a delta against exact base bytes, rather than a replacement ROM containing a language-independent multiplayer program.
 
-Die Anleitung nennt für manuelles Patchen deaktivierte xdelta-Prüfsummen. Diese Empfehlung gehört zu ihrer ausdrücklich verlangten US-Basis. Sie macht die deutsche ROM nicht kompatibel. In dieser Prüfung wurden die Checks nicht abgeschaltet und kein fehlerhaft rekonstruiertes Ergebnis als Port ausgegeben. Ob auch die korrekte US-Basis besondere Decoderoptionen benötigt, wurde mangels dieser Datei nicht getestet.
+The supplied guide recommends disabling xdelta checksums for manual patching against its required US base. That does not make the German ROM compatible. Checks were retained throughout this test; no incorrectly reconstructed result was presented as a port. The later successful US-base test above established that no special checksum bypass was required for the supplied matching files.
 
-## Code ergänzt
+## Preparation script
 
-`config/project-pm-patches.json` ordnet genau diesen Patch-Fingerabdruck den dokumentierten Basisanforderungen zu. `scripts/prepare-rom.py --inspect` kann ein Build-ZIP ohne vollständiges Entpacken und ohne Ausführen seines Installers prüfen. Es liest nur den einzelnen xdelta-Eintrag und berichtet Basiskennung, Revision und Prüfsumme. Ein bekanntes Paket mit falscher Basis endet mit Exitcode 1; unbekannte Patches werden ausdrücklich als unbestätigt gemeldet (Exitcode 2). Keine Datei wird verändert.
+`config/project-pm-patches.json` maps this exact patch fingerprint to its base requirements. `scripts/prepare-rom.py --inspect` reads the single xdelta entry in a build ZIP without fully extracting it or running the installer. It reports base code, revision and checksum. A known patch with the wrong base exits with code 1; unknown patches are explicitly unverified (code 2). Inspection changes no file.
 
 ```bash
 python3 scripts/prepare-rom.py --inspect \
-  --rom /pfad/zur/eigenen-deutschen.nds --patch '/pfad/Build V0.4.5.zip'
+  --rom /path/to/your-german.nds --patch '/path/to/Build V0.4.5.zip'
 ```
 
-Dieser Aufruf wurde mit den echten bereitgestellten Dateien ausgeführt: Patch 0.4.5 erkannt, deutsche Basis erkannt, Kompatibilität abgelehnt. Die Patchanwendung prüft diese bekannte Basisanforderung zusätzlich vor der Decodierung. Sie unterstützt inzwischen den verifizierten US-Build 0.4.5; unbekannte Patches bleiben auf geprüfte CPUD-Ein-/Ausgaben ausgerichtet. Ein automatischer US-zu-Deutsch-Port wird nicht behauptet.
+The real supplied files were checked this way: patch 0.4.5 and the German base were recognized, compatibility was rejected. Patch application also validates the known base requirement before decoding. The script supports the verified US 0.4.5 build; unknown patches remain restricted to verified CPUD input/output. It does not automatically port the US mod to German.
 
-## Multiplayer-Anforderungen aus der Paket-Anleitung
+## Enable multiplayer in the game
 
-Der ROM-Mod lässt Multiplayer erst nach Erhalt des Pokédex zu. Dann im Beutel unter Key Items **Wireless Play → Start Wireless** auswählen. **CO-OP** für gemeinsame Trainerkämpfe ist standardmäßig ausgeschaltet und muss im Optionsmenü aktiviert werden. Beide Spieler brauchen denselben Build; randomisierte Koop-Einstellungen müssen übereinstimmen. Für zwei Fenster auf demselben PC nennt die Anleitung zwei getrennte Emulatorverzeichnisse und `127.0.0.1`. Diese Aussagen stammen aus der bereitgestellten Anleitung; sie sind noch kein eigener Gameplaynachweis.
+Receive the **Pokédex** first. Then open **Bag → Key Items → Wireless Play → Start Wireless**. **CO-OP**, needed for shared trainer battles, is disabled by default and must be enabled in the game's options. Both players need the same build and matching randomized co-op settings. These requirements come from the supplied setup guide. Its two-window instructions use separate emulator directories and `127.0.0.1`; CouchSplit manages the two profiles and processes itself.
 
-Der Launcher zeigt den Pokédex-/Wireless-Play-Schritt jetzt im Verbindungsstatus. Eine TCP-Verbindung vor dieser Aktivierung ist kein Beleg gemeinsamer Spielwelt-Synchronisation.
+The launcher includes the Pokédex/Wireless Play step in its connection guidance. TCP connecting before ROM activation does not prove shared-world synchronization.
 
-## Fortsetzung und konkrete Blocker
+## German engine-port limitation
 
-Für einen belastbaren deutschen Port fehlt weiterhin der ROM-Mod-Quellcode oder ein vom Autor tatsächlich für CPUD erstellter Patch. Ein Binärdelta für CPUE reicht zur geprüften Anpassung aller Spielcode-Hooks und deutschen Textressourcen nicht aus. Es wurde kein vollständiger deutscher Port implementiert.
+A reliable native CPUD port still needs ROM-mod source or a patch actually authored for CPUD. A CPUE binary delta is insufficient to verify every game-code hook and German resource mapping. No complete native German engine port was implemented.
 
-Die passende USA-Rev-1-Basis wurde inzwischen bereitgestellt, gepatcht und auf Intro-/TCP-/Prozessfunktion getestet. Als Nächstes muss die gemeinsame Spielwelt nach dem Pokédex tatsächlich nachgewiesen werden. Die deutsche Lokalisierung auf US-PM-Basis ist inzwischen als Alpha implementiert; ein vollständiger nativer CPUD-Port bleibt ein anderes, noch nicht umgesetztes Vorhaben. Die deutsche Originaldatei wird dabei nicht ersetzt.
+The matching US base was supplied, patched and tested for intro/TCP/process operation. A US-based German text alpha was then implemented. The original German ROM is not replaced. Later shared-world and battle checks are documented in [Development status](development-status.md) and the separate [target](rom-target-cursor-fix.md) and [item](rom-coop-item-fix.md) correction reports.
