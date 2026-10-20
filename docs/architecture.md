@@ -1,51 +1,53 @@
-# Architektur
+# Architecture
 
-Der Launcher ist ein C++17/Qt6-Programm. Er verbindet vorhandene Emulatorfunktionen mit einer kleinen Linux-IPC-Schnittstelle. Beide unabhängigen Emulatoren behalten ihre eigene EmuInstance, EmuThread, DS-Hardware, Audio und SaveManager.
+**English** · [Deutsch](de/architecture.md) · [Documentation](README.md)
 
-````mermaid
+The launcher is a C++17/Qt 6 application connecting existing emulator functionality to a small IPC interface. Each independent emulator retains its own EmuInstance, EmuThread, DS hardware, audio and SaveManager. The original Linux mapping implementation has a native Windows counterpart in the current packages.
+
+```mermaid
 flowchart TD
-    UI["Qt Launcher / Split-Screen"] --> Input["SDL Controller-Zuordnung"]
-    UI --> Manager["Prozesse und Profilsperre"]
-    Input --> A["Spieler 1 / Project PM"]
-    Input --> B["Spieler 2 / Project PM"]
+    UI["Qt launcher / split screen"] --> Input["SDL controller assignment"]
+    UI --> Manager["Processes and profile lock"]
+    Input --> A["Player 1 / Project PM"]
+    Input --> B["Player 2 / Project PM"]
     Manager --> A
     Manager --> B
     A <-->|"TCP loopback / Wire v2"| B
-    A -->|"RAM-Bilddaten / mmap"| UI
-    B -->|"RAM-Bilddaten / mmap"| UI
-    A --> S1["Eigene Saves"]
-    B --> S2["Eigene Saves"]
-````
+    A -->|"RAM frames / shared mapping"| UI
+    B -->|"RAM frames / shared mapping"| UI
+    A --> S1["Independent saves"]
+    B --> S2["Independent saves"]
+```
 
-| Modul | Implementierung | Verantwortung |
+| Module | Implementation | Responsibility |
 |---|---|---|
-| Emulator Manager | launcher/Session.h | QProcess, Capability-Prüfung, Fehlerüberwachung, SIGTERM, Parent-death-Signal |
-| Session Manager | Project-PM-Patch + multiplayer/SocketCompat.h | tatsächliche TCP-Bridge, localhost, POSIX-Portierung, Rollen, Wiederverbindung |
-| Controller Manager | controller/Controllers.h | SDL GameController, live instance IDs, neutrale Eingaben bei Trennung, Stick-Touch, Mapping |
-| Darstellung | display/Layout.h, display/CoopIPC.h, PlayView | 4:3-Geometrie, mmap-Bilddaten, gemeinsame Qt-Fläche, Cursor |
-| Save Manager | saves/SaveStore.h + melonDS SaveManager | Profilsperre, Backup/Restore mit SHA-256, tatsächliches Speichern durch Emulator |
-| Launcher UI | launcher/main.cpp | Einrichtung, Sitzungsmenü, TV-Layout, Logs |
+| Emulator manager | `launcher/Session.h` | QProcess, capability validation, failure monitoring and cooperative shutdown; Linux SIGTERM/parent-death handling and Windows job ownership |
+| Session transport | Project PM patch + `multiplayer/SocketCompat.h` | Actual TCP bridge, localhost, POSIX adaptation, roles and reconnect |
+| Controller manager | `controller/Controllers.h` | SDL GameController, live instance IDs, neutral input on disconnect, stick touch and mappings |
+| Display | `display/Layout.h`, `display/CoopIPC.h`, PlayView | 4:3 geometry, mapped RAM frames, shared Qt surface and cursors |
+| Save manager | `saves/SaveStore.h` + melonDS SaveManager | Profile lock, SHA-256 backup/restore; the emulator performs actual in-game saving |
+| Launcher UI | `launcher/main.cpp` | Setup, session menu, TV layout and logs |
 
-## Warum keine Fensterpositionierung?
+## Why one rendering surface?
 
-CouchPlay steuert KDE über temporäre KWin-Skripte, startet verschachteltes Gamescope und isoliert Geräte über einen privilegierten Helfer. KWin steht im Steam Gaming Mode nicht generell zur Verfügung, Wayland erlaubt keine allgemeine Fremdfensterpositionierung. Eine X11-Einbettung wäre ebenfalls keine native Wayland-Lösung. Der vorhandene melonDS-SoftRenderer liefert bereits beide Framebuffer. Diese direkt in einer gemeinsamen Qt-Oberfläche zu zeichnen vermeidet Fremdfenstersteuerung und einen eigenen Compositor.
+CouchPlay controls KDE with temporary KWin scripts, nested Gamescope and privileged device isolation. KWin is not generally available in Steam Gaming Mode, and Wayland does not permit general positioning of other applications' windows. X11 embedding would not be native Wayland either. melonDS's existing software renderer already supplies both framebuffers; painting them directly in one Qt window avoids external window control or a custom compositor.
 
-Der Baseline-Renderer bleibt **softwarebasiert** (DS-Auflösung 256 × 192 pro Bildschirm), Qt übernimmt die hochauflösende Ausgabe. Hardwarebeschleunigte DS-3D-Upscaling-Texturen werden nicht transportiert. Bildqualität und Leistung auf dem Ziel-PC sind noch zu prüfen.
+The baseline renderer remains **software-based**, at DS resolution 256 × 192 per screen. Qt scales the output. Hardware-accelerated DS 3D upscaling textures are not transported. Image quality and performance on the target PC still need hardware testing.
 
-## IPC und Eingaben
+## IPC and input
 
-Pro Sitzung existiert ein zufälliger temporärer Ordner mit Modus 0700. Die beiden Mapping-Dateien haben Modus 0600, O_EXCL/O_NOFOLLOW und überprüfte Größe/ABI. Lockfreie 32-Bit-Atomics übertragen Tasten, Touch und Sitzungsstatus. Ein Try-Lock schützt die Bildkopie; belegte Frames werden übersprungen, damit das Spiel weiterläuft. Stürzt ein Prozess mitten in der Bildkopie ab, beendet die Prozessüberwachung die Sitzung und entfernt die Mapping-Dateien.
+On Linux each session has a random temporary directory with mode 0700. Mapping files use mode 0600, O_EXCL/O_NOFOLLOW and checked size/ABI. Lock-free 32-bit atomics carry buttons, touch and status. A try-lock protects frame copies; occupied frames are skipped so the game continues. If a process crashes during copying, monitoring stops the session and removes the mappings. Windows uses native file mappings with the same shared ABI.
 
-SDL liest ausschließlich im Launcher. Die Worker setzen beim IPC-Betrieb ihren DS-KeyMask direkt aus der jeweils eigenen Mapping-Datei und ignorieren ihre regulären Tastatur-/Controller-Eingaben. Eine getrennte Bluetooth-Verbindung liefert neutrale Eingaben; eine neue SDL-Instanz muss ausdrücklich erneut zugeordnet werden. Ein GUID ist keine eindeutige physische Kennung, insbesondere bei zwei baugleichen Geräten ohne Seriennummer.
+SDL reads controllers only in the launcher. In IPC mode workers set their DS KeyMask directly from their own mapping and ignore ordinary keyboard/controller input. Disconnecting Bluetooth produces neutral input; a new SDL instance must be explicitly assigned again. A GUID is not a unique physical identity, particularly for identical devices without serial numbers.
 
-## Netzwerk
+## Network
 
-Der Launcher wählt einen freien lokalen TCP-Port und übergibt ihn beiden Workern. Project PM hostet mit PMCOOP_ROLE nur auf 127.0.0.1; der Client verbindet dieselbe Adresse. Discovery-Broadcast und Online-Relay sind in diesem Modus deaktiviert. Die kleine Zeitspanne zwischen Portfreigabe und Host-bind bleibt ein mögliches Rennen; Fehler werden über Status/Logs sichtbar. Das ist kein Internet-Netplay.
+The launcher selects a free local TCP port and passes it to both workers. `PMCOOP_ROLE` makes Project PM host on `127.0.0.1`; the client connects there. Discovery broadcast and online relay are disabled in local mode. The short gap between releasing the chosen port and host bind remains a possible race; failures are visible in status/logs. This is local transport.
 
-Wire v2: `u16 LE length` plus Payload; Bridge-Tags 1 (Block/Overworld), 2 (Party), 3 (Paket); Kontrollframes 0xFF (Rolle), 0xFE (Name), 0xFD/0xFC (Ping/Pong). Die ROM muss ihre Discovery-/Kontrollblöcke veröffentlichen und ihren Multiplayer-Modus aktivieren. Ein Socket-Peer und ein aktiviertes ROM-Kontrollbyte beweisen keine Welt-Synchronisation.
+Wire v2 uses `u16 LE length` plus payload; bridge tags 1 (block/overworld), 2 (party), 3 (packet); control frames 0xFF (role), 0xFE (name), 0xFD/0xFC (ping/pong). The ROM must publish discovery/control blocks and activate its multiplayer mode. A socket peer and active ROM control byte do not establish world synchronization.
 
-## Speicher und Lebenszyklus
+## Saves and lifecycle
 
-Standardwurzel: `$XDG_DATA_HOME/pokemon-platinum-local-coop` oder `~/.local/share/pokemon-platinum-local-coop`. Je Spieler und ROM-SHA-256 gibt es ein eigenes Profil. Das verhindert gleichzeitiges Schreiben beider Spieler und Kollisionen gleichnamiger ROMs. Ein anderer Patch/ROM-Hash erhält ein neues Profil; bestehende Saves müssen bewusst übernommen werden.
+On Linux the default root is `$XDG_DATA_HOME/pokemon-platinum-local-coop` or `~/.local/share/pokemon-platinum-local-coop`; see [platforms](platforms.md) for Windows. Each player and ROM SHA-256 has its own profile, preventing shared writes and collisions between identically named ROMs. A different patch/hash gets a new profile; transferring existing saves is an [explicit operation](save-transfer.md).
 
-Der Launcher sperrt die gesamte Datenwurzel über QLockFile, sichert *.sav vor dem Start und schreibt Metadaten atomar. Wiederherstellung prüft das Manifest vollständig und sichert zuerst den aktuellen Stand. Backups werden nicht automatisch gelöscht. SIGTERM wird in den Qt-Eventloops verarbeitet; EmuInstance/SaveManager führen die Upstream-Aufräumarbeiten aus. Erzwungenes SIGKILL kann ungespeicherten Fortschritt verlieren. Kein automatischer Neustart eines abgestürzten Spiels.
+QLockFile locks the data root for the session. The launcher backs up `*.sav` before starting and writes metadata atomically. Restore validates the complete manifest and first backs up the current state. Backups are not deleted automatically. Graceful shutdown lets upstream EmuInstance/SaveManager finish cleanup. Forced SIGKILL can lose unsaved progress. Crashed games are never restarted automatically.

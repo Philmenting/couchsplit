@@ -1,16 +1,18 @@
-# Installation auf Bazzite
+# Building on Bazzite
 
-Für die komfortable Installation die [Ein-Datei-Anleitung](one-file-installer.md) verwenden. Sie nutzt fertige Programme mit eigener Ubuntu-24.04-Laufzeit und automatischer ROM-/ZIP-Ersteinrichtung. Die folgenden Abschnitte beschreiben weiterhin den optionalen Entwicklerbuild im Fedora-Container.
+**English** · [Deutsch](de/bazzite-installation.md) · [Documentation](README.md)
 
-## Voraussetzungen
+For normal installation use the [single-file guide](one-file-installer.md): prebuilt programs, a private Ubuntu 24.04 runtime and first-run ROM/ZIP import. This page covers the optional developer build in a Fedora container.
 
-Bazzite mit funktionierenden vorhandenen NVIDIA-Treibern, Distrobox/Podman, zwei SDL-kompatible USB-/Bluetooth-Controller. Eine rechtmäßig bereitgestellte Pokémon-Platin-ROM, die bereits mit dem zur Bridge passenden Project-PM-Patch vorbereitet ist. Das Projekt liefert weder ROM noch Nintendo-Dumps und lädt diese nicht herunter.
+## Requirements
 
-Ein normaler Platin-Spielstand und ein normaler ROM-Header beweisen keine Multiplayer-Kompatibilität. Die passende Patchquelle und Patchversion müssen beim Project-PM-Projekt geklärt werden.
+Bazzite with its existing working NVIDIA drivers, Distrobox/Podman and two SDL-compatible USB/Bluetooth controllers. Supply your own Platinum ROM prepared with the Project PM patch matching the bridge. The project includes no games or Nintendo dumps and downloads none.
 
-## Bauen und starten
+A normal Platinum save or ROM header does not establish multiplayer compatibility. See the [verified PM 0.4.5 requirements](project-pm-045.md); a matching patch source/version is required.
 
-Quellprojekt an einem dauerhaften Ort im eigenen Benutzerverzeichnis entpacken bzw. klonen; danach:
+## Build and start
+
+Clone or extract the source into a permanent directory in your home folder, then run:
 
 ```bash
 cd couchsplit
@@ -18,30 +20,32 @@ cd couchsplit
 ~/.local/bin/pokemon-platinum-local-coop
 ```
 
-Der Container heißt `platinum-coop-build`, Basis Fedora 44. Das Skript installiert die Entwicklungspakete ausschließlich über `sudo dnf` **innerhalb** des Containers. Auf dem Bazzite-Host werden nur Dateien in `~/.local/bin` und `$XDG_DATA_HOME/applications` angelegt. Kein rpm-ostree, keine Root-Dienste und keine Änderungen an NVIDIA, Gamescope oder bestehenden Steamkonfigurationen.
+The build container is `platinum-coop-build`, based on Fedora 44. Development packages are installed with `sudo dnf` **inside the container only**. On the host, the script creates owned files in `~/.local/bin` and `$XDG_DATA_HOME/applications`. It does not use rpm-ostree or a root service, or alter NVIDIA, Gamescope or existing Steam configuration.
 
-Der Wrapper führt das gebaute Programm in derselben Distrobox aus. Damit wird keine Qt-/SDL-Kompatibilität auf einem unbekannten Host vorausgesetzt. Zum erneuten Bauen `scripts/bazzite-build.sh` wiederholen. Zum Entfernen Desktop-Eintrag/Wrapper sowie optional Container und Projektordner entfernen; Spielstände liegen getrennt in der Datenwurzel.
+The wrapper runs the program inside the same Distrobox, avoiding assumptions about host Qt/SDL compatibility. Repeat `scripts/bazzite-build.sh` to rebuild. To remove the developer installation, remove its desktop entry/wrapper and optionally its container/project folder. Saves remain in the separate data root.
 
-Ersteinrichtung im KDE-Desktop:
+Initial setup in KDE desktop mode:
 
-1. Beide Controller verbinden und „Controller zuordnen“ öffnen. Die Anzeige enthält live SDL-Instanz-IDs.
-2. Unter „ROM auswählen“ die vorbereitete ROM angeben und den vorhandenen Project-PM-Patch bestätigen.
-3. In „Einstellungen“ das gepatchte `build/bin/melonDS-coop` kontrollieren. Das Buildskript legt es automatisch neben den Launcher.
-4. Externe BIOS/Firmwarefelder leer lassen für freien BIOS-Direktstart; eigene DS-Dumps optional vollständig auswählen.
-5. „Bildschirmaufteilung“: links/rechts, großer Hauptbildschirm mit kleinerem Touchscreen.
-6. Starten und Multiplayer im ROM aktivieren, sofern der Hack dies verlangt. TCP-Status und ROM-Aktivierung werden getrennt angezeigt.
+1. Connect both controllers and open **Assign controllers**. Live SDL instance IDs identify connected devices.
+2. Use **Select ROM** to choose a prepared ROM and confirm its Project PM patch when requested.
+3. Under **Settings**, check the patched `build/bin/melonDS-coop`. The build script places it beside the launcher.
+4. Leave external BIOS/firmware fields empty for free-BIOS direct boot. A complete set of your own DS dumps is optional.
+5. Choose **Screen layout**: side by side, large top screen with a smaller touchscreen.
+6. Start and enable multiplayer inside the ROM when required. TCP status and ROM activation are reported separately.
+
+Choose English or Deutsch at the first interactive launcher start; change it later in Settings.
 
 ## Steam Gaming Mode
 
-Der Installer öffnet automatisch Bazzites Funktion zum Hinzufügen des Launchers zu Steam. Falls erforderlich, in Desktop-Steam anmelden. Unter „Steam-fremd“ nach **CouchSplit** suchen. Fehlt der Eintrag: im Startmenü Rechtsklick auf den Launcher → „Erneut zu Steam hinzufügen“. Alternativ in Desktop-Steam „Spiel hinzufügen → Steam-fremdes Spiel“ und den erzeugten Startmenüeintrag wählen. Startoptionen müssen nicht global geändert werden. Für diesen einen Eintrag **Steam Input deaktivieren**, wenn Steam physische und virtuelle Controller doppelt präsentiert oder Tastatureingaben emuliert.
+The single-file installer requests a Steam entry through Bazzite's host helper. Sign in to desktop Steam if needed and look for **CouchSplit** under non-Steam games. If missing, right-click the launcher in the application menu and choose the action to add it to Steam again. Alternatively, use Steam's **Add a Game → Add a Non-Steam Game** and select the launcher entry. No global launch-option changes are needed. Disable Steam Input **for this entry** if Steam exposes duplicate physical/virtual controllers or emulates keyboard input.
 
-Danach in den Gaming Mode wechseln und den Eintrag starten. Ein einziges Qt-Hauptfenster enthält beide Spieleransichten. Keine Fremdfensterpositionierung oder zweite Gamescope-Instanz erforderlich. Ausgabeauflösung in den vorhandenen Steam-/TV-Einstellungen auf 3840 × 2160, 60 Hz wählen. Das Programm respektiert die tatsächlich verfügbare Fenstergröße.
+Switch to Gaming Mode and start the entry. One Qt window contains both players; no foreign-window positioning or second Gamescope instance is required. Select 3840 × 2160 at 60 Hz in the existing Steam/TV settings. The application respects available window size.
 
-Distrobox-GUI/Wayland/XWayland, Bluetooth und Steam-Gaming-Mode wurden in der Entwicklungsumgebung nicht real auf Bazzite geprüft. Falls der Eintrag nicht startet, zunächst über `distrobox enter platinum-coop-build -- /voller/pfad/build/bin/platinum-coop --fullscreen` im Desktop prüfen. Für den Launcher kann bei Bedarf XWayland ausschließlich per Startumgebung getestet werden: `QT_QPA_PLATFORM=xcb ~/.local/bin/pokemon-platinum-local-coop`; die Worker bleiben offscreen.
+Distrobox GUI/Wayland/XWayland, Bluetooth and Steam Gaming Mode have not been accepted on actual Bazzite target hardware in this development environment. If startup fails, first test `distrobox enter platinum-coop-build -- /full/path/build/bin/platinum-coop --fullscreen` from the desktop. If needed, test launcher-only XWayland with `QT_QPA_PLATFORM=xcb ~/.local/bin/pokemon-platinum-local-coop`; workers remain offscreen.
 
-## Native Entwicklungsdistribution / CI
+## Native development / CI
 
-Ubuntu 24.04:
+Ubuntu 24.04 dependencies and build:
 
 ```bash
 sudo apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config extra-cmake-modules libsdl2-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive-dev libenet-dev libzstd-dev libcurl4-openssl-dev libfaad-dev libpcap-dev libegl-dev libwayland-dev xdelta3
@@ -49,10 +53,10 @@ sudo apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config
 ./build/bin/platinum-coop
 ```
 
-Fedora-Abhängigkeiten stehen im geprüften Buildskript. `COOP_BUILD_JOBS=4` begrenzt Parallelität; bei knappem Speicher 2 wählen.
+Fedora dependencies are listed in the build script. `COOP_BUILD_JOBS=4` limits parallelism; use 2 if memory is tight.
 
-## Dateien und Sicherungen
+## Files and backups
 
-Standardeinstellungen und Spielerdateien liegen unter `$XDG_DATA_HOME/pokemon-platinum-local-coop` oder `~/.local/share/pokemon-platinum-local-coop`. `--data-dir /pfad` erlaubt eine andere Datenwurzel. Jede ROM-SHA-256 bekommt je Spieler ein eigenes Profil. Backups werden vor Sitzungsbeginn angelegt und nicht automatisch gelöscht. Über „Spielstände“ lassen sich Profilordner öffnen oder geprüfte Backups wiederherstellen, wenn beide Emulatoren beendet sind.
+Settings and player data are under `$XDG_DATA_HOME/pokemon-platinum-local-coop` or `~/.local/share/pokemon-platinum-local-coop`. `--data-dir /path` selects another root. Each ROM SHA-256 gets a profile per player. Backups are made before session start and are not deleted automatically. **Saves** opens profiles and restores verified backups while both emulators are stopped.
 
-Die Anwendung speichert, wenn das Spiel seine Save-Funktion ausführt. Beenden allein erzeugt keinen neuen Ingame-Spielstand. Vor dem Beenden im Spiel speichern, dann Start + Select zwei Sekunden halten.
+The application saves when you use the game's save function. Exiting alone does not create an in-game save. Save inside each game first; then hold Start + Select for two seconds to stop the session.

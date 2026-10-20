@@ -1,54 +1,56 @@
-# Technische Machbarkeit und Quellcodeprüfung
+# Technical feasibility and source inspection
 
-Prüfdatum: 14.10.2026. Alle Aussagen beziehen sich auf die fixierten Stände; die HEADs der Referenzprojekte können sich ändern.
+**English** · [Deutsch](de/technical-feasibility.md) · [Documentation](README.md)
 
-| Projekt | Geprüfter Commit | Lizenz / tatsächlicher Aufbau |
+Historical review date: 14 October 2026. Statements describe the pinned revisions; reference-project HEADs may change. See [Development status](development-status.md) for later implementation and gameplay results.
+
+| Project | Inspected commit | License / implementation |
 |---|---|---|
-| ComicartOlie/melonDS-Project-PM, platinum-mp | 4d9785468bbefc8d08002f16df4d85a12f9611f7 | GPL-3.0-or-later, melonDS 1.1, C++17, Qt5/6 + SDL2 |
-| Spuds0588/mgba-splitscreen | b66511a35873bda9c961872813e58b35543bcfc5 | MPL-2.0 für mGBA; C-Kern, Rust/Tauri, HTML/Canvas, WebSocket-Bilder |
-| hikaps/couchplay | b8c8e47502bb0eac3471acb896dc69b8290de8c8 | Quelldateien tragen GPL-3.0-or-later SPDX; Qt/KDE, Gamescope und privilegierter Helfer |
-| melonDS-emu/melonDS | 906e9ebb27da8c6a715cd7abab4abfe8a8d29427 | GPL-3.0-or-later; CMake, Qt/SDL, getrennte Instanz-Konfiguration im bestehenden Frontend |
+| ComicartOlie/melonDS-Project-PM, platinum-mp | `4d9785468bbefc8d08002f16df4d85a12f9611f7` | GPL-3.0-or-later, melonDS 1.1, C++17, Qt5/6 + SDL2 |
+| Spuds0588/mgba-splitscreen | `b66511a35873bda9c961872813e58b35543bcfc5` | MPL-2.0 for mGBA; C core, Rust/Tauri, HTML/Canvas, WebSocket frames |
+| hikaps/couchplay | `b8c8e47502bb0eac3471acb896dc69b8290de8c8` | Source SPDX says GPL-3.0-or-later; Qt/KDE, Gamescope, privileged helper |
+| melonDS-emu/melonDS | `906e9ebb27da8c6a715cd7abab4abfe8a8d29427` | GPL-3.0-or-later; CMake, Qt/SDL, existing per-instance frontend configuration |
 
 ## Project PM
 
-Branch/Repository waren erreichbar. Der fixierte Commit vom 01.10.2026 entfernt Windows-DLL-Ballast. Die Branchliste ist in upstream-branches.txt gespeichert. Eine GitHub-Abfrage offener Issues lieferte am Prüfdatum keine offenen Issues; daraus folgt keine Fehlerfreiheit.
+The repository/branch were accessible. The pinned commit of 1 October 2026 removes Windows DLL clutter; branches are recorded in `upstream-branches.txt`. GitHub returned no open issues on the inspection date. That does not establish an absence of defects.
 
-Im Quellcode `src/frontend/qt_sdl/EmuThread.cpp` liegen sowohl **Scripted test autopilot** als auch die Bridge. Sie sind unterschiedliche Komponenten. `MELONDS_AP=host|join` startet nicht nur einen Transport, sondern kann die ROM automatisch mit Tasteneingaben durchlaufen. Der Launcher verwendet deshalb das neue `PMCOOP_ROLE` und setzt niemals `MELONDS_AP`. Alle geerbten Autopilotvariablen werden vor dem Workerstart entfernt.
+`src/frontend/qt_sdl/EmuThread.cpp` contains both **Scripted test autopilot** and the bridge. They are distinct. `MELONDS_AP=host|join` can automatically navigate the ROM with button presses as well as start transport. The launcher therefore uses `PMCOOP_ROLE`, never `MELONDS_AP`, and removes inherited autopilot variables before starting workers.
 
-Die Bridge besitzt pro Prozess globale Net-/BridgeSt-Objekte. Zwei unabhängige DS-Prozesse passen zu diesem Aufbau; zwei EmuInstances im selben Prozess würden ohne weitere Änderung diese globals teilen. Deshalb bleibt das Projekt bei zwei Prozessen.
+The bridge uses global Net/BridgeSt objects per process. Two independent DS processes fit that model. Two EmuInstances inside one process would share globals without further changes, so this project uses two processes.
 
-### Linux-Blocker und behobene Ursachen
+### Linux blockers and fixes
 
-Der Fork beschreibt Linux-Builds, aber sein zusätzlicher Bridgecode benutzt `SOCKET`, WSA-Funktionen, `DWORD`, `GetTickCount` und `GetComputerNameA` außerhalb von Windows-Guards. Auf Linux fehlten entsprechende Definitionen. Außerdem ignoriert POSIX `select(0, ...)` alle Deskriptoren, während Winsock den ersten Parameter ignoriert. Nichtblockierendes POSIX-connect liefert EINPROGRESS statt Winsock-EWOULDBLOCK. Ein geschlossenes Ziel kann bei POSIX-send SIGPIPE auslösen.
+Although the fork describes Linux builds, added bridge code used `SOCKET`, WSA functions, `DWORD`, `GetTickCount` and `GetComputerNameA` outside Windows guards. Linux lacked those definitions. POSIX `select(0, ...)` ignores all descriptors, whereas Winsock ignores its first parameter. Nonblocking POSIX connect returns EINPROGRESS rather than Winsock EWOULDBLOCK; sending to a closed peer can raise SIGPIPE.
 
-SocketCompat.h adaptiert die API, nutzt fd+1, normalisiert EINPROGRESS und unterdrückt SIGPIPE mit MSG_NOSIGNAL. SO_ERROR prüft, ob ein schreibbereiter connect tatsächlich erfolgreich war. Der eigentliche Frame- und Mailboxcode bleibt erhalten. Unser Patch bindet lokalen Hostbetrieb an loopback, erlaubt einen pro Sitzung ausgewählten Port, deaktiviert lokale Discovery und liefert IPC-Status/Bilder/Eingaben.
+`SocketCompat.h` adapts the API, uses fd+1, normalizes EINPROGRESS and suppresses SIGPIPE with MSG_NOSIGNAL. SO_ERROR checks whether a writable connect actually succeeded. Existing frame/mailbox logic remains. Our patch binds local hosting to loopback, accepts a per-session port, disables local discovery and exposes IPC status/frames/input.
 
-### Verbindungen
+### Connection paths
 
-| Pfad | Protokoll | Bedeutung |
+| Path | Protocol | Purpose |
 |---|---|---|
-| Native melonDS LAN | UDP 7064 / ENet | ursprüngliche LAN-Sitzung, unabhängig vom freien Welt-Koop |
-| Project PM Bridge | TCP 7820 standardmäßig | plattformübergreifende ROM-Mailbox-Synchronisation |
-| Bridge Discovery | UDP 7821 | PLATMP-Discovery, lokaler Launcher deaktiviert Broadcast |
-| Online Relay | TCP 7833 standardmäßig | PMRELAY1; für dieses Projekt nicht verwendet |
-| Lokaler Launcher | zufälliger freier TCP-Port auf 127.0.0.1 | gleiche Bridgeframes, direkt host/client ohne native LAN-Lobby |
+| Native melonDS LAN | UDP 7064 / ENet | Original LAN session, separate from world co-op |
+| Project PM bridge | TCP 7820 by default | Cross-platform ROM mailbox synchronization |
+| Bridge discovery | UDP 7821 | PLATMP discovery; local launcher disables broadcast |
+| Online relay | TCP 7833 by default | PMRELAY1; unused by this project |
+| Local launcher | Random free TCP port on 127.0.0.1 | Same bridge frames, direct host/client, no native LAN lobby |
 
-`startFromEnv()` und `BridgePump()` unterstützen TCP-Start unabhängig von der nativen LAN-Lobby. Der ROM-Discoveryblock wird erst später gesucht. Daher kann der Sockettransport ohne ROM geprüft werden. Der Test tests/test_transport.py extrahiert den **tatsächlichen gepatchten namespace mpnet** in einen C++-Harness und prüft Rollen, Namen, bidirektionale Frames, Fragmentierung, ungültige Länge, Wiederverbindung, verweigerte Verbindung und SIGPIPE. Es wird kein eigener Ersatztransport getestet.
+`startFromEnv()` and `BridgePump()` can start TCP independently of the native LAN lobby; ROM discovery is searched later. Transport can therefore be tested without a ROM. `tests/test_transport.py` extracts the **actual patched namespace mpnet** into a C++ harness, checking roles, names, bidirectional frames, fragmentation, invalid lengths, reconnect, refused connection and SIGPIPE. It tests the production transport.
 
-### ROM-Abhängigkeit
+### ROM dependency
 
-Die untersuchte Emulatorquelle enthält keinen geeigneten ROM-Patch. Die GitHub-Suche im Konto ComicartOlie fand die beiden Emulatorports, aber kein eindeutig passendes öffentliches Patchrepository. Die Emulator-README bezeichnet den Hack als Project PM; eine aktuelle, passende Patchquelle und eine konkrete veröffentlichte Patchversion sind damit **nicht verifiziert**.
+The inspected emulator source contains no suitable ROM patch. GitHub account research found two emulator ports but no clearly matching public patch repository. The emulator README calls the hack Project PM; that alone did not verify a current matching patch source/release.
 
-Nach dieser öffentlichen Recherche wurde Build 0.4.5 vom Nutzer bereitgestellt. Dessen Setup-Anleitung verlangt USA Revision 1. Ein echter xdelta-Versuch auf der deutschen Datei scheitert. Die anschließend ebenfalls bereitgestellte exakte US-Basis wurde erfolgreich gepatcht und auf zwei echte Emulatorstarts geprüft; siehe [Paketprüfung](project-pm-045.md). ZIP-/Patch-Basisprüfung und reproduzierbare US-Patchvorbereitung sind in scripts/prepare-rom.py vorhanden. Deutsche Lokalisierung und Spielweltabnahme bleiben offen; ROM-Mod-Quellcode ist nicht im Paket.
+The user subsequently supplied Build 0.4.5, whose setup requires USA Revision 1. Real xdelta rejected the German original. The matching US base was then supplied, patched successfully and boot-tested in two emulators; see [package verification](project-pm-045.md). `scripts/prepare-rom.py` supports ZIP/base inspection and reproducible US patch preparation. ROM-mod source was absent. German localization and world acceptance were still open at that stage and were investigated later.
 
-Die Mailbox-Bridge nutzt Wire v2 (Kommentar: 8 Spieler, ROM-Protokoll v18), Discovery-Magics `0xCAFE1234 / 0x5678CAFE` und Kontrollblock-Magic `BRG1`. Die vom Nutzer bereitgestellte ROM muss diese Schnittstelle tatsächlich veröffentlichen. Der Launcher prüft nur Platin-Headerkennung CPU*, Dateigröße und SHA-256 sowie eine ausdrückliche Nutzerbestätigung. Er kann die Patchkompatibilität nicht beweisen.
+The mailbox bridge uses Wire v2 (comment: eight players, ROM protocol v18), discovery magics `0xCAFE1234 / 0x5678CAFE` and control magic `BRG1`. The supplied ROM must actually publish that interface. Header CPU*, file size, SHA-256 and explicit confirmation can validate selection boundaries, but cannot prove arbitrary patch compatibility.
 
-**Hauptakzeptanzkriterium offen:** Beide unterschiedlichen Spielfiguren sehen einander in derselben Sinnoh-Welt, bewegen sich unabhängig und speichern getrennt. Kein Transporttest ersetzt diesen Test.
+At that initial review the main acceptance criterion was open: both different characters must see each other in one Sinnoh world, move independently and save separately. A transport test cannot replace that gameplay check. Later targeted evidence is documented in [Development status](development-status.md).
 
-## Architekturvorbilder
+## Architecture references
 
-mGBA SplitScreen demonstriert Frameausgabe aus mehreren Kernen in einer Oberfläche, Link-Synchronisation und Gamepad-Zuordnung. Der GBA-Kern kann keine Nintendo-DS-ROM ausführen. Der Browser/Tauri-Stack wird hier nicht eingebaut: melonDS besitzt bereits ein brauchbares Qt-Frontend und RAM-Framebuffer. Quellcode wurde nicht übernommen.
+mGBA SplitScreen demonstrates multiple core frame outputs in one surface, link synchronization and gamepad assignment. Its GBA core cannot run DS ROMs. The browser/Tauri stack is not used here because melonDS already has Qt and RAM framebuffers. No reference-project code was copied.
 
-CouchPlay isoliert komplexe fremde Spiele durch separate Benutzer, Gerätesteuerung und Gamescope-Prozesse. Die Quelldateien GamescopeInstance.cpp, WindowManager.cpp und SessionRunner.cpp zeigen verschachtelte Gamescope-Ausführung und KWin/D-Bus-Fensterpositionierung; die Installation benötigt einen privilegierten Helfer. Für zwei selbst kontrollierte Emulatorprozesse reichen getrennte Profile und direkte SDL-Zuordnung. Deshalb werden weder Root-Helfer noch temporäre Systemkonten eingeführt. Quellcode wurde nicht übernommen.
+CouchPlay isolates complex external games with separate users, device management and Gamescope processes. `GamescopeInstance.cpp`, `WindowManager.cpp` and `SessionRunner.cpp` show nested Gamescope and KWin/D-Bus positioning; installation needs a privileged helper. Two owned emulator processes need only independent profiles and direct SDL assignment, so this project introduces neither root helpers nor temporary system accounts. No code was copied.
 
-Upstream melonDS unterstützt CMake, Qt6 und SDL2, sowie `portable`-Konfigurationsordner neben dem Binary und XDG-Konfigurationspfade. Unser explizites `PMCOOP_PROFILE` erhält Vorrang vor diesen Defaults, damit zwei Worker zuverlässig verschiedene Verzeichnisse benutzen. Die vorhandenen SaveManager- und Framebufferfunktionen werden weiterverwendet.
+Upstream melonDS supports CMake, Qt6, SDL2, `portable` configuration beside the binary and XDG paths. Explicit `PMCOOP_PROFILE` takes priority so workers reliably use different directories. Existing SaveManager/framebuffer functionality is reused.
