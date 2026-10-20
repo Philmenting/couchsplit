@@ -25,20 +25,14 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_*.py'
           python3 tests/smoke_emulator.py build/bin/melonDS-coop
           mkdir -p dist
-          python3 scripts/make-installer.py --upstream .cache/project-pm --output dist/Pokemon-Platinum-Coop-Bazzite.run
-          bash dist/Pokemon-Platinum-Coop-Bazzite.run --check
-          python3 scripts/make-deb.py --upstream .cache/project-pm --output dist/Pokemon-Platinum-Coop-ZorinOS18-amd64.deb
-      - name: Install and remove native Debian package
+          python3 scripts/make-installer.py --upstream .cache/project-pm --output dist/CouchSplit-Bazzite.run
+          bash dist/CouchSplit-Bazzite.run --check
+          python3 scripts/make-deb.py --upstream .cache/project-pm --output dist/CouchSplit-ZorinOS18-amd64.deb
+      - name: Upgrade Alpha 7 to CouchSplit and remove native Debian package
         env:
           QT_QPA_PLATFORM: offscreen
           SDL_AUDIODRIVER: dummy
-        run: |
-          sudo apt-get install -y ./dist/Pokemon-Platinum-Coop-ZorinOS18-amd64.deb
-          /opt/pokemon-platinum-local-coop/project/build/bin/platinum-coop --data-dir "$RUNNER_TEMP/deb-profile" --smoke-test "$RUNNER_TEMP/deb-launcher.png"
-          test -s "$RUNNER_TEMP/deb-launcher.png"
-          sudo apt-get remove -y pokemon-platinum-local-coop
-          test ! -f /opt/pokemon-platinum-local-coop/project/build/bin/platinum-coop
-          test -d "$RUNNER_TEMP/deb-profile"
+        run: python3 tests/check_debian_upgrade.py dist/CouchSplit-ZorinOS18-amd64.deb
       - uses: actions/upload-artifact@v4
         with:
           name: Linux-installers
@@ -85,25 +79,14 @@ jobs:
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging/windows.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed" }
-          $installDir = Join-Path $env:RUNNER_TEMP "Coop Setup Test"
-          $profileDir = Join-Path $env:RUNNER_TEMP "Coop User Data"
-          $setup = Start-Process -FilePath "dist/Pokemon-Platinum-Coop-Windows-Setup.exe" -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=`"$installDir`"") -Wait -PassThru
-          if ($setup.ExitCode -ne 0) { throw "Setup failed: $($setup.ExitCode)" }
-          $env:QT_QPA_PLATFORM = "offscreen"
-          $env:SDL_AUDIODRIVER = "dummy"
-          $env:QT_LOGGING_TO_CONSOLE = "1"
-          $smoke = Start-Process -FilePath "$installDir/project/build/bin/platinum-coop.exe" -ArgumentList @("--data-dir", "`"$profileDir`"", "--smoke-test", "`"$env:RUNNER_TEMP/setup-launcher.png`"") -Wait -PassThru
-          if ($smoke.ExitCode -ne 0 -or !(Test-Path "$env:RUNNER_TEMP/setup-launcher.png")) { throw "Installed launcher failed: exit=$($smoke.ExitCode)" }
-          $uninstall = Start-Process -FilePath "$installDir/unins000.exe" -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART") -Wait -PassThru
-          if ($uninstall.ExitCode -ne 0 -or (Test-Path "$installDir/project/build/bin/platinum-coop.exe")) { throw "Uninstall failed" }
-          if (!(Test-Path "$profileDir")) { throw "Uninstall removed personal data" }
-          Compress-Archive -Path dist/windows/* -DestinationPath dist/Pokemon-Platinum-Coop-Windows-Portable.zip
+          & ./tests/check_windows_upgrade.ps1 -SetupPath "dist/CouchSplit-Windows-Setup.exe"
+          Compress-Archive -Path dist/windows/* -DestinationPath dist/CouchSplit-Windows-Portable.zip
       - uses: actions/upload-artifact@v4
         with:
           name: Windows-installers
           path: |
-            dist/Pokemon-Platinum-Coop-Windows-Setup.exe
-            dist/Pokemon-Platinum-Coop-Windows-Portable.zip
+            dist/CouchSplit-Windows-Setup.exe
+            dist/CouchSplit-Windows-Portable.zip
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -128,7 +111,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')
     runs-on: ubuntu-24.04
     concurrency:
-      group: publish-alpha7
+      group: publish-alpha8
       cancel-in-progress: false
     permissions:
       contents: write
@@ -145,8 +128,8 @@ jobs:
           python3 - <<'PYVERIFY'
           import hashlib, pathlib, zipfile
           root = pathlib.Path('release')
-          expected = {'Pokemon-Platinum-Coop-Bazzite.run', 'Pokemon-Platinum-Coop-ZorinOS18-amd64.deb',
-                      'Pokemon-Platinum-Coop-Windows-Setup.exe', 'Pokemon-Platinum-Coop-Windows-Portable.zip',
+          expected = {'CouchSplit-Bazzite.run', 'CouchSplit-ZorinOS18-amd64.deb',
+                      'CouchSplit-Windows-Setup.exe', 'CouchSplit-Windows-Portable.zip',
                       'Pokemon-PM-ROM-Korrekturen.zip'}
           assert {p.name for p in root.iterdir()} == expected, 'Unexpected or missing release assets'
           for name in expected:
@@ -158,13 +141,13 @@ jobs:
           (root/'SHA256SUMS').write_text(''.join(hashlib.sha256((root/n).read_bytes()).hexdigest()+'  '+n+'\n'
                                                for n in sorted(expected)))
           PYVERIFY
-          bash release/Pokemon-Platinum-Coop-Bazzite.run --check
-      - name: Publish Alpha 7 after every platform and ARM check passed
+          bash release/CouchSplit-Bazzite.run --check
+      - name: Publish Alpha 8 after every platform and ARM check passed
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=v0.2.0-alpha.7
+          tag=v0.2.0-alpha.8
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,targetCommitish,assets > "$RUNNER_TEMP/existing-release.json"; then
             if [ "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["isDraft"])' "$RUNNER_TEMP/existing-release.json")" = False ]; then
               echo 'Published release already exists; preserving all existing assets.'
@@ -185,8 +168,8 @@ jobs:
             done < "$RUNNER_TEMP/missing-assets.txt"
           else
             gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-              --draft --prerelease --title 'Pokémon Platinum Local Co-op 0.2.0 Alpha 7 — English & German launcher' \
-              --notes-file docs/releases/v0.2.0-alpha.7.md
+              --draft --prerelease --title 'CouchSplit 0.2.0 Alpha 8 — Couch co-op & split screen' \
+              --notes-file docs/releases/v0.2.0-alpha.8.md
           fi
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets > "$RUNNER_TEMP/uploaded-assets.json"
           python3 - "$RUNNER_TEMP/uploaded-assets.json" <<'PYUPLOAD'

@@ -1,6 +1,6 @@
 # Eine Datei für Bazzite
 
-Der Installer `Pokemon-Platinum-Coop-Bazzite.run` enthält beide fertigen Linux-x86_64-Programme und ihren vollständigen zugehörigen GPL-Quellcode. Eine ROM ist nicht enthalten. Ein GitHub-Konto, manuelle Paketinstallation und Kompilieren sind für die Nutzung nicht erforderlich.
+Der Installer `CouchSplit-Bazzite.run` enthält beide fertigen Linux-x86_64-Programme und ihren vollständigen zugehörigen GPL-Quellcode. Eine ROM ist nicht enthalten. Ein GitHub-Konto, manuelle Paketinstallation und Kompilieren sind für die Nutzung nicht erforderlich.
 
 ## Benutzen
 
@@ -11,7 +11,7 @@ Der Installer `Pokemon-Platinum-Coop-Bazzite.run` enthält beide fertigen Linux-
 
 Die ROM wird mit privaten Dateirechten in den eigenen Datenordner kopiert. Der Download kann danach entfernt werden. Eine normale ungepatchte Platin-ROM wird weiterhin abgelehnt; der Installer beschafft keine Spiele und patcht diese nicht automatisch.
 
-Später im Startmenü **Pokémon Platinum Local Co-op** öffnen. **Launcher beenden** schließt die Anwendung und beendet zuvor beide Emulatorprozesse. Start + Select im Spiel beendet weiterhin nur die Sitzung und kehrt zum Menü zurück. Der Installer fordert automatisch einen Nicht-Steam-Eintrag für den Gaming Mode an. Falls nötig, in Steam anmelden; unter **Steam-fremd** nach dem Launcher suchen. Steam Input für diesen Eintrag deaktivieren, falls doppelte oder emulierte Tastatureingaben auftreten. BIOS/Firmware ist für den voreingestellten freien Direktstart nicht erforderlich.
+Später im Startmenü **CouchSplit** öffnen. **Launcher beenden** schließt die Anwendung und beendet zuvor beide Emulatorprozesse. Start + Select im Spiel beendet weiterhin nur die Sitzung und kehrt zum Menü zurück. Der Installer fordert automatisch einen Nicht-Steam-Eintrag für den Gaming Mode an. Falls nötig, in Steam anmelden; unter **Steam-fremd** nach dem Launcher suchen. Steam Input für diesen Eintrag deaktivieren, falls doppelte oder emulierte Tastatureingaben auftreten. BIOS/Firmware ist für den voreingestellten freien Direktstart nicht erforderlich.
 
 ## Automatisch zu Steam hinzufügen
 
@@ -46,7 +46,7 @@ Zum Entfernen zuerst beide Spiele schließen. Den eigenen Startmenüeintrag und 
 ## Paket prüfen / selbst bauen
 
 ```bash
-bash Pokemon-Platinum-Coop-Bazzite.run --check
+bash CouchSplit-Bazzite.run --check
 ```
 
 Das prüft das vollständige eingebettete Paket und alle Dateifingerabdrücke ohne Installation. Es ist ein Integritätscheck, keine digitale Herausgebersignatur. Archivpfade, Links, Dateigrößen und Dateiliste werden vor Ausführung des Installationsprogramms geprüft. Es werden keine heruntergeladenen Shellskripte ausgeführt.
@@ -56,8 +56,8 @@ Für Entwickler nach sauberem Ubuntu-24.04-Build:
 ```bash
 scripts/build.sh
 python3 -m unittest discover -s tests -p 'test_*.py'
-python3 scripts/make-installer.py --upstream .cache/project-pm --output /tmp/Pokemon-Platinum-Coop-Bazzite.run
-bash /tmp/Pokemon-Platinum-Coop-Bazzite.run --check
+python3 scripts/make-installer.py --upstream .cache/project-pm --output /tmp/CouchSplit-Bazzite.run
+bash /tmp/CouchSplit-Bazzite.run --check
 ```
 
 Vor Paketbau Änderungen committen. Der Paketbauer rekonstruiert den gepinnten Upstream samt eigenem Patch und vergleicht ihn mit dem tatsächlich verwendeten Quellbaum. Beide Binärdateien müssen nach dem letzten C++-Änderungsstand neu gebaut sein. `.git`, Zugangsdaten, ROMs, Firmware und Spielstände werden nicht mitgeliefert. Das Paket enthält die eigenen Projektdateien, die gepatchte vollständige Upstreamquelle und die Buildanleitung; keine Laufzeitbibliotheken vom Host.

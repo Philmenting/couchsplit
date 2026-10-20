@@ -49,10 +49,10 @@ class Dialogs:
     def message(self, text, error=False, question=False):
         print(text, flush=True)
         if self.kdialog:
-            return subprocess.run([self.kdialog, '--title', 'Pokémon Platinum Local Co-op',
+            return subprocess.run([self.kdialog, '--title', 'CouchSplit',
                                    '--yesno' if question else ('--error' if error else '--msgbox'), text]).returncode == 0
         if self.zenity:
-            return subprocess.run([self.zenity, '--title=Pokémon Platinum Local Co-op',
+            return subprocess.run([self.zenity, '--title=CouchSplit',
                                    '--question' if question else ('--error' if error else '--info'), '--text=' + text]).returncode == 0
         if not question: return True
         try: return input('Installieren? [j/N] ').strip().lower() in ('j', 'ja', 'y', 'yes')
@@ -75,7 +75,7 @@ class Dialogs:
             if not self.ref:
                 # Downloads and first-time initialization have no known percentage.
                 # A zero range animates continuously instead of freezing at 1/5.
-                result = subprocess.run([self.kdialog, '--title', 'Pokémon Platinum Local Co-op', '--progressbar', text, '0'],
+                result = subprocess.run([self.kdialog, '--title', 'CouchSplit', '--progressbar', text, '0'],
                                         capture_output=True, text=True, timeout=10)
                 self.ref = result.stdout.split() if result.returncode == 0 else []
             if len(self.ref) == 2:
@@ -84,7 +84,7 @@ class Dialogs:
         elif self.zenity:
             if self.progress is None:
                 self.progress = subprocess.Popen([self.zenity, '--progress', '--pulsate', '--auto-close', '--no-cancel',
-                                                 '--title=Pokémon Platinum Local Co-op', '--text=' + text], stdin=subprocess.PIPE, text=True)
+                                                 '--title=CouchSplit', '--text=' + text], stdin=subprocess.PIPE, text=True)
             try: self.progress.stdin.write('# ' + text.replace('\n', ' · ') + '\n'); self.progress.stdin.flush()
             except (BrokenPipeError, OSError): pass
 
@@ -277,7 +277,7 @@ def main():
         for dependency in ('podman', 'distrobox'):
             if not shutil.which(dependency): raise RuntimeError(dependency + ' fehlt. Bazzite-Desktop mit vorhandener Distrobox verwenden.')
         if shutil.disk_usage(root).free < 3 * 1024**3: raise RuntimeError('Mindestens 3 GiB freien Speicher bereitstellen.')
-        if not args.yes and not ui.message('Pokémon Platinum Local Co-op installieren?\n\n'
+        if not args.yes and not ui.message('CouchSplit installieren?\n\n'
                 'Die Programme sind enthalten. Laufzeitpakete werden automatisch heruntergeladen.\n'
                 'Internet und mindestens 3 GiB freier Speicher werden benötigt.\n'
                 'Danach fügst du deine vorbereitete Project-PM-ROM oder deren ZIP hinzu.\n'
@@ -300,7 +300,7 @@ def main():
                 steam_message = 'Steam-Anfrage nicht bestätigt: ' + str(error)
         ui.close()
         if not args.yes: ui.message('Installation abgeschlossen.\n\nJetzt deine ROM oder das ROM-ZIP auswählen.\n'
-                     'Später findest du das Spiel im Startmenü unter „Pokémon Platinum Local Co-op“.\n\n'
+                     'Später findest du das Spiel im Startmenü unter „CouchSplit“.\n\n'
                      + steam_message + '\n'
                      'Fehlt der Eintrag? Im Startmenü Rechtsklick → Erneut zu Steam hinzufügen.\n'
                      'Für diesen Eintrag Steam Input deaktivieren, falls doppelte Eingaben auftreten.')

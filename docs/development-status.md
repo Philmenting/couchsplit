@@ -20,7 +20,7 @@ Am 16.10.2026 wurde die veraltete Zielauswahl nach besiegtem Gegner erneut im ta
 
 ## Automatisiert getestet
 
-Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Entwicklungsbibliotheken wurden lokal aus Ubuntu-Paketen bereitgestellt; keine Bazzite-Umgebung. Qt-GUI-Tests offscreen, Audio im Smoke-Test dummy. Tests liefen hier. Der GitHub-Actions-Workflow nach der Veröffentlichung am 14.10.2026 bestand ebenfalls: vollständiger Neubau, native Komponentensuite, Produktions-TCP-Bridge, Python-Tests, Qt-Launcher-Start und zwei echte Homebrew-Emulatorprozesse. Erfolgreicher Lauf: https://github.com/Philmenting/pokemon-platinum-local-coop/actions/runs/38607299933 (4 Minuten 43 Sekunden).
+Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Entwicklungsbibliotheken wurden lokal aus Ubuntu-Paketen bereitgestellt; keine Bazzite-Umgebung. Qt-GUI-Tests offscreen, Audio im Smoke-Test dummy. Tests liefen hier. Der GitHub-Actions-Workflow nach der Veröffentlichung am 14.10.2026 bestand ebenfalls: vollständiger Neubau, native Komponentensuite, Produktions-TCP-Bridge, Python-Tests, Qt-Launcher-Start und zwei echte Homebrew-Emulatorprozesse. Erfolgreicher Lauf: https://github.com/Philmenting/couchsplit/actions/runs/38607299933 (4 Minuten 43 Sekunden).
 
 | Test | Tatsächliches Ergebnis |
 |---|---|
@@ -40,9 +40,9 @@ Umgebung: Ubuntu 24.04 x86_64, GCC 13.3, CMake 3.28.3, Qt 6.4.2, SDL 2.30.0. Ent
 | Buildpatch | Gegen den gepinnten Quellstand reversibel anwendbar geprüft |
 | GitHub Actions | Vollständiger Neubau und alle ROM-freien Tests erfolgreich (Run 38607299933) |
 
-Auch der Folgecommit zur Original-ROM-Erkennung bestand den vollständigen GitHub-Neubau und alle damaligen ROM-freien Tests: https://github.com/Philmenting/pokemon-platinum-local-coop/actions/runs/38610385288. Die anschließend ergänzte Patchvorbereitung wurde lokal mit xdelta3 3.0.11 getestet: sieben Python-Testfälle (einschließlich der zwei Installertests), alle erfolgreich. Dabei wurde kein Project-PM-ROM-Patch verwendet; dessen Beschaffung und deutscher Port bleiben blockiert.
+Auch der Folgecommit zur Original-ROM-Erkennung bestand den vollständigen GitHub-Neubau und alle damaligen ROM-freien Tests: https://github.com/Philmenting/couchsplit/actions/runs/38610385288. Die anschließend ergänzte Patchvorbereitung wurde lokal mit xdelta3 3.0.11 getestet: sieben Python-Testfälle (einschließlich der zwei Installertests), alle erfolgreich. Dabei wurde kein Project-PM-ROM-Patch verwendet; dessen Beschaffung und deutscher Port bleiben blockiert.
 
-Die Patchvorbereitung bestand anschließend auch GitHub CI (https://github.com/Philmenting/pokemon-platinum-local-coop/actions/runs/38612252475). Nach Bereitstellung von Build 0.4.5 wurden Paket-/Basisprüfung und Pokédex-Hinweis ergänzt: lokaler Neubau, native Komponentensuite und nun neun Python-Tests einschließlich ZIP-Inspektion/Mehrdeutigkeitsablehnung erfolgreich. Der reale Patchversuch auf der deutschen ROM wurde erwartungsgemäß abgelehnt; keine gemeinsame Spielwelt getestet. Der zuvor fehlende Patch liegt jetzt vor, aber für die verlangte US-Basis beziehungsweise einen deutschen Port fehlen weiter die passenden Dateien.
+Die Patchvorbereitung bestand anschließend auch GitHub CI (https://github.com/Philmenting/couchsplit/actions/runs/38612252475). Nach Bereitstellung von Build 0.4.5 wurden Paket-/Basisprüfung und Pokédex-Hinweis ergänzt: lokaler Neubau, native Komponentensuite und nun neun Python-Tests einschließlich ZIP-Inspektion/Mehrdeutigkeitsablehnung erfolgreich. Der reale Patchversuch auf der deutschen ROM wurde erwartungsgemäß abgelehnt; keine gemeinsame Spielwelt getestet. Der zuvor fehlende Patch liegt jetzt vor, aber für die verlangte US-Basis beziehungsweise einen deutschen Port fehlen weiter die passenden Dateien.
 
 Nach zusätzlicher Bereitstellung der US-Basis: Patchskript unterstützt den bekannten Release aus ZIP mit automatischen Prüfsummen und verbietet abweichende Hash-Overrides. Das echte Ergebnis wurde ein zweites Mal reproduziert. Lokaler Neubau und native Tests erfolgreich; zehn Python-Tests bestehen, einschließlich automatischer Release-Prüfsummen/ZIP-Decodierung mit eigenem Testdatenkatalog und echtem xdelta. Patched-US-Start: 35 Sekunden, je 2075 Frames, TCP verbunden, beide sauber beendet. Die englische Datei wurde dem Nutzer separat bereitgestellt; keine ROM in GitHub.
 
@@ -96,7 +96,7 @@ Die hier erzeugten Qt-Menübilder wurden auf Lesbarkeit und abgeschnittene Inhal
 
 ## GitHub-Veröffentlichung
 
-GitHub-Repository am 14.10.2026 nach Zustimmung über die Weboberfläche privat erstellt: https://github.com/Philmenting/pokemon-platinum-local-coop. Quellcode und Testnachweise sind vollständig übertragen; die Git-Trees der drei Entwicklungsstände stimmen exakt mit den lokal geprüften Ständen überein.
+GitHub-Repository am 14.10.2026 nach Zustimmung über die Weboberfläche privat erstellt: https://github.com/Philmenting/couchsplit. Quellcode und Testnachweise sind vollständig übertragen; die Git-Trees der drei Entwicklungsstände stimmen exakt mit den lokal geprüften Ständen überein.
 
 Das private Repository wurde über die GitHub-Weboberfläche erstellt. Die unterstützten Datei-/Git-Operationen wurden anschließend über die verbundene GitHub-App ausgeführt. Kein fremdes Upstream-Repository wurde verändert. Die ursprünglichen drei lokalen Commits bleiben zusätzlich im lokalen Branch local-implementation erhalten; main folgt der veröffentlichten GitHub-Historie.
 
@@ -199,3 +199,10 @@ Deutsch und Englisch im nativen Qt-Launcher: zweisprachige Erstauswahl vor ROM-E
 Lokal bestanden: native Komponenten- und Produktions-UI-Tests mit virtuellen SDL-Controllern; DE/EN-Menüs und Spielhilfe bei 640×360, 720p, 768p, 1080p und 4K in beiden Teilungen; Erstauswahl, Abbrechen, Neustart, ungültige Sprache, beschädigtes JSON ohne Überschreiben, fehlgeschlagene atomare Speicherung und Erhalt unbekannter/älterer Felder. Umschalten bei laufenden TEST-ONLY-Workern erhält Sitzungssperre und denselben Laufzeitordner; anschließendes sauberes Beenden gibt die Sperre frei. Alle 57 Python-Tests bestanden ohne Skip mit echtem xdelta/Unicorn. Zwei echte Emulatorprozesse führten eigenes ARM-Homebrew aus, verbanden sich und beendeten kooperativ. Der Import des vorhandenen echten korrigierten ROM-ZIPs erhielt dessen SHA-256 unverändert.
 
 Native UI-Aufnahmen prüfen Auswahl, beide Menüs, Einstellungen und Hilfe; dies ist kein neuer Pokémon-Spielablauf und keine physische Controller-/Bazzite-/Windows-Spielabnahme. Veröffentlichte Plattformpakete setzen die nativen CI-Neubauten und Installationsprüfungen voraus. System-Dateidialoge und rohe Fremd-Logs können der Betriebssystem-/Originalsprache folgen.
+
+
+## CouchSplit — 19.10.2026, Alpha 8
+
+Auf Nutzerwunsch heißt das Projekt CouchSplit; der Name betont Couch-Koop und Splitscreen. Aktuelle Spielunterstützung bleibt Project PM / Pokémon Platin. Sichtbare Launcher-, Dialog-, Installer- und Startmenünamen sowie künftige Download-Dateien werden umgestellt. Profile, ROM-Hashes, Speicherpfade, Controllerzuordnung, Laufzeitbesitz und bestehende Installationskennungen bleiben erhalten. Die Windows-Installation ersetzt ausschließlich ihre bekannten alten Programmverknüpfungen.
+
+Lokal geprüft: native Komponenten-/UI-/Controller-/Sitzungstests in Deutsch/Englisch; 57 Python-Tests ohne Skip mit echtem xdelta/Unicorn; zwei echte Homebrew-Emulatorprozesse mit sauberem IPC-Ende. Neue native Bildschirmaufnahmen zeigen CouchSplit bei 640×360, 720p, 768p, 1080p und 4K; kein neuer Pokémon-Spielablauf. Der Import des tatsächlichen korrigierten ROM-ZIPs behält seinen SHA-256. Die CI ergänzt echte Alpha-7-zu-8-Upgrades unter Windows und Debian/Ubuntu mit bekannten alten Pakethashes, erhaltenen eigenen Testprofil-/Spielstandbytes und Deinstallation ohne Datenverlust. Plattformpakete werden erst nach diesen Prüfungen veröffentlicht. Physische Controller, Bazzite-Zielhardware und neue Pokémon-Spielabnahmen sind dadurch nicht nachgewiesen.

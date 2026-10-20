@@ -16,6 +16,7 @@ runtime=importlib.util.module_from_spec(spec);spec.loader.exec_module(runtime)
 def package(upstream,output,version):
     if not version or any(c not in '0123456789abcdefghijklmnopqrstuvwxyz.+~-:' for c in version):
         raise ValueError('Invalid Debian version')
+    # Preserve the Debian package ID and install root for in-place upgrades.
     files,metadata=maker.source_files(ROOT,upstream)
     output=output.resolve()
     with tempfile.TemporaryDirectory(prefix='coop-deb-') as temporary:
@@ -27,16 +28,16 @@ def package(upstream,output,version):
         dependencies=['libc6 (>= 2.39)','libstdc++6','python3',*runtime.PACKAGES]
         control.write_text(
             'Package: pokemon-platinum-local-coop\nVersion: '+version+
-            '\nArchitecture: amd64\nMaintainer: Platinum Local Co-op contributors\n'
+            '\nArchitecture: amd64\nMaintainer: CouchSplit contributors\n'
             'Section: games\nPriority: optional\nDepends: '+', '.join(dict.fromkeys(dependencies))+
-            '\nHomepage: https://github.com/Philmenting/pokemon-platinum-local-coop\n'
-            'Description: Two-player Project PM launcher for Zorin OS 18\n'
+            '\nHomepage: https://github.com/Philmenting/couchsplit\n'
+            'Description: CouchSplit split-screen couch co-op launcher\n'
             ' Own compatible patched ROM required. No Nintendo files included.\n'
             ' Complete matching GPL source is installed alongside the application.\n')
         desktop=stage/'usr/share/applications/pokemon-platinum-local-coop.desktop'
         desktop.parent.mkdir(parents=True)
-        desktop.write_text('[Desktop Entry]\nType=Application\nName=Pokémon Platinum Local Co-op\n'
-            'Comment=Zwei Spieler mit Project PM\n'
+        desktop.write_text('[Desktop Entry]\nType=Application\nName=CouchSplit\n'
+            'Comment=Split-screen couch co-op with Project PM\nComment[de]=Couch-Koop und Splitscreen mit Project PM\n'
             'Exec=/opt/pokemon-platinum-local-coop/project/build/bin/platinum-coop --fullscreen --first-run\n'
             'Terminal=false\nIcon=applications-games\nCategories=Game;Emulator;\n',encoding='utf-8')
         copyright=stage/'usr/share/doc/pokemon-platinum-local-coop/copyright'
@@ -49,5 +50,5 @@ def package(upstream,output,version):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--upstream',type=Path,required=True)
-    p.add_argument('--output',type=Path,required=True);p.add_argument('--version',default='0.2.0~alpha.7')
+    p.add_argument('--output',type=Path,required=True);p.add_argument('--version',default='0.2.0~alpha.8')
     a=p.parse_args();package(a.upstream,a.output,a.version)

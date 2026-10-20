@@ -177,7 +177,7 @@ class Launcher : public QWidget {
         }catch(...){stored=before;throw;}
         i18n::setLanguage(value);retranslate();
     }
-    void report(QString msg) { QMessageBox::warning(this,"Pokémon Platinum Local Co-op",msg); }
+    void report(QString msg) { QMessageBox::warning(this,"CouchSplit",msg); }
     void saveSettings() {
         if(settings.emulator==bundledEmulator()) stored.remove("emulator");
         else stored["emulator"]=settings.emulator;
@@ -358,7 +358,7 @@ public:
         contentLayout=new QVBoxLayout(menuContent);contentLayout->setContentsMargins(0,0,0,0);
         centered->addWidget(menuContent,100);centered->addStretch(1);canvas->addLayout(centered);canvas->addStretch();
         auto* header=new QHBoxLayout;
-        auto* title=new QLabel("Pokémon Platinum\nLocal Co-op");title->setObjectName("title");
+        auto* title=new QLabel("CouchSplit\nLocal Co-op");title->setObjectName("title");
         title->setWordWrap(true);title->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred);
         header->addWidget(title,1);
         auto* alpha=new QLabel("ALPHA");alpha->setObjectName("alphaBadge");header->addWidget(alpha,0,Qt::AlignTop);
@@ -406,7 +406,7 @@ public:
         session.status=[this](QString text){statusSource=text;statusLabel->setProperty("tone","normal");statusLabel->setText(i18n::text(text));statusLabel->style()->unpolish(statusLabel);statusLabel->style()->polish(statusLabel);};
         session.error=[this](QString text){statusSource=text;statusLabel->setProperty("tone","error");statusLabel->setText(i18n::text(text));statusLabel->style()->unpolish(statusLabel);statusLabel->style()->polish(statusLabel);};
         session.ended=[this]{pages->setCurrentIndex(0);};
-        setWindowTitle("Pokémon Platinum Local Co-op");resize(QSize(1280,800).boundedTo(screen()->availableGeometry().size()));
+        setWindowTitle("CouchSplit");resize(QSize(1280,800).boundedTo(screen()->availableGeometry().size()));
         updateAppearance();
         start->setFocus();
         // UI navigation works through mapped controllers after assignment.
@@ -440,7 +440,8 @@ protected:
 };
 #ifndef PLATINUM_COOP_NO_MAIN
 int main(int argc,char** argv) {
-    QApplication app(argc,argv); app.setApplicationName("platinum-coop");app.setOrganizationName("PlatinumLocalCoop");
+    // Keep application/organization IDs and the data directory for upgrades.
+    QApplication app(argc,argv); app.setApplicationDisplayName("CouchSplit");app.setApplicationName("platinum-coop");app.setOrganizationName("PlatinumLocalCoop");
     i18n::setLanguage(i18n::systemLanguage());
     std::signal(SIGTERM,requestQuit);std::signal(SIGINT,requestQuit);
     QTimer quitTimer;QObject::connect(&quitTimer,&QTimer::timeout,&app,[&]{if(quitRequested)app.quit();});quitTimer.start(100);
@@ -467,10 +468,10 @@ int main(int argc,char** argv) {
                 app.setQuitOnLastWindowClosed(true);
                 if(args.contains("--first-run"))launcher.firstRun();
             }catch(const std::exception& e){
-                QMessageBox::critical(&launcher,"Local Co-op",QString::fromUtf8(e.what()));app.exit(1);
+                QMessageBox::critical(&launcher,"CouchSplit",QString::fromUtf8(e.what()));app.exit(1);
             }
         });
         return app.exec(); }
-    catch(const std::exception& e){QMessageBox::critical(nullptr,"Local Co-op",e.what());return 1;}
+    catch(const std::exception& e){QMessageBox::critical(nullptr,"CouchSplit",e.what());return 1;}
 }
 #endif

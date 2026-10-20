@@ -1,10 +1,10 @@
 # Screenshot provenance
 
-All images are actual application captures, not generated artwork or mockups. The launcher and language selector show Alpha 7; older gameplay captures use Alpha 5 and the German ROM. Choosing an English launcher does not translate that ROM.
+All images are actual application captures, not generated artwork or mockups. The main launcher shows CouchSplit Alpha 8. The unchanged language selector was captured in Alpha 7; older gameplay captures use Alpha 5 and the German ROM. Choosing an English launcher does not translate that ROM.
 
 | File | Context |
 |---|---|
-| `launcher.png` | Alpha-7 production launcher in English, fresh setup at 1280×720; no game or assigned controllers. |
+| `launcher.png` | CouchSplit Alpha-8 production launcher in English, fresh setup at 1280×720; no game or assigned controllers. |
 | `language-picker.png` | Actual bilingual first-launch language choice, before ROM setup. |
 | `shared-battle.png` | Real shared trainer battle against Sven, Linux, two actual emulator workers. |
 | `shared-world.png` | Route 202 immediately after the shared victory, before any movement; both own followers visible. |
