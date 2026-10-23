@@ -324,7 +324,9 @@ class Launcher : public QWidget {
         if(QFileInfo::exists(importer)) {
             QString python="python3";
 #ifdef _WIN32
-            python=QCoreApplication::applicationDirPath()+"/python/python.exe";
+            const auto bundledPython=QCoreApplication::applicationDirPath()+"/python/python.exe";
+            // Installed builds ship Python here; source builds use the build environment.
+            if(QFileInfo::exists(bundledPython))python=bundledPython;
 #endif
             QProcess process;process.start(python,{"-X","utf8",importer,"--rom",rom,"--into",root+"/roms"});
             QApplication::setOverrideCursor(Qt::WaitCursor);
