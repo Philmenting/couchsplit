@@ -232,6 +232,9 @@ def install(payload, root, data_home, bin_home, release_id, ui, log):
     binary = release / 'project/build/bin'
     result = command([*ENTER, *CLEAN, str(binary / 'melonDS-coop'), '--coop-capabilities'], log, timeout=30, progress=ui.activity)
     if 'PMCOOP_ABI=2' not in result.stdout: raise RuntimeError('Emulator-Schnittstelle fehlt.')
+    if (binary/'gba-worker').is_file():
+        gba=command([*ENTER,*CLEAN,str(binary/'gba-worker'),'--coop-capabilities'],log,timeout=30,progress=ui.activity)
+        if 'GBA=1' not in gba.stdout or 'STABLE_SAVE=1' not in gba.stdout:raise RuntimeError('GBA-Emulator-Schnittstelle fehlt.')
     with tempfile.TemporaryDirectory(prefix='.install-check-', dir=root) as check:
         command([*ENTER, *CLEAN, 'QT_QPA_PLATFORM=offscreen', 'SDL_AUDIODRIVER=dummy',
                  str(binary / 'platinum-coop'), '--data-dir', str(Path(check) / 'profiles'),

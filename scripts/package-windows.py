@@ -22,7 +22,7 @@ def stage(upstream,output,prefix):
     for name,(data,mode) in files.items():
         target=output/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
     binary=output/'project/build/bin'
-    for name in ('platinum-coop.exe','melonDS-coop.exe'):
+    for name in ('platinum-coop.exe','melonDS-coop.exe','gba-worker.exe'):
         subprocess.run([str(prefix/'bin/windeployqt6.exe'),'--release','--no-translations','--dir',str(binary),str(binary/name)],check=True)
     # windeployqt deploys qwindows by default; our hidden workers require offscreen too.
     offscreen=prefix/'share/qt6/plugins/platforms/qoffscreen.dll'

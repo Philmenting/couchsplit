@@ -16,7 +16,7 @@ import tarfile
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-FORBIDDEN = {'.nds', '.srl', '.sav', '.dsv', '.rom', '.bios', '.bin', '.exe', '.dll'}
+FORBIDDEN = {'.nds', '.srl', '.gba', '.gb', '.gbc', '.sav', '.dsv', '.rom', '.bios', '.bin', '.exe', '.dll'}
 
 
 def forbidden(name):
@@ -61,37 +61,46 @@ def source_files(project, upstream, windows=False):
             if (upstream / name).read_bytes() != data: raise ValueError('Gebauter Upstream weicht vom gepinnten Patch ab: ' + name)
             files['corresponding-source/' + name] = (data, mode)
     files['corresponding-source/UPSTREAM_COMMIT'] = ((lock['commit'] + '\nwith project/patches/project-pm-linux-coop.patch and project/scripts/prepare-platform.py applied\n').encode(), 0o644)
-    files['BUILDING.txt'] = (b'''Complete corresponding source is in project/ and corresponding-source/.
+    gba_lock=json.loads((project/'config/mgba.lock.json').read_text())
+    gba_source=project/'.cache/mgba'
+    if git('rev-parse','HEAD',cwd=gba_source).decode().strip()!=gba_lock['commit'] or git('diff','HEAD','--',cwd=gba_source).strip():
+        raise ValueError('mGBA source differs from config/mgba.lock.json')
+    for name,value in snapshot(gba_source,gba_lock['commit']).items():
+        if not forbidden(name):files['gba-corresponding-source/'+name]=value
+    files['gba-corresponding-source/UPSTREAM_COMMIT']=( (gba_lock['commit']+'\nmGBA 0.10.5; XROM overlay reconstructed by project/scripts/prepare-mgba-xrom.py and project/patches/mgba-xrom.patch\n').encode(),0o644)
+    files['BUILDING.txt'] = (b'''Complete corresponding source is in project/, corresponding-source/ and gba-corresponding-source/.
 Install Ubuntu 24.04 development dependencies from project/docs/bazzite-installation.md.
 From this release directory, without fetching any source:
 cmake -S corresponding-source -B rebuild/emulator -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_LTO_RELEASE=OFF
 cmake --build rebuild/emulator --parallel 4
-cmake -S project -B rebuild/launcher -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake -S project -B rebuild/launcher -G Ninja -DCMAKE_BUILD_TYPE=Release -DCOUCHSPLIT_MGBA_SOURCE="$PWD/gba-corresponding-source"
 cmake --build rebuild/launcher --parallel 4
 ctest --test-dir rebuild/launcher --output-on-failure
 mkdir -p project/build/bin
 cp rebuild/emulator/melonDS project/build/bin/melonDS-coop
 cp rebuild/launcher/platinum-coop project/build/bin/platinum-coop
+cp rebuild/launcher/gba/gba-worker project/build/bin/gba-worker
 Run project/build/bin/platinum-coop in the same runtime.
-See project/LICENSE and the dependency licenses in corresponding-source/.
+See project/LICENSE, corresponding-source/LICENSE and gba-corresponding-source/LICENSE (mGBA, MPL-2.0).
 ''', 0o644)
     if windows:
-        files['BUILDING.txt'] = (b'''Complete matching source is in project/ and corresponding-source/.
+        files['BUILDING.txt'] = (b'''Complete matching source is in project/, corresponding-source/ and gba-corresponding-source/.
 Use MSYS2 UCRT64 x86_64. Exact compiler/runtime versions are in dependency-licenses/MSYS2-PACKAGES.txt.
 The complete package/development dependency list is in project/.github/workflows/platforms.yml.
 From this release directory in the UCRT64 shell, no source download is required:
 cmake -S corresponding-source -B rebuild/emulator -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_LTO_RELEASE=OFF
 cmake --build rebuild/emulator --parallel 4
-cmake -S project -B rebuild/launcher -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake -S project -B rebuild/launcher -G Ninja -DCMAKE_BUILD_TYPE=Release -DCOUCHSPLIT_MGBA_SOURCE="$PWD/gba-corresponding-source"
 cmake --build rebuild/launcher --parallel 4
 ctest --test-dir rebuild/launcher --output-on-failure
 cp rebuild/emulator/melonDS.exe project/build/bin/melonDS-coop.exe
 cp rebuild/launcher/platinum-coop.exe project/build/bin/platinum-coop.exe
+cp rebuild/launcher/gba/gba-worker.exe project/build/bin/gba-worker.exe
 Run from UCRT64 for development. For standalone use deploy Qt and transitive DLLs as in project/scripts/package-windows.py.
-See project/LICENSE, corresponding-source/LICENSE and dependency-licenses/.
+See project/LICENSE, corresponding-source/LICENSE, gba-corresponding-source/LICENSE (mGBA, MPL-2.0) and dependency-licenses/.
 ''', 0o644)
     suffix = '.exe' if windows else ''
-    binaries = tuple(name + suffix for name in ('platinum-coop', 'melonDS-coop'))
+    binaries = tuple(name + suffix for name in ('platinum-coop', 'melonDS-coop', 'gba-worker'))
     for binary in binaries:
         data = (project / 'build/bin' / binary).read_bytes()
         valid = data[:6] == b'\x7fELF\x02\x01' and struct.unpack_from('<H', data, 18)[0] == 62
@@ -103,7 +112,7 @@ See project/LICENSE, corresponding-source/LICENSE and dependency-licenses/.
         files['project/build/bin/' + binary] = (data, 0o755)
     for name in files:
         if forbidden(name) and name not in {'project/build/bin/' + binary for binary in binaries}: raise ValueError('Geschützte/unerwartete Datei im Paket: ' + name)
-    return files, dict(project_commit=commit, upstream_commit=lock['commit'], architecture='x86_64', runtime='windows-ucrt64' if windows else 'ubuntu:24.04')
+    return files, dict(project_commit=commit, upstream_commit=lock['commit'], mgba_commit=gba_lock['commit'], architecture='x86_64', runtime='windows-ucrt64' if windows else 'ubuntu:24.04')
 
 
 def make_installer(files, metadata, output, bootstrap):

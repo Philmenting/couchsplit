@@ -80,7 +80,7 @@ static void languagePreferences() {
         assert(launcher.findChild<QLabel*>("playHelp1")->text().contains("right stick"));
         assert(launcher.findChild<QLabel*>("navigationHelp")->text().contains("D-pad"));
         assert(launcher.findChild<QLabel*>("sessionStatus")->text().contains("No game running"));
-        assert(launcher.findChild<QLabel*>("romLabel")->text()=="No Project PM ROM selected");
+        assert(launcher.findChild<QLabel*>("romLabel")->text()=="No game ROM selected");
         launcher.resize(640,360);spin(30);configureLanguage(launcher,"de");configureLanguage(launcher,"en");
     }
     {
@@ -100,6 +100,30 @@ static void languagePreferences() {
     QDialogButtonBox buttons(QDialogButtonBox::Cancel|QDialogButtonBox::Close);theme::labelButtons(buttons);
     assert(buttons.button(QDialogButtonBox::Cancel)->text()=="Cancel");
     i18n::setLanguage("de");theme::labelButtons(buttons);assert(buttons.button(QDialogButtonBox::Close)->text()=="Schließen");
+}
+static void gbaSelection() {
+    QTemporaryDir data;const auto rom=data.path()+"/own-homebrew.gba";
+    QByteArray header(1024,0);header.replace(0xAC,4,"TEST");header[0xB2]=char(0x96);
+    unsigned sum=0x19;for(int i=0xA0;i<0xBD;i++)sum+=static_cast<unsigned char>(header[i]);header[0xBD]=char(-sum);
+    atomicWrite(rom,header);
+    atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"language","de"}}).toJson());
+    Launcher launcher(data.path());launcher.show();
+    bool picked=false;QTimer picker;picker.setInterval(10);
+    QObject::connect(&picker,&QTimer::timeout,[&]{
+        auto* dialog=qobject_cast<QFileDialog*>(QApplication::activeModalWidget());if(!dialog)return;
+        assert(dialog->nameFilters().join(" ").contains("*.gba"));
+        dialog->selectFile(rom);picked=true;picker.stop();QMetaObject::invokeMethod(dialog,"accept",Qt::QueuedConnection);
+    });picker.start();
+    for(auto* button:launcher.findChildren<QPushButton*>())if(button->text()=="ROM auswählen")button->click();
+    picker.stop();assert(picked);
+    auto selected=preferences(data.path())["rom"].toString();
+    assert(inspectRom(selected).system==GameSystem::GameBoyAdvance && hashFile(selected)==hashFile(rom));
+    assert(launcher.findChild<QPushButton*>("startGame")->text()=="Splitscreen starten");
+    assert(launcher.findChild<QLabel*>("subtitle")->text()=="Zwei Spieler. Zwei eigene Abenteuer.");
+    capture(launcher,"gba-menu-de");configureLanguage(launcher,"en");
+    assert(launcher.findChild<QPushButton*>("startGame")->text()=="Start split screen");
+    capture(launcher,"gba-menu-en");
+    Launcher reopened(data.path());assert(reopened.findChild<QPushButton*>("startGame")->text()=="Start split screen");
 }
 static void menuFits() {
     QTemporaryDir data;
@@ -200,11 +224,12 @@ static void playHelpFits() {
 }
 
 int main(int argc,char** argv) {
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
     QApplication app(argc,argv);app.setQuitOnLastWindowClosed(false);
     QTemporaryDir mouseData,controllerData,sessionData;
     languagePreferences();
     for(auto language:{"en","de"}) {i18n::setLanguage(language);menuFits();playHelpFits();}
-    backgroundMenu();assignedMenu();
+    gbaSelection();i18n::setLanguage("de");backgroundMenu();assignedMenu();
     {
         QTemporaryDir keyboardData;Launcher launcher(keyboardData.path());launcher.show();spin(40);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit);exit->setFocus();

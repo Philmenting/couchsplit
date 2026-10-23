@@ -18,9 +18,10 @@
 #include <signal.h>
 #include "CoopIPC.h"
 #include "SaveStore.h"
+#include "Rom.h"
 namespace coop {
 struct Settings {
-    QString emulator, rom, bios9, bios7, firmware;
+    QString emulator, rom, bios9, bios7, firmware, gbaEmulator;
     int layout=0; bool horizontal=false; bool patchedConfirmed=false;
 };
 inline QString executableSuffix() {
@@ -31,16 +32,10 @@ inline QString executableSuffix() {
 #endif
 }
 inline QString bundledEmulator() {return QCoreApplication::applicationDirPath()+"/melonDS-coop"+executableSuffix();}
+inline QString bundledGbaEmulator() {return QCoreApplication::applicationDirPath()+"/gba-worker"+executableSuffix();}
 inline QString quoted(QString value) {
     // JSON basic strings are valid TOML basic strings for these paths.
     return QString::fromUtf8(QJsonDocument(QJsonArray{value}).toJson(QJsonDocument::Compact)).mid(1).chopped(1);
-}
-inline QString validateRom(const QString& path) {
-    QFile f(path); if(!f.open(QIODevice::ReadOnly)) fail(i18n::text("ROM fehlt oder ist nicht lesbar."));
-    if(f.size()<512 || f.size()>512*1024*1024) fail(i18n::text("Keine gültige Nintendo-DS-ROM (Dateigröße)."));
-    auto header=f.read(16);
-    if(header.size()<16 || header.mid(12,3)!="CPU") fail(i18n::text("Die ROM muss auf Pokémon Platin basieren (CPU*-Kennung)."));
-    return hashFile(path);
 }
 inline void requireMultiplayerPatch(const QString& sha256) {
     // Exact known-original fingerprint, checked against No-Intro metadata.
@@ -51,6 +46,7 @@ inline void requireMultiplayerPatch(const QString& sha256) {
         fail(i18n::text("Unveränderte USA-Rev-1-ROM erkannt. Zuerst Project PM anwenden: scripts/prepare-rom.py --rom ORIGINAL.nds --patch BUILD.zip --output GEPATCHT.nds. Die Ausgabe bleibt bei PM 0.4.5 englisch."));
 }
 inline QString knownPreparedRom(const QString& sha256) {
+    if(sha256==QLatin1String(GermanFireRedSha256))return i18n::text("Pokémon Feuerrot · Deutsch · Getrennte Abenteuer");
     if(sha256=="800106962a6dd4eba0d090c4acca322d8e45f0eefbe3281aa2a843459a08629c") return i18n::text("Project PM 0.4.5 · Deutsch Alpha 2");
     if(sha256=="8b11f36e7bf4a15932eb364358fba183c2067ac8265cfbc97611ca53e3c90949") return i18n::text("Project PM 0.4.5 · Deutsch Alpha 1");
     if(sha256=="8ef9d4eeee81513f2d6e13c36125cdbfa4c6f498b039ef4b99faa7095d39cfa5") return i18n::text("Project PM 0.4.5 · Englisch");
@@ -70,7 +66,7 @@ class Session : public QObject {
     std::array<std::unique_ptr<QProcess>,2> workers;
     std::unique_ptr<QTemporaryDir> runtime;
     std::array<std::unique_ptr<QFile>,2> logs;
-    bool active=false, stopping=false, failed=false;
+    bool active=false, stopping=false, failed=false, gba=false;
 #ifdef _WIN32
     HANDLE job = nullptr;
 #endif
@@ -107,6 +103,10 @@ public:
                     failed=true; stop(); return;
                 }
             }
+            if(gba) {
+                if(status)status(i18n::text("GBA läuft · Zwei getrennte Spiele · Keine Link-Verbindung"));
+                return;
+            }
             const bool connected=maps[0]->data->peers.load()&&maps[1]->data->peers.load();
             const bool activated=maps[0]->data->bridgeActive.load()&&maps[1]->data->bridgeActive.load();
             if(status) status(connected?(activated?"TCP verbunden · ROM-Bridge aktiviert (Welt-Synchronisation im Spiel prüfen)":"TCP verbunden · Nach dem Pokédex: Wireless Play im Beutel aktivieren"):(elapsed.elapsed()>10000?"Verbindung ausstehend · Logs prüfen":"Lokale Verbindung wird aufgebaut …"));
@@ -114,24 +114,31 @@ public:
     }
     ~Session() { stop(); }
     bool running() const { return active; }
+    bool isGba() const {return gba;}
     Shared* shared(int p) const { return maps.at(p)?maps.at(p)->data:nullptr; }
     bool copyFrame(int p, QImage& top, QImage& bottom) {
         if(!maps[p] || !maps[p]->acquire()) return false;
         top=QImage(reinterpret_cast<const uchar*>(maps[p]->data->top),Width,Height,QImage::Format_RGB32).copy();
         bottom=QImage(reinterpret_cast<const uchar*>(maps[p]->data->bottom),Width,Height,QImage::Format_RGB32).copy();
-        maps[p]->release(); return true;
+        maps[p]->release();
+        if(gba){top=top.copy(0,0,240,160);bottom=QImage();}
+        return true;
     }
     void start(const Settings& s) {
         if(active) fail(i18n::text("Sitzung läuft bereits."));
-        if(!s.patchedConfirmed) fail(i18n::text("Die vorbereitete Project-PM-ROM muss bestätigt werden. Eine normale Platin-ROM bietet keine gemeinsame Spielwelt."));
-        game=validateRom(s.rom); requireMultiplayerPatch(game); validateFirmware(s);
-        QFileInfo binary(s.emulator);
-        if(!binary.isFile()||!binary.isExecutable()) fail(i18n::text("Gepatchtes Emulator-Binary fehlt: ")+s.emulator);
+        const auto info=inspectRom(s.rom);gba=info.system==GameSystem::GameBoyAdvance;game=info.sha256;
+        if(!gba) {
+            if(!s.patchedConfirmed) fail(i18n::text("Die vorbereitete Project-PM-ROM muss bestätigt werden. Eine normale Platin-ROM bietet keine gemeinsame Spielwelt."));
+            requireMultiplayerPatch(game); validateFirmware(s);
+        }
+        const auto executable=gba?(s.gbaEmulator.isEmpty()?bundledGbaEmulator():s.gbaEmulator):s.emulator;
+        QFileInfo binary(executable);
+        if(!binary.isFile()||!binary.isExecutable()) fail(i18n::text("Emulator fehlt: %1").arg(executable));
         // Reject unrelated binaries before acquiring locks or launching sessions.
-        QProcess capability; capability.start(s.emulator,{"--coop-capabilities"});
+        QProcess capability; capability.start(executable,{"--coop-capabilities"});
         const bool ready=capability.waitForFinished(5000) && capability.exitCode()==0;
         const auto features=capability.readAllStandardOutput();
-        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1")) {
+        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1") || (gba&&!features.contains("GBA=1")) || (info.extendedGba&&!features.contains("GBA_XROM=1"))) {
             capability.kill(); capability.waitForFinished(1000); fail(i18n::text("Emulator unterstützt die benötigte Co-op-Spielstandschnittstelle nicht. Launcher und Emulator gemeinsam aktualisieren."));
         }
         saves.acquire();
@@ -147,7 +154,7 @@ public:
             QFile::setPermissions(runtime->path(),QFileDevice::ReadOwner|QFileDevice::WriteOwner|QFileDevice::ExeOwner);
             // Reserve an available loopback port; bridge retries cover the brief bind handoff.
             QTcpServer probe;
-            if(!probe.listen(QHostAddress::LocalHost,0)) fail(i18n::text("Kein lokaler TCP-Port verfügbar."));
+            if(!gba && !probe.listen(QHostAddress::LocalHost,0)) fail(i18n::text("Kein lokaler TCP-Port verfügbar."));
             auto port=probe.serverPort(); probe.close();
             logDir=saves.root()+"/logs/"+QDateTime::currentDateTimeUtc().toString("yyyyMMddTHHmmsszzz")+"-"+QUuid::createUuid().toString(QUuid::Id128);
             if(!QDir().mkpath(logDir)) fail(i18n::text("Logordner nicht anlegbar."));
@@ -161,7 +168,7 @@ public:
             for(int i=0;i<2;i++) {
                 const auto profile=saves.profile(i,game);
                 QString toml="LimitFPS = true\nTargetFPS = 60.0\n[Emu]\nDirectBoot = true\nExternalBIOSEnable = "+QString(s.bios9.isEmpty()?"false":"true")+"\n[Screen]\nUseGL = false\n[\"3D\"]\nRenderer = 0\n[DS]\nBIOS9Path = "+quoted(s.bios9)+"\nBIOS7Path = "+quoted(s.bios7)+"\nFirmwarePath = "+quoted(s.firmware)+"\n[Instance0]\nJoystickID = -1\nSaveFilePath = "+quoted(profile+"/saves")+"\nSavestatePath = "+quoted(profile+"/states")+"\nCheatFilePath = "+quoted(profile+"/cheats")+"\n[Instance0.Audio]\nVolume = 128\n[Instance0.Firmware]\nUsername = "+quoted("Spieler "+QString::number(i+1))+"\n";
-                atomicWrite(profile+"/melonDS.toml",toml.toUtf8());
+                if(!gba)atomicWrite(profile+"/melonDS.toml",toml.toUtf8());
                 auto ipc=runtime->path()+"/player"+QString::number(i+1)+".ipc";
                 maps[i]=std::make_unique<Mapping>(); maps[i]->open(ipc.toStdString(),true);
                 workers[i]=std::make_unique<QProcess>();
@@ -174,7 +181,7 @@ public:
 #endif
                 auto env=QProcessEnvironment::systemEnvironment();
                 for(const auto& key:env.keys()) if(key.startsWith("MELONDS_AP")||key.startsWith("PMCOOP_")) env.remove(key);
-                env.insert("PMCOOP_ROLE",i?"join":"host"); env.insert("PMCOOP_PORT",QString::number(port));
+                if(!gba){env.insert("PMCOOP_ROLE",i?"join":"host"); env.insert("PMCOOP_PORT",QString::number(port));}
                 env.insert("PMCOOP_IPC",ipc); env.insert("PMCOOP_PROFILE",profile);
                 env.insert("PMCOOP_SAVE_NAME","game");
                 env.insert("QT_QPA_PLATFORM","offscreen");

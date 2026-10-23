@@ -6,7 +6,9 @@
 
 A split-screen couch co-op launcher for Windows and Linux.
 
-**Currently supports Project PM / Pokémon Platinum.**
+**Supports Project PM / Pokémon Platinum, plus GBA games and ROM hacks in independent split-screen sessions.**
+
+GBA support is a local development build: [setup and limitations](docs/firered.md). Existing Alpha 8 downloads do not contain this new worker. GBA games currently run independently; GBA link multiplayer and shared-world co-op are not provided.
 
 [![Release](https://img.shields.io/badge/Release-0.2.0%20Alpha%208-b83f35?style=flat-square)](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)
 [![Native builds](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml/badge.svg?branch=main)](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml)
@@ -116,12 +118,14 @@ For all ARM tests, also install `tests/requirements-romfix.txt`; decoder tests r
 
 ## Deutsch
 
+Die lokale Entwicklungsversion unterstützt zusätzlich **GBA-Spiele und ROM-Hacks mit zwei getrennten Sitzungen im Splitscreen**. Einrichtung und Grenzen stehen in der [GBA-Anleitung](docs/de/firered.md). Die veröffentlichten Alpha-8-Downloads enthalten diese Erweiterung noch nicht. Pokémon-Bank, Regionsreisen und gemeinsame GBA-Spielwelt sind noch nicht implementiert.
+
 **CouchSplit** bringt Couch-Koop und Splitscreen in ein gemeinsames Fenster. Aktuell unterstützt es Project PM / Pokémon Platin: Der native Retro-Launcher startet zwei getrennte Project-PM/melonDS-Prozesse für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 8 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, eine eigene kompatible Project-PM-ROM auswählen und beide Controller zuordnen. Beim ersten Start zwischen **Deutsch und Englisch** wählen; später unter **Einstellungen → Sprache** ändern. Die Auswahl wird gespeichert und verändert die Spiel-ROM nicht. Ausführliche Anleitungen gibt es auf [Deutsch](docs/de/README.md) und [Englisch](docs/README.md).
 
 Welt-Koop und gemeinsame Kämpfe wurden unter Linux mit virtuellen SDL-Controllern geprüft. Windows-/Linux-CI prüft Builds, native Tests und Pakete. Gezielte Heilungs-/Siegszenarien nutzen vorbereitete Level-25-Spielstandkopien. Physische Hardware und ein vollständiger Durchlauf bleiben offen. ROM-Korrekturen sind separate, hashgebundene Werkzeuge; ein neuer ROM-Hash verwendet eigene Spielstandordner. [Spielstände übernehmen](docs/de/save-transfer.md) · [Einrichtung](docs/de/platforms.md).
 
 ## Credits and license
 
-Our launcher and changes: **[GPL-3.0-or-later](LICENSE)**. [Project PM / platinum-mp](https://github.com/ComicartOlie/melonDS-Project-PM/tree/platinum-mp) provides the emulator core, ROM mailbox bridge and SaveManager, based on [melonDS](https://github.com/melonDS-emu/melonDS). Silkscreen uses the [SIL Open Font License](assets/fonts/OFL.txt). mGBA SplitScreen and CouchPlay were architectural references; no code was taken from them.
+Our launcher and changes: **[GPL-3.0-or-later](LICENSE)**. [Project PM / platinum-mp](https://github.com/ComicartOlie/melonDS-Project-PM/tree/platinum-mp) provides the DS emulator core, ROM mailbox bridge and SaveManager, based on [melonDS](https://github.com/melonDS-emu/melonDS). The GBA worker embeds [mGBA 0.10.5](https://github.com/mgba-emu/mgba/tree/0.10.5), licensed under MPL-2.0; matching source and licenses accompany distributed workers. Silkscreen uses the [SIL Open Font License](assets/fonts/OFL.txt). mGBA SplitScreen and CouchPlay were architectural references; no code was taken from them.
 
 An unofficial project, not affiliated with Nintendo, Game Freak or The Pokémon Company. Game screenshots document the tests; game-content rights remain with their respective owners.

@@ -32,6 +32,7 @@ void layoutTest() {
         auto positions=screens(area,layout,bottom);
         for(auto r:positions)if(!r.isEmpty()){assert(area.contains(r));assert(std::abs(r.width()/r.height()-4.0/3.0)<1e-8);}
         if(layout<2)assert(!positions[0].intersects(positions[1]));
+        const auto gba=fitAspect(area,1.5);assert(area.contains(gba));assert(std::abs(gba.width()/gba.height()-1.5)<1e-8);
     }
     auto area=playerArea({0,0,3840,2160},1,false);assert(area==QRectF(1920,0,1920,2160));
 }
@@ -107,6 +108,13 @@ void controllerTest() {
         assert(c.read(0).keys==(0xFFFu&~(1u<<(toggle?3:8))));
     }
     c.buttons=original;
+    // GBA has one screen: Select+R must reach the game as ordinary input.
+    SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_A,0);
+    SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_START,0);
+    SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_BACK,1);
+    SDL_JoystickSetVirtualButton(ja,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,1);c.update();
+    const auto gbaInput=c.read(0,1.0f/60,false);
+    assert(!gbaInput.toggle && (gbaInput.keys&(1u<<2))==0 && (gbaInput.keys&(1u<<8))==0);
     SDL_JoystickDetachVirtual(a);c.update();assert(!c.connected(0));assert(c.read(0).keys==0xFFF);assert(!c.read(0).touch);assert(c.connected(1));
     // Device indices shifted, but player 1 must never adopt player 2.
     assert(c.id(0)==ia);assert(c.id(1)==ib);
@@ -122,6 +130,26 @@ void validationTest() {
     assert(knownPreparedRom(QString(64,'a')).isEmpty());
     assert(knownPreparedRom("800106962a6dd4eba0d090c4acca322d8e45f0eefbe3281aa2a843459a08629c").contains("Deutsch Alpha 2"));
     assert(quoted("a\"b\\c")=="\"a\\\"b\\\\c\"");
+    auto gba=temp.path()+"/authored-header.gba";
+    QByteArray fake(1024,0);fake.replace(0xAC,4,"TEST");fake[0xB2]=char(0x96);
+    unsigned sum=0x19;for(int i=0xA0;i<0xBD;i++)sum+=static_cast<unsigned char>(fake[i]);fake[0xBD]=char(-sum);
+    atomicWrite(gba,fake);assert(inspectRom(gba).system==GameSystem::GameBoyAdvance);
+    // Modified/custom games are accepted as a format, with a separate hash.
+    const auto before=validateRom(gba);fake[900]=1;atomicWrite(gba,fake);assert(validateRom(gba)!=before);
+    fake[0xBD]=char(static_cast<unsigned char>(fake[0xBD])^1);atomicWrite(gba,fake);rejects([&]{inspectRom(gba);});
+    atomicWrite(gba,"MZ not a game");rejects([&]{inspectRom(gba);});
+    fake.resize(32*1024*1024+1);fake[0xBD]=char(static_cast<unsigned char>(fake[0xBD])^1);
+    atomicWrite(gba,fake);rejects([&]{inspectRom(gba);});
+    // Large files require the explicit extended data format; a larger file alone is insufficient.
+    fake.resize(512);fake.replace(0xB5,7,"CSXROM1");
+    sum=0x19;for(int i=0xA0;i<0xBD;i++)sum+=static_cast<unsigned char>(fake[i]);fake[0xBD]=char(-sum);
+    atomicWrite(gba,fake);rejects([&]{inspectRom(gba);});
+    {QFile large(gba);assert(large.open(QIODevice::ReadWrite));assert(large.resize(64LL*1024*1024));}
+    assert(inspectRom(gba).extendedGba);
+    {QFile large(gba);assert(large.open(QIODevice::ReadWrite));assert(large.resize(64LL*1024*1024+1));}
+    rejects([&]{inspectRom(gba);});
+    {QFile large(gba);assert(large.open(QIODevice::ReadWrite));assert(large.resize(512LL*1024*1024+4));}
+    rejects([&]{inspectRom(gba);});
 }
 void processTest(const QString& fixture) {
     QTemporaryDir temp;SaveStore store(temp.path());Session session(store);Settings s;s.emulator=fixture;

@@ -11,9 +11,9 @@ import zipfile
 def package(project, upstream, output):
     if subprocess.check_output(['git','-C',str(project),'status','--porcelain']).strip():
         raise SystemExit('Commit reviewed project changes before packaging.')
-    binaries=[project/'build/bin/platinum-coop',project/'build/bin/melonDS-coop']
-    if not all(p.is_file() for p in binaries):raise SystemExit('Build both release binaries first.')
-    forbidden={'.nds','.srl','.sav','.dsv','.rom','.bios','.bin','.exe','.dll'}
+    binaries=[project/'build/bin/platinum-coop',project/'build/bin/melonDS-coop',project/'build/bin/gba-worker']
+    if not all(p.is_file() for p in binaries):raise SystemExit('Build launcher and both emulator workers first.')
+    forbidden={'.nds','.srl','.gba','.gb','.gbc','.sav','.dsv','.rom','.bios','.bin','.exe','.dll'}
     with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         tracked=subprocess.check_output(['git','-C',str(project),'ls-files','-z']).decode().split('\0')
         for name in filter(None,tracked):
@@ -24,6 +24,14 @@ def package(project, upstream, output):
         for path in (project/'.git').rglob('*'):
             if path.is_file() and path.name not in {'index.lock','COMMIT_EDITMSG'}:z.write(path,'couchsplit/'+str(path.relative_to(project)))
         for path in binaries:z.write(path,'linux-build/'+path.name)
+        gba_source=project/'.cache/mgba'
+        if subprocess.check_output(['git','-C',str(gba_source),'rev-parse','HEAD']).decode().strip()!='26b7884bc25a5933960f3cdcd98bac1ae14d42e2':
+            raise SystemExit('Pinned mGBA source required')
+        if subprocess.check_output(['git','-C',str(gba_source),'diff','HEAD','--']).strip():
+            raise SystemExit('Unmodified pinned mGBA source required')
+        for name in filter(None,subprocess.check_output(['git','-C',str(gba_source),'ls-files','-z']).decode().split('\0')):
+            path=gba_source/name
+            if path.is_file() and path.suffix.lower() not in forbidden:z.write(path,'gba-corresponding-source/'+name)
         tracked_upstream=subprocess.check_output(['git','-C',str(upstream),'ls-files','-z']).decode().split('\0')
         for name in filter(None,tracked_upstream):
             path=upstream/name

@@ -1,6 +1,30 @@
-# Entwicklungsstatus — 16.10.2026
+# Entwicklungsstatus — 21.10.2026
 
 [English](../development-status.md) · **Deutsch** · [Anleitungen](README.md)
+
+## Große GBA-ROMs: 23. Oktober 2026
+
+Der lokale Build unterstützt ausdrücklich markierte CouchSplit-XROM-v1-Dateien bis 512 MiB, bei gleicher Oberfläche und erhaltenen DS-/GBA-Pfaden. Normale GBA-ROMs bleiben auf 32 MiB begrenzt. Ein nachvollziehbarer mGBA-Patch ergänzt einen nur lesbaren Datenbereich, CPU-/LDM-Zugriffe, DMA-Quellen und BIOS-Dekomprimierung. Er erzeugt keine Spielinhalte oder zusätzlichen Handlungskapitel. [Format und Grenzen](extended-rom.md).
+
+Lokal geprüft: eigene ARM-Testprogramme mit 64 und 512 MiB lesen tatsächliche Daten am Dateiende; Byte-/Halbwort-/Wort-, unaligned- und LDM-Zugriffe, DMA16/32, BIOS-CpuSet/LZ77 nach RAM/VRAM, Eingabeisolation zweier Worker, kaltes SRAM-Laden und sauberer Stopp. Native Komponenten-/UI-Tests und alle 60 Python-Tests bestehen (7 optionale Abhängigkeits-/Umgebungsprüfungen in diesem Lauf übersprungen); bestehende SRAM-/Flash-/EEPROM-Prüfungen am Produktions-Worker bestehen ebenfalls. Die separate private 64-MiB-Reise-ROM verlagert echte Pokémon-Grafiken hinter 32 MiB; Einstiege Kanto/Johto/Hoenn, gemeinsamer PC und normales Speichern sind kurz geprüft. Vollständige Kampagnen sowie Windows/Bazzite, Hardware und hörbarer Ton bleiben ungeprüft.
+
+## Allgemeine GBA-Erweiterung — 21.10.2026
+
+Die bestehende GitHub-Menüaufteilung bleibt erhalten. Ein geprüfter Header wählt GBA automatisch aus: direkter/ZIP-Import, maximal 32 MiB, ein Bildschirm mit 240×160 Pixeln je Spieler und passende Eingaben/Hinweise. Es gibt kein Reise-/Bankmenü und keine zusätzliche Emulatorzeile in den Einstellungen. Project PM / Platin nutzt weiterhin den bisherigen DS-Worker und IPC-ABI 2. [GBA-Einrichtung und Grenzen](firered.md).
+
+Unter Zorin OS 18.1 mit lokalem Qt 6.4.2, SDL 2.30 und mGBA 0.10.5 geprüft: native Komponenten-/UI-Tests, GBA-Auswahl und deutsche/englische Menübilder, virtuelle Controller einschließlich Trennung und normales Select+R unter GBA bestehen. Alle 59 Python-Tests bestehen mit echtem xdelta3 und aktivierten ARM-Abhängigkeiten. Eigene ARM-Cartridge-Testprogramme laufen auf zwei Produktions-Workern für SRAM mit 32 KiB, Flash mit 64/128 KiB sowie EEPROM mit 512 Byte/8 KiB. Sie schreiben getrennten Fortschritt, prüfen Eingabeisolation, laden nach Neustart identische Speicherbytes und beenden sich sauber. Ein Spiel ohne Batteriespeicher erzeugt keinen Save; ungültige Speichergrößen werden ohne Überschreiben der vorhandenen Bytes abgewiesen.
+
+Die echte deutsche Feuerrot-ROM erreicht getrennt davon das Zimmer des bestehenden Testhelden über Weiter, lädt nach Neustart erneut und behält die vorherigen Save-Prüfsummen. Die ROM bleibt unverändert. Dies ist zusätzlich zum früheren Nachweis der Ingame-Speichererstellung unten geprüft. DS-Produktionstransport, Speicherpfad-/Konfigurationsprüfungen und zwei echte DS-Worker mit eigenem ARM-Programm bestehen ebenfalls. Gemeinsame GBA-Spielwelt/Link-Multiplayer, Regionsreisen, Bank, physische Controller, hörbarer Ton, Windows/Bazzite und vollständige Spieldurchläufe sind nicht nachgewiesen. Die allgemeine Formaterkennung bestätigt nicht jeden ROM-Hack. Öffentliche Releases bleiben unverändert.
+
+## Frühere reine Feuerrot-Erweiterung — 21.10.2026
+
+Die lokale Entwicklungsversion erkennt die deutsche Feuerrot-Originalausgabe anhand ihrer exakten Prüfsumme und startet zwei getrennte Abenteuer über mGBA 0.10.5. Der vorhandene Launcher übernimmt Controllerzuordnung, zwei Bildflächen mit jeweils 240×160 Pixeln sowie getrennte Spielstände, Sperren und Backups pro Spieler und ROM. Eine externe GBA-BIOS-Datei wird nicht benötigt. [Einrichtung und Grenzen](firered.md).
+
+Unter Zorin OS 18.1 mit Qt-Offscreen, Dummy-Audio und virtuellen SDL-Controllern geprüft: echte `.gba`-/ZIP-Importe mit unveränderter Prüfsumme, zwei echte GBA-Worker mit deutschen Spielbildern, ausschließlich an Spieler 1 wirkende Eingaben sowie Ingame-Speichern mit allen 14 Speicherabschnitten und Laden über **Weiter** nach sauberem Beenden. Spieler 2 behält seinen getrennten leeren Spielstand. Das private Prüfprogramm verwendet die tatsächliche Produktions-Sitzung und Bilddarstellung. Native Komponenten-/UI-Tests und alle 58 Python-Tests einschließlich echtem xdelta3 und ARM-Prüfungen bestehen. Der Produktions-DS-Transporttest und der Smoke-Test mit zwei echten DS-Homebrew-Workern bestehen weiterhin.
+
+Ein erster Neustart während der noch sichtbaren Speicheranzeige unterbrach den ersten Ingame-Speichervorgang. Der Wiederholungstest nach abgeschlossenem Speichern bestand. Atomare Dateiausgabe ersetzt nicht das vollständige Speichern innerhalb des Spiels.
+
+Gemeinsame Feuerrot-Spielwelt, Link-Kämpfe/Tausch, Pokémon-Bank und Regionsreisen sind noch nicht umgesetzt. Physische Controller, hörbare Tonausgabe, GBA-Ausführung unter Windows/Bazzite und ein vollständiger Spieldurchlauf sind offen. Der öffentliche Alpha-8-Release enthält diese Erweiterung noch nicht; seine Pakete bleiben unverändert. Die folgenden Abschnitte dokumentieren frühere Entwicklungsstände.
 
 **Aktueller Nachtrag:** Alpha 4 wurde mit der bereitgestellten deutschen PM-0.4.5-ROM tatsächlich bis zum Pokédex gespielt. Zwei Figuren und ihre Begleiter bewegen sich synchron; ein gemeinsamer Wildkampf mit getrennten Befehlen, identischen Gegnerzuständen, Sieg/EP/Levelaufstieg und anschließendem Ingame-Speichern/-Laden wurde unter Linux geprüft. Native Windows-/Bazzite-Spielabnahme, Trainer-Koop, Tausch und mehrstündiger Dauertest bleiben offen. Die älteren Abschnitte unten beschreiben den damaligen Prüfstand.
 
