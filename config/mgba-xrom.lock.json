@@ -1,0 +1,17 @@
+{
+  "upstream_commit": "26b7884bc25a5933960f3cdcd98bac1ae14d42e2",
+  "files": {
+    "include/mgba/internal/gba/memory.h": "bc959b786218da4ce1a8215be66fb907aa25d32bd7c76a0493b9def4f9992ad6",
+    "src/gba/memory.c": "3cb9a1595e36f11cd712407c559064dda781ab85cce7e5e3e3b9883b1f2ba19a",
+    "src/gba/dma.c": "83f1ff180942907d274208284d3d5d9148bbcb9e60ab51302bf59933d1ccdb41",
+    "src/gba/gba.c": "92b0fd214bfa563a1694921661c4413ffd96871cd6162cd762542fb5c2a2c098",
+    "src/gba/bios.c": "8885962e1ca2d8c79a7f13a5d1e074bb2b39704a64aa164f76e1506868c8759a"
+  },
+  "patched_files": {
+    "include/mgba/internal/gba/memory.h": "b0dd79d886413ca51f11f8631b63795c565fd9e9243a952458f45b7804c95a59",
+    "src/gba/memory.c": "da4adeb858476e04fcbe2891be9e72ee7646378e4fe0a53aeef7113af10ae01d",
+    "src/gba/dma.c": "4057c73902b5a5065fb60f30dfe3ecd7614e59a765c9f10883cea66a97246786",
+    "src/gba/gba.c": "10a6f2ed59cca8be1c15d8a82a4fcec1260641561f7bd7f3565a02adc106643a",
+    "src/gba/bios.c": "33ee6734bf832f18e8c73b42d15b6203e7143637e6d2477baf71eb4923ed804d"
+  }
+}

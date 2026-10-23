@@ -2,7 +2,31 @@
 
 **English** · [Deutsch](de/development-status.md) · [Documentation](README.md)
 
-Updated 20 October 2026. Current release: **[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**. Current game support is Project PM / Pokémon Platinum. Historical results below apply to the versions and environments named; they are not full-playthrough or target-hardware certification.
+Updated 21 October 2026. Current public release: **[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, supporting Project PM / Pokémon Platinum. The local development build additionally supports GBA games and ROM hacks as independent split-screen sessions. Historical results below apply to the versions and environments named; they are not full-playthrough or target-hardware certification.
+
+## Extended GBA ROMs: 23 October 2026
+
+The local build supports explicit CouchSplit XROM v1 files up to 512 MiB, retaining the UI and native DS/GBA paths. Standard GBA remains limited to 32 MiB. A reproducible mGBA overlay adds a read-only data aperture, CPU/LDM reads, DMA sources and BIOS decompression. It does not create game content or implement extra story chapters. See [format and limits](extended-rom.md).
+
+Verified locally: authored ARM fixtures at 64 and 512 MiB read actual data at the end of the file, CPU byte/halfword/word and unaligned/LDM accesses, DMA16/32, BIOS CpuSet/LZ77 to RAM/VRAM, two-worker input isolation, SRAM cold reload and clean shutdown. Native component/UI tests and all 60 Python tests pass (7 optional dependency/environment checks skipped in this run); existing SRAM/Flash/EEPROM production-worker checks pass. The separate private 64 MiB journey build relocates real Pokémon assets beyond 32 MiB; Kanto/Johto/Hoenn openings, shared PC and normal save checks pass. Full campaigns and Windows/Bazzite/hardware/audio remain unverified.
+
+## General GBA extension: 21 October 2026
+
+The existing GitHub menu layout is retained. GBA is selected automatically from a validated header, with raw/ZIP import, a 32 MiB limit, one 240×160 screen per player and appropriate input/help. No journey/bank menu or additional emulator settings row is added. Project PM / Platinum remains on its existing DS worker and IPC ABI 2. See [GBA setup and limits](firered.md).
+
+Verified on Zorin OS 18.1 using local Qt 6.4.2, SDL 2.30 and pinned mGBA 0.10.5: native component/UI tests, GBA selection and German/English menu captures, virtual controller isolation/disconnect and GBA Select+R pass. All 59 Python tests pass with xdelta3 and ARM dependencies enabled. Authored ARM cartridge programs run on two production workers for SRAM 32 KiB, Flash 64/128 KiB and EEPROM 512 bytes/8 KiB; each writes progress, preserves per-player input, reloads identical battery bytes after restart and exits cleanly. A game with no battery creates no save; invalid save lengths fail while preserving existing bytes.
+
+Actual German FireRed separately reaches the existing authored test hero's room through Continue, survives restart/reload and retains the previous save hashes. ROM bytes remain unchanged. This is separate from the earlier in-game-save creation evidence below. DS production transport, save path/config checks and two-worker authored DS execution also pass. No shared-world GBA/link multiplayer, travel, bank, physical-controller, audible-output, Windows/Bazzite or complete-playthrough claim is made. Generic acceptance is format support, not certification of every ROM hack. Public releases are unchanged.
+
+## Earlier FireRed-only prototype: 21 October 2026
+
+The original German FireRed is accepted by exact fingerprint and runs through a separate pinned mGBA 0.10.5 worker. The existing launcher provides two 240×160 views, controller assignment and separate per-player/per-ROM saves, locks and backups. No external GBA BIOS is required. See [setup and scope](firered.md).
+
+Verified locally on Zorin OS 18.1 with Qt offscreen, dummy audio and virtual SDL controllers: real raw/ZIP imports retain the original hash; two actual GBA workers render German game screens; player-one input progresses only that adventure; an in-game save creates all 14 save sections and survives clean shutdown/reload through **Continue**. Player two retains its separate blank save. The private acceptance tool uses production Session/PlayView code. Native core/UI checks and all 58 Python tests pass with real xdelta3 and ARM checks enabled. Production DS transport and the two-worker DS homebrew smoke check still pass.
+
+One deliberately premature test restart happened during the game's saving indicator and left the first save incomplete. Repeating the test after saving finished succeeded. Atomic host file replacement does not make an interrupted in-game save complete.
+
+Shared FireRed world co-op, link battles/trading, the shared Pokémon bank and travel between editions are not implemented. Physical controllers, audible output, Windows/Bazzite GBA execution and a full playthrough remain unverified. Existing public Alpha 8 assets do not include this worker and are unchanged.
 
 ## Current evidence
 

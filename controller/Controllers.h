@@ -83,13 +83,13 @@ public:
         }
         return {};
     }
-    ControlState read(int p, float seconds=1.0f/60) {
+    ControlState read(int p, float seconds=1.0f/60, bool allowScreenToggle=true) {
         ControlState out;
         auto* h=handles.at(p);
         // Never fall back to another device when disconnected or indices shift.
         if(!h || !SDL_GameControllerGetAttached(h)) { toggleHeld[p]=false; exitSince[p]=0; return out; }
         auto down=[&](SDL_GameControllerButton b){ return SDL_GameControllerGetButton(h,b)!=0; };
-        bool toggle=down(SDL_CONTROLLER_BUTTON_BACK)&&down(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+        bool toggle=allowScreenToggle&&down(SDL_CONTROLLER_BUTTON_BACK)&&down(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
         bool exit=down(SDL_CONTROLLER_BUTTON_BACK)&&down(SDL_CONTROLLER_BUTTON_START);
         // Consume physical shortcut buttons before applying the user's mapping.
         auto consumed=[&](int button){

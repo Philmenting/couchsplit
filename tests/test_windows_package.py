@@ -13,6 +13,8 @@ def main():
     env=dict(os.environ,PATH=str(Path(os.environ['SYSTEMROOT'])/'System32'),
              QT_QPA_PLATFORM='offscreen',SDL_AUDIODRIVER='dummy',QT_LOGGING_TO_CONSOLE='1')
     for key in ('QT_PLUGIN_PATH','QML2_IMPORT_PATH','PYTHONPATH','PYTHONHOME'):env.pop(key,None)
+    gba=subprocess.run([str(binary/'gba-worker.exe'),'--coop-capabilities'],check=True,env=env,capture_output=True,text=True,timeout=20)
+    assert 'GBA=1' in gba.stdout and 'STABLE_SAVE=1' in gba.stdout
     with tempfile.TemporaryDirectory(prefix='coop package ä ') as temporary:
         data=Path(temporary);source=data/'own synthetic.nds';header=bytearray(4096);header[12:16]=b'CPUE';source.write_bytes(header)
         archive=data/'own.zip'

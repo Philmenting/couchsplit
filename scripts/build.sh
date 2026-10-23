@@ -28,15 +28,27 @@ cp "$project_dir/multiplayer/SocketCompat.h" "$source_dir/src/frontend/qt_sdl/"
 cp "$project_dir/display/CoopIPC.h" "$source_dir/src/frontend/qt_sdl/"
 cmake -S "$source_dir" -B "$build_dir/emulator" -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_LTO_RELEASE=OFF
 cmake --build "$build_dir/emulator" --parallel "$jobs"
-cmake -S "$project_dir" -B "$build_dir/launcher" -G Ninja -DCMAKE_BUILD_TYPE=Release
+gba_source="$project_dir/.cache/mgba"
+gba_commit=26b7884bc25a5933960f3cdcd98bac1ae14d42e2
+if [[ ! -d "$gba_source/.git" ]]; then
+  git clone --branch 0.10.5 --depth 1 https://github.com/mgba-emu/mgba.git "$gba_source"
+fi
+if [[ "$(git -C "$gba_source" rev-parse HEAD)" != "$gba_commit" ]] || [[ -n "$(git -C "$gba_source" status --porcelain --untracked-files=no)" ]]; then
+  echo "mGBA source differs from config/mgba.lock.json. Preserve local work and restore the pinned source first." >&2
+  exit 1
+fi
+cmake -S "$project_dir" -B "$build_dir/launcher" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCOUCHSPLIT_MGBA_SOURCE="$gba_source"
 cmake --build "$build_dir/launcher" --parallel "$jobs"
 mkdir -p "$build_dir/bin"
 suffix=""
 if [[ "${OS:-}" == Windows_NT ]]; then suffix=".exe"; fi
 cp "$build_dir/emulator/melonDS$suffix" "$build_dir/bin/melonDS-coop$suffix"
 cp "$build_dir/launcher/platinum-coop$suffix" "$build_dir/bin/"
+cp "$build_dir/launcher/gba/gba-worker$suffix" "$build_dir/bin/"
 ctest --test-dir "$build_dir/launcher" --output-on-failure
 python3 "$project_dir/tests/test_transport.py" --source "$source_dir"
 python3 "$project_dir/tests/test_save_paths.py" --source "$source_dir"
 python3 "$project_dir/tests/test_config_threads.py" --source "$source_dir"
 "$build_dir/bin/melonDS-coop$suffix" --coop-capabilities
+python3 "$project_dir/tests/smoke_gba.py" "$build_dir/bin/gba-worker$suffix"
+python3 "$project_dir/tests/smoke_xrom.py" "$build_dir/bin/gba-worker$suffix"

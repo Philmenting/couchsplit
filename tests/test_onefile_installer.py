@@ -178,7 +178,7 @@ class CommandTests(unittest.TestCase):
 class OneFileTests(unittest.TestCase):
     def test_gpl_freebios_makefile_is_source_but_dumps_are_rejected(self):
         self.assertFalse(maker.forbidden('corresponding-source/freebios/Makefile.bios'))
-        for name in ('project/game.nds', 'project/user.bios', 'project/bios9.bin', 'corresponding-source/user.rom'):
+        for name in ('project/game.nds', 'project/game.gba', 'project/game.gb', 'project/game.gbc', 'project/user.bios', 'project/bios9.bin', 'corresponding-source/user.rom'):
             self.assertTrue(maker.forbidden(name))
 
     def test_self_extraction_and_corruption_rejection_without_install(self):
@@ -269,6 +269,47 @@ class OneFileTests(unittest.TestCase):
 
 
 class RomImportTests(unittest.TestCase):
+    def test_custom_gba_import_and_corrupt_header_rejection(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);source=base/'own-homebrew.gba'
+            data=bytearray(1024);data[0xAC:0xB0]=b'TEST';data[0xB2]=0x96
+            data[0xBD]=(-sum(data[0xA0:0xBD])-0x19)&255;source.write_bytes(data)
+            archive=base/'fake.zip'
+            with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:z.write(source,'../../unsupported.gba')
+            for file in (source,archive):
+                imported=importer.import_rom(file,base/'roms')
+                self.assertEqual(imported.suffix,'.gba');self.assertEqual(imported.read_bytes(),data)
+            before=imported.read_bytes()
+            data[0xBD]^=1;source.write_bytes(data)
+            with self.assertRaisesRegex(ValueError,'Prüfsumme'):importer.import_rom(source,base/'roms')
+            self.assertEqual(imported.read_bytes(),before)
+            self.assertEqual(len(list((base/'roms').iterdir())),2)  # ZIP member and raw source have different names.
+
+    def test_gba_rom_size_limit(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);source=base/'too-large.gba'
+            data=bytearray(512);data[0xB2]=0x96;data[0xBD]=(-sum(data[0xA0:0xBD])-0x19)&255
+            with source.open('wb') as f:f.write(data);f.truncate(32*1024*1024+1)
+            with self.assertRaisesRegex(ValueError,'32 MiB'):importer.import_rom(source,base/'roms')
+            self.assertEqual(list((base/'roms').iterdir()),[])
+
+    def test_extended_gba_raw_zip_and_truncation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);source=base/'own-xrom.gba'
+            data=bytearray(512);data[0xB2]=0x96;data[0xB5:0xBC]=b'CSXROM1'
+            data[0xBD]=(-sum(data[0xA0:0xBD])-0x19)&255
+            source.write_bytes(data)
+            with self.assertRaisesRegex(ValueError,'größer als 32 MiB'):importer.import_rom(source,base/'roms')
+            with source.open('r+b') as f:f.truncate(32*1024*1024+4)
+            archive=base/'xrom.zip'
+            with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:z.write(source,'own-xrom.gba')
+            imported=importer.import_rom(source,base/'roms')
+            self.assertEqual(importer.import_rom(archive,base/'roms'),imported)
+            self.assertEqual(imported.stat().st_size,source.stat().st_size)
+            with source.open('r+b') as f:f.truncate(32*1024*1024+5)
+            with self.assertRaisesRegex(ValueError,'ausgerichtet'):importer.import_rom(source,base/'roms')
+            self.assertEqual(len(list((base/'roms').iterdir())),1)
+
     def test_raw_zip_import_and_idempotent_private_copy(self):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp); source = base / 'OWN synthetic header.nds'
@@ -289,7 +330,7 @@ class RomImportTests(unittest.TestCase):
                 z.writestr('one.nds', b'bad'); z.writestr('two.nds', b'bad')
             with self.assertRaisesRegex(ValueError, 'genau eine'): importer.import_rom(archive, base / 'roms')
             source = base / 'other.nds'; source.write_bytes(bytes(1024))
-            with self.assertRaisesRegex(ValueError, 'CPU'): importer.import_rom(source, base / 'roms')
+            with self.assertRaisesRegex(ValueError, 'Unterstützt'): importer.import_rom(source, base / 'roms')
             self.assertFalse(list((base / 'roms').glob('*.nds')))
 
 

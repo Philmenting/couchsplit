@@ -3,6 +3,10 @@
 #include <QRectF>
 #include <array>
 namespace coop {
+inline QRectF fitAspect(QRectF area,double aspect) {
+    const double w=qMin(area.width(),area.height()*aspect),h=w/aspect;
+    return {area.center().x()-w/2,area.center().y()-h/2,w,h};
+}
 inline QRectF fit(QRectF area) {
     const double w = qMin(area.width(), area.height() * 4.0 / 3.0);
     const double h = w * 3.0 / 4.0;

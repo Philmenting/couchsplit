@@ -2,6 +2,7 @@
 /.cache/
 /dist/
 *.nds
+*.gba
 *.srl
 *.sav
 *.dsv

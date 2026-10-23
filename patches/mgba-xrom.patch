@@ -1,0 +1,203 @@
+--- a/include/mgba/internal/gba/memory.h
++++ b/include/mgba/internal/gba/memory.h
+@@ -113,6 +113,9 @@
+ 	struct GBACartEReader ereader;
+ 	size_t romSize;
+ 	uint32_t romMask;
++	// CouchSplit XROM v1: non-owning, immutable data extension, never executable.
++	const uint8_t* couchsplitXrom;
++	size_t couchsplitXromSize;
+ 	uint16_t romID;
+ 	int fullBios;
+ 
+@@ -181,6 +184,10 @@
+ 
+ void GBAPrintFlush(struct GBA* gba);
+ 
++// Host owns the mapping through core destruction. NULL disables the extension.
++void GBACouchSplitSetXrom(struct GBA* gba, const void* data, size_t size);
++bool GBACouchSplitIsXrom(const struct GBA* gba, uint32_t address);
++
+ CXX_GUARD_END
+ 
+ #endif
+--- a/src/gba/memory.c
++++ b/src/gba/memory.c
+@@ -58,6 +58,8 @@
+ 	gba->memory.rom = 0;
+ 	gba->memory.romSize = 0;
+ 	gba->memory.romMask = 0;
++	gba->memory.couchsplitXrom = NULL;
++	gba->memory.couchsplitXromSize = 0;
+ 	gba->memory.hw.p = gba;
+ 
+ 	int i;
+@@ -458,6 +460,31 @@
+ 	return value;
+ }
+ 
++// CouchSplit XROM v1 data aperture: file offset 32 MiB maps to 0x10000000.
++// Ordinary cartridges never enable it. Native ROM mirrors and save buses stay intact.
++bool GBACouchSplitIsXrom(const struct GBA* gba, uint32_t address) {
++	return gba->memory.couchsplitXrom && address >= 0x10000000U && address < 0x2E000000U;
++}
++void GBACouchSplitSetXrom(struct GBA* gba, const void* data, size_t size) {
++	gba->memory.couchsplitXrom = size && size <= 480U * 1024U * 1024U ? data : NULL;
++	gba->memory.couchsplitXromSize = gba->memory.couchsplitXrom ? size : 0;
++	for (unsigned i = 0x10; i < 0x2E; ++i) {
++		gba->memory.waitstatesNonseq16[i] = gba->memory.couchsplitXrom ? 4 : 0;
++		gba->memory.waitstatesNonseq32[i] = gba->memory.couchsplitXrom ? 8 : 0;
++		gba->memory.waitstatesSeq16[i] = gba->memory.couchsplitXrom ? 2 : 0;
++		gba->memory.waitstatesSeq32[i] = gba->memory.couchsplitXrom ? 4 : 0;
++	}
++}
++static uint32_t _couchsplitXromRead(const struct GBA* gba, uint32_t address, unsigned width) {
++	uint32_t offset = (address & ~(width - 1)) - 0x10000000U;
++	uint32_t value = 0;
++	for (unsigned i = 0; i < width; ++i) {
++		uint32_t byte = offset + i < gba->memory.couchsplitXromSize ? gba->memory.couchsplitXrom[offset + i] : 0xFF;
++		value |= byte << (8 * i);
++	}
++	return value;
++}
++
+ uint32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
+ 	struct GBA* gba = (struct GBA*) cpu->master;
+ 	struct GBAMemory* memory = &gba->memory;
+@@ -465,6 +492,12 @@
+ 	int wait = 0;
+ 	char* waitstatesRegion = memory->waitstatesNonseq32;
+ 
++	if (GBACouchSplitIsXrom(gba, address)) {
++		value = _couchsplitXromRead(gba, address, 4);
++		if (cycleCounter) *cycleCounter += 10;
++		int rotate = (address & 3) << 3;
++		return ROR(value, rotate);
++	}
+ 	switch (address >> BASE_OFFSET) {
+ 	case REGION_BIOS:
+ 		LOAD_BIOS;
+@@ -523,6 +556,12 @@
+ 	uint32_t value = 0;
+ 	int wait = 0;
+ 
++	if (GBACouchSplitIsXrom(gba, address)) {
++		value = _couchsplitXromRead(gba, address, 2);
++		if (cycleCounter) *cycleCounter += 6;
++		int rotate = (address & 1) << 3;
++		return ROR(value, rotate);
++	}
+ 	switch (address >> BASE_OFFSET) {
+ 	case REGION_BIOS:
+ 		if (address < SIZE_BIOS) {
+@@ -638,6 +677,11 @@
+ 	uint32_t value = 0;
+ 	int wait = 0;
+ 
++	if (GBACouchSplitIsXrom(gba, address)) {
++		value = _couchsplitXromRead(gba, address, 1);
++		if (cycleCounter) *cycleCounter += 6;
++		return value;
++	}
+ 	switch (address >> BASE_OFFSET) {
+ 	case REGION_BIOS:
+ 		if (address < SIZE_BIOS) {
+@@ -1098,6 +1142,8 @@
+ 	struct GBA* gba = (struct GBA*) cpu->master;
+ 	uint32_t value = 0;
+ 	address &= ~3;
++	if (GBACouchSplitIsXrom(gba, address)) return _couchsplitXromRead(gba, address, 4);
++
+ 	switch (address >> BASE_OFFSET) {
+ 	case REGION_BIOS:
+ 		if (address < SIZE_BIOS) {
+@@ -1137,6 +1183,8 @@
+ 	struct GBA* gba = (struct GBA*) cpu->master;
+ 	uint16_t value = 0;
+ 	address &= ~1;
++	if (GBACouchSplitIsXrom(gba, address)) return _couchsplitXromRead(gba, address, 2);
++
+ 	switch (address >> BASE_OFFSET) {
+ 	case REGION_BIOS:
+ 		if (address < SIZE_BIOS) {
+@@ -1177,6 +1225,8 @@
+ uint8_t GBAView8(struct ARMCore* cpu, uint32_t address) {
+ 	struct GBA* gba = (struct GBA*) cpu->master;
+ 	uint8_t value = 0;
++	if (GBACouchSplitIsXrom(gba, address)) return _couchsplitXromRead(gba, address, 1);
++
+ 	switch (address >> BASE_OFFSET) {
+ 	case REGION_BIOS:
+ 		if (address < SIZE_BIOS) {
+@@ -1503,7 +1553,11 @@
+ 		LDM_LOOP(LOAD_SRAM);
+ 		break;
+ 	default:
+-		LDM_LOOP(LOAD_BAD);
++		if (GBACouchSplitIsXrom(gba, address)) {
++			LDM_LOOP(value = _couchsplitXromRead(gba, address & ~3U, 4); wait += 4;);
++		} else {
++			LDM_LOOP(LOAD_BAD);
++		}
+ 		break;
+ 	}
+ 
+--- a/src/gba/dma.c
++++ b/src/gba/dma.c
+@@ -46,7 +46,7 @@
+ uint32_t GBADMAWriteSAD(struct GBA* gba, int dma, uint32_t address) {
+ 	struct GBAMemory* memory = &gba->memory;
+ 	if (_isValidDMASAD(dma, address)) {
+-		memory->dma[dma].source = address & 0x0FFFFFFE;
++		memory->dma[dma].source = address & (GBACouchSplitIsXrom(gba, address) ? 0xFFFFFFFEU : 0x0FFFFFFEU);
+ 	} else {
+ 		mLOG(GBA_DMA, GAME_ERROR, "Invalid DMA source address: 0x%08X", address);
+ 		memory->dma[dma].source = 0;
+--- a/src/gba/gba.c
++++ b/src/gba/gba.c
+@@ -132,6 +132,7 @@
+ }
+ 
+ void GBAUnloadROM(struct GBA* gba) {
++	GBACouchSplitSetXrom(gba, NULL, 0);
+ 	GBAMemoryClearAGBPrint(gba);
+ 	if (gba->memory.rom && !gba->isPristine) {
+ 		if (gba->yankedRomSize) {
+--- a/src/gba/bios.c
++++ b/src/gba/bios.c
+@@ -527,7 +527,7 @@
+ 		break;
+ 	case GBA_SWI_LZ77_UNCOMP_WRAM:
+ 	case GBA_SWI_LZ77_UNCOMP_VRAM:
+-		if (!(cpu->gprs[0] & 0x0E000000)) {
++		if (!(cpu->gprs[0] & 0x0E000000) && !GBACouchSplitIsXrom(gba, cpu->gprs[0])) {
+ 			mLOG(GBA_BIOS, GAME_ERROR, "Bad LZ77 source");
+ 			break;
+ 		}
+@@ -544,7 +544,7 @@
+ 		}
+ 		break;
+ 	case GBA_SWI_HUFFMAN_UNCOMP:
+-		if (!(cpu->gprs[0] & 0x0E000000)) {
++		if (!(cpu->gprs[0] & 0x0E000000) && !GBACouchSplitIsXrom(gba, cpu->gprs[0])) {
+ 			mLOG(GBA_BIOS, GAME_ERROR, "Bad Huffman source");
+ 			break;
+ 		}
+@@ -561,7 +561,7 @@
+ 		break;
+ 	case GBA_SWI_RL_UNCOMP_WRAM:
+ 	case GBA_SWI_RL_UNCOMP_VRAM:
+-		if (!(cpu->gprs[0] & 0x0E000000)) {
++		if (!(cpu->gprs[0] & 0x0E000000) && !GBACouchSplitIsXrom(gba, cpu->gprs[0])) {
+ 			mLOG(GBA_BIOS, GAME_ERROR, "Bad RL source");
+ 			break;
+ 		}
+@@ -579,7 +579,7 @@
+ 	case GBA_SWI_DIFF_8BIT_UNFILTER_WRAM:
+ 	case GBA_SWI_DIFF_8BIT_UNFILTER_VRAM:
+ 	case GBA_SWI_DIFF_16BIT_UNFILTER:
+-		if (!(cpu->gprs[0] & 0x0E000000)) {
++		if (!(cpu->gprs[0] & 0x0E000000) && !GBACouchSplitIsXrom(gba, cpu->gprs[0])) {
+ 			mLOG(GBA_BIOS, GAME_ERROR, "Bad UnFilter source");
+ 			break;
+ 		}

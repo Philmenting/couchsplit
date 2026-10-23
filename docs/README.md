@@ -2,11 +2,12 @@
 
 **English** · [Deutsch](de/README.md) · [Project overview](../README.md)
 
-Current game support: **Project PM / Pokémon Platinum**. These guides are available in English and German. The launcher language does not change your game ROM. Commands are run from the project root unless stated otherwise.
+Current development build: **Project PM / Pokémon Platinum**, plus **GBA games and ROM hacks with independent sessions**. Released Alpha 8 packages support Platinum only. These guides are available in English and German. The launcher language does not change your game ROM. Commands are run from the project root unless stated otherwise.
 
 ## Getting started
 
 - [Platform packages](platforms.md)
+- [GBA games: setup and limits](firered.md)
 - [Bazzite single-file installation](one-file-installer.md)
 - [Developer build](bazzite-installation.md)
 - [Project PM 0.4.5 requirements](project-pm-045.md)

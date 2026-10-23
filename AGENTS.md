@@ -1,5 +1,8 @@
 # Project: CouchSplit
 
+## Authorized FireRed extension (21 October 2026)
+The user explicitly requested German FireRed support. Retain the Project PM DS worker and add an independent mGBA 0.10.5 worker for the exact verified German FireRed original. Shared IPC ABI stays 2; GBA occupies the top framebuffer's first 240x160 pixels. Do not call two independent GBA adventures shared-world co-op or link multiplayer. Keep GBA saves isolated by player and ROM hash, use atomic save snapshots, and include pinned mGBA source/licenses with distributed workers. German ROM acceptance, real emulation, input isolation, in-game saves/reload and ROM integrity must be verified separately from fixtures. Never commit GBA ROMs or saves.
+
 ## Goal and evidence
 Build a working Linux couch launcher for TWO separate Project PM processes. A successful TCP link or synthetic mailbox test is NOT evidence of shared Sinnoh gameplay. Never claim that commercial-ROM gameplay, controller hardware, Bazzite, KDE Wayland, Gamescope or hours of play were tested unless they actually were.
 
@@ -65,3 +68,9 @@ The visible project is CouchSplit and the repository is Philmenting/couchsplit. 
 
 ## Documentation languages
 English is the default for public documentation at the existing `docs/*.md` URLs. Keep German counterparts under `docs/de/` and reciprocal language links on every guide. English README sections and English guides must lead to English local documentation; the German README summary uses German guide links. Keep commands, fingerprints, technical requirements, dated evidence and limitations consistent across languages. Historical reports must not be presented as current certification. Released assets remain immutable; documentation-only updates do not require a binary release.
+
+## General GBA support (21 October 2026)
+The user now explicitly requests general GBA ROM/hack support before further ROM work. Keep the existing launcher menu layout and DS/Platinum support; add no journey UI. Accept header-valid GBA files up to 32 MiB, with game compatibility verified separately. Use pinned mGBA with independently detected EEPROM/SRAM/Flash battery storage, isolated player/ROM saves and clean shutdown. Never claim GBA link or shared-world multiplayer from two independent workers. Keep original ROMs unchanged and test authored ARM storage/input fixtures separately from actual FireRed gameplay.
+
+## Extended journey ROMs (23 October 2026)
+The user requests a single larger ROM for the planned GBA-style journey, with the launcher UI retained. Standard cartridges remain limited to 32 MiB. Accept explicitly marked CSXROM1 files up to 512 MiB only with a GBA_XROM=1 worker. The pinned mGBA checkout stays pristine; CMake reconstructs the owned patch copy from patches/mgba-xrom.patch with checked preimages. The extension is immutable data, not executable code, at 0x10000000. Preserve the native ROM mirrors, save format, per-player/per-hash isolation, and DS worker. Verify CPU/DMA/BIOS access beyond 32 MiB separately from private actual-game checks. Never claim that a size increase adds the eight stories or is standard GBA hardware compatibility. Keep ROM assets and private game reports outside Git.

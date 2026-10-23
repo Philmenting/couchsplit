@@ -62,10 +62,10 @@ public:
             float dt=qMin(qint64(50),delta.restart())/1000.0f;
             controllers.update();
             for(int p=0;p<2;p++) {
-                auto input=controllers.read(p,dt);
-                if(input.toggle) bottomOnly[p]=!bottomOnly[p];
+                auto input=controllers.read(p,dt,!session.isGba());
+                if(input.toggle && !session.isGba()) bottomOnly[p]=!bottomOnly[p];
                 if(auto* shared=session.shared(p)) {
-                    shared->keys.store(input.keys); shared->touch.store(input.touch);
+                    shared->keys.store(input.keys); shared->touch.store(session.isGba()?0:input.touch);
                     auto frame=shared->frame.load();
                     if(frame!=lastFrames[p] && session.copyFrame(p,tops[p],bottoms[p])) lastFrames[p]=frame;
                 }
@@ -78,7 +78,13 @@ public:
         for(int p=0;p<2;p++) if(auto* s=session.shared(p)) {s->keys.store(0xFFF);s->touch.store(0);}
         controllers.resetGestures(); delta.restart();
     }
-    void reset() { lastFrames={{0,0}}; tops={}; bottoms={}; bottomOnly={{false,false}}; delta.restart(); }
+    void refreshHelp() {
+        for(auto* help:helpLabels) {
+            const QString key=session.isGba()?"GBA: Steuerkreuz + A/B + L/R · Ende: Start + Select (2 s)":"Touch: rechter Stick + Klick · Ansicht: Select + R · Ende: Start + Select (2 s)";
+            help->setProperty("translationKey",key);help->setText(i18n::text(key));
+        }
+    }
+    void reset() { lastFrames={{0,0}}; tops={}; bottoms={}; bottomOnly={{false,false}}; delta.restart();refreshHelp(); }
 protected:
     void keyPressEvent(QKeyEvent* e) override { if(e->key()==Qt::Key_Escape) { if(leave) leave(); } else QWidget::keyPressEvent(e); }
     void paintEvent(QPaintEvent*) override {
@@ -98,7 +104,7 @@ protected:
             const int helpHeight=qMax(help->fontMetrics().height(),help->heightForWidth(helpWidth));
             help->setGeometry(qCeil(area.left()),qFloor(area.bottom())-helpHeight,helpWidth,helpHeight);
             area.adjust(0,64,0,-helpHeight-8);
-            auto dest=screens(area,settings.layout,bottomOnly[p]);
+            auto dest=session.isGba()?std::array<QRectF,2>{{fitAspect(area,1.5),{}}}:screens(area,settings.layout,bottomOnly[p]);
             if(!tops[p].isNull() && !dest[0].isEmpty()) painter.drawImage(dest[0],tops[p]);
             if(!bottoms[p].isNull() && !dest[1].isEmpty()) painter.drawImage(dest[1],bottoms[p]);
             if(!dest[1].isEmpty()) {
@@ -162,11 +168,16 @@ class Launcher : public QWidget {
             else if(auto* button=qobject_cast<QPushButton*>(widget))button->setText(i18n::text(source.toString()));
         }
         const auto known=knownPreparedRom(romFingerprint);
-        romLabel->setText(settings.rom.isEmpty()?i18n::text("Noch keine Project-PM-ROM ausgewählt"):(known.isEmpty()?QFileInfo(settings.rom).fileName():known));
+        romLabel->setText(settings.rom.isEmpty()?i18n::text("Noch keine Spiel-ROM ausgewählt"):(known.isEmpty()?QFileInfo(settings.rom).fileName():known));
         updatePadLabel();statusLabel->setText(i18n::text(statusSource));
+        if(auto* start=findChild<QPushButton*>("startGame"))start->setText(i18n::text(gbaSelected()?"Splitscreen starten":"Koop-Spiel starten"));
+        if(auto* subtitle=findChild<QLabel*>("subtitle"))subtitle->setText(i18n::text(gbaSelected()?"Zwei Spieler. Zwei eigene Abenteuer.":"Zwei Spieler. Ein gemeinsames Abenteuer."));
+        play->refreshHelp();
         play->update();updateAppearance();
     }
     QString romFingerprint;
+    bool selectedGba=false;
+    bool gbaSelected() const {return selectedGba;}
     void rememberLanguage(const QString& value,bool fullSettings=false) {
         if(!i18n::supported(value))fail(i18n::text("Nicht unterstützte Sprache."));
         const auto before=stored;
@@ -181,6 +192,8 @@ class Launcher : public QWidget {
     void saveSettings() {
         if(settings.emulator==bundledEmulator()) stored.remove("emulator");
         else stored["emulator"]=settings.emulator;
+        if(settings.gbaEmulator==bundledGbaEmulator() || settings.gbaEmulator.isEmpty())stored.remove("gbaEmulator");
+        else stored["gbaEmulator"]=settings.gbaEmulator;
         stored["rom"]=settings.rom;
         stored["bios9"]=settings.bios9; stored["bios7"]=settings.bios7; stored["firmware"]=settings.firmware;
         stored["layout"]=settings.layout; stored["horizontal"]=settings.horizontal;
@@ -242,17 +255,18 @@ class Launcher : public QWidget {
     }
     void remap() {
         QDialog dialog(this);dialog.setWindowTitle(i18n::text("Tastenbelegung"));QFormLayout form(&dialog);
-        const QStringList keys{"DS A","DS B","Select","Start",i18n::text("Rechts"),i18n::text("Links"),i18n::text("Oben"),i18n::text("Unten"),"R","L","X","Y"};
+        const QStringList keys{"A","B","Select","Start",i18n::text("Rechts"),i18n::text("Links"),i18n::text("Oben"),i18n::text("Unten"),"R","L","X","Y"};
+        const int keyCount=gbaSelected()?10:12;
         std::array<std::unique_ptr<QComboBox>,12> combos;
-        for(int i=0;i<12;i++) {combos[i]=std::make_unique<QComboBox>(); combos[i]->addItem(i18n::text("Deaktiviert"),-1);for(int b=0;b<SDL_CONTROLLER_BUTTON_MAX;b++) combos[i]->addItem(SDL_GameControllerGetStringForButton(SDL_GameControllerButton(b)),b);combos[i]->setCurrentIndex(combos[i]->findData(controllers.buttons[i]));form.addRow(keys[i],combos[i].get());}
+        for(int i=0;i<keyCount;i++) {combos[i]=std::make_unique<QComboBox>(); combos[i]->addItem(i18n::text("Deaktiviert"),-1);for(int b=0;b<SDL_CONTROLLER_BUTTON_MAX;b++) combos[i]->addItem(SDL_GameControllerGetStringForButton(SDL_GameControllerButton(b)),b);combos[i]->setCurrentIndex(combos[i]->findData(controllers.buttons[i]));form.addRow(keys[i],combos[i].get());}
         QDialogButtonBox ok(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);theme::labelButtons(ok);form.addRow(&ok);connect(&ok,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(&ok,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
-        if(dialog.exec()==QDialog::Accepted) {for(int i=0;i<12;i++) controllers.buttons[i]=combos[i]->currentData().toInt();saveSettings();}
+        if(dialog.exec()==QDialog::Accepted) {for(int i=0;i<keyCount;i++) controllers.buttons[i]=combos[i]->currentData().toInt();saveSettings();}
     }
     void layoutDialog() {
         QDialog dialog(this);dialog.setWindowTitle(i18n::text("Bildschirmaufteilung"));QFormLayout form(&dialog);
         QComboBox split,ds;split.addItems({i18n::text("Links / Rechts"),i18n::text("Oben / Unten")});split.setCurrentIndex(settings.horizontal?1:0);
         ds.addItems({i18n::text("Oberer Bildschirm groß + Touchscreen klein"),i18n::text("DS-Bildschirme nebeneinander"),i18n::text("Ein Bildschirm · Select + R wechseln")});ds.setCurrentIndex(settings.layout);
-        form.addRow(i18n::text("Spieler"),&split);form.addRow(i18n::text("DS-Ansicht"),&ds);
+        form.addRow(i18n::text("Spieler"),&split);if(!gbaSelected())form.addRow(i18n::text("DS-Ansicht"),&ds);
         QDialogButtonBox ok(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);theme::labelButtons(ok);form.addRow(&ok);connect(&ok,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(&ok,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
         if(dialog.exec()==QDialog::Accepted) {settings.horizontal=split.currentIndex()==1;settings.layout=ds.currentIndex();saveSettings();}
     }
@@ -305,12 +319,14 @@ class Launcher : public QWidget {
     }
     void chooseRom() {
         if(session.running()) fail(i18n::text("Vor einem ROM-Wechsel die laufende Sitzung beenden. Im Spiel Start + Select zwei Sekunden gedrückt halten."));
-        auto rom=QFileDialog::getOpenFileName(this,i18n::text("Project-PM-ROM hinzufügen"),settings.rom,i18n::text("Nintendo DS oder ROM-ZIP (*.nds *.srl *.zip)"));if(rom.isEmpty())return;
+        auto rom=QFileDialog::getOpenFileName(this,i18n::text("Spiel-ROM hinzufügen"),settings.rom,i18n::text("Unterstützte Spiele (*.nds *.srl *.gba *.zip)"));if(rom.isEmpty())return;
         auto importer=QCoreApplication::applicationDirPath()+"/../../scripts/import-rom.py";
         if(QFileInfo::exists(importer)) {
             QString python="python3";
 #ifdef _WIN32
-            python=QCoreApplication::applicationDirPath()+"/python/python.exe";
+            const auto bundledPython=QCoreApplication::applicationDirPath()+"/python/python.exe";
+            // Installed builds ship Python here; source builds use the build environment.
+            if(QFileInfo::exists(bundledPython))python=bundledPython;
 #endif
             QProcess process;process.start(python,{"-X","utf8",importer,"--rom",rom,"--into",root+"/roms"});
             QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -320,10 +336,13 @@ class Launcher : public QWidget {
             if(process.exitCode()!=0) fail(i18n::text("ROM-Import fehlgeschlagen: %1").arg(i18n::text(QString::fromUtf8(process.readAllStandardError()).trimmed())));
             rom=QString::fromUtf8(process.readAllStandardOutput()).trimmed();
         } else if(QFileInfo(rom).suffix().compare("zip",Qt::CaseInsensitive)==0) fail(i18n::text("ROM-ZIP zuerst entpacken; Importskript fehlt in dieser Installation."));
-        auto sha=validateRom(rom);requireMultiplayerPatch(sha);auto known=knownPreparedRom(sha);
-        bool confirmed=!known.isEmpty() || theme::question(this,"Project PM ROM",i18n::text("Ist diese Platin-ROM mit dem passenden Project-PM-Multiplayer-Patch vorbereitet? Der Launcher kann Patchversion und Welt-Synchronisation nicht anhand des ROM-Headers bestätigen.")) == QMessageBox::Yes;
+        const auto info=inspectRom(rom);const auto sha=info.sha256;
+        const bool gba=info.system==GameSystem::GameBoyAdvance;
+        if(!gba)requireMultiplayerPatch(sha);
+        auto known=knownPreparedRom(sha);
+        bool confirmed=gba || !known.isEmpty() || theme::question(this,"Project PM ROM",i18n::text("Ist diese Platin-ROM mit dem passenden Project-PM-Multiplayer-Patch vorbereitet? Der Launcher kann Patchversion und Welt-Synchronisation nicht anhand des ROM-Headers bestätigen.")) == QMessageBox::Yes;
         if(!confirmed)return;
-        settings.rom=rom;settings.patchedConfirmed=true;romFingerprint=sha;romLabel->setText(known.isEmpty()?QFileInfo(rom).fileName():known);saveSettings();
+        settings.rom=rom;settings.patchedConfirmed=true;romFingerprint=sha;selectedGba=gba;retranslate();saveSettings();
     }
 public:
     bool ensureLanguageSelected() {
@@ -344,6 +363,8 @@ public:
         const auto savedLanguage=stored.value("language").toString();
         if(i18n::supported(savedLanguage))i18n::setLanguage(savedLanguage);
         settings.emulator=stored.value("emulator").toString(bundledEmulator());settings.rom=stored.value("rom").toString();
+        settings.gbaEmulator=stored.value("gbaEmulator").toString(bundledGbaEmulator());
+        if(!settings.rom.isEmpty()) {try{const auto info=inspectRom(settings.rom);romFingerprint=info.sha256;selectedGba=info.system==GameSystem::GameBoyAdvance;}catch(const std::exception&){}}
         if(!QFileInfo(settings.emulator).isExecutable()) settings.emulator=bundledEmulator();
         settings.bios9=stored.value("bios9").toString();settings.bios7=stored.value("bios7").toString();settings.firmware=stored.value("firmware").toString();
         settings.layout=qBound(0,stored.value("layout").toInt(),2);settings.horizontal=stored.value("horizontal").toBool();settings.patchedConfirmed=stored.value("patchedConfirmed").toBool();
@@ -407,7 +428,7 @@ public:
         session.error=[this](QString text){statusSource=text;statusLabel->setProperty("tone","error");statusLabel->setText(i18n::text(text));statusLabel->style()->unpolish(statusLabel);statusLabel->style()->polish(statusLabel);};
         session.ended=[this]{pages->setCurrentIndex(0);};
         setWindowTitle("CouchSplit");resize(QSize(1280,800).boundedTo(screen()->availableGeometry().size()));
-        updateAppearance();
+        retranslate();
         start->setFocus();
         // UI navigation works through mapped controllers after assignment.
         uiTimer.setInterval(30);connect(&uiTimer,&QTimer::timeout,this,[this]{

@@ -32,18 +32,20 @@ def package(upstream,output,version):
             'Section: games\nPriority: optional\nDepends: '+', '.join(dict.fromkeys(dependencies))+
             '\nHomepage: https://github.com/Philmenting/couchsplit\n'
             'Description: CouchSplit split-screen couch co-op launcher\n'
-            ' Own compatible patched ROM required. No Nintendo files included.\n'
+            ' Own compatible Project PM Platinum or GBA ROM required.\n'
+            ' No Nintendo files included. GBA games run independently.\n'
             ' Complete matching GPL source is installed alongside the application.\n')
         desktop=stage/'usr/share/applications/pokemon-platinum-local-coop.desktop'
         desktop.parent.mkdir(parents=True)
         desktop.write_text('[Desktop Entry]\nType=Application\nName=CouchSplit\n'
-            'Comment=Split-screen couch co-op with Project PM\nComment[de]=Couch-Koop und Splitscreen mit Project PM\n'
+            'Comment=Project PM co-op and GBA split screen\nComment[de]=Project-PM-Koop und GBA-Splitscreen\n'
             'Exec=/opt/pokemon-platinum-local-coop/project/build/bin/platinum-coop --fullscreen --first-run\n'
             'Terminal=false\nIcon=applications-games\nCategories=Game;Emulator;\n',encoding='utf-8')
         copyright=stage/'usr/share/doc/pokemon-platinum-local-coop/copyright'
         copyright.parent.mkdir(parents=True)
         copyright.write_text('GPL-3.0-or-later. See /opt/pokemon-platinum-local-coop/project/LICENSE.\n'
             'Complete matching upstream source: /opt/pokemon-platinum-local-coop/corresponding-source\n'
+            'mGBA 0.10.5 (MPL-2.0), complete source and license: /opt/pokemon-platinum-local-coop/gba-corresponding-source\n'
             'Project commit: '+metadata['project_commit']+'\n')
         subprocess.run(['dpkg-deb','--root-owner-group','--build',str(stage),str(output)],check=True)
     subprocess.run(['dpkg-deb','--info',str(output)],check=True)
