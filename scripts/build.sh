@@ -51,3 +51,4 @@ python3 "$project_dir/tests/test_save_paths.py" --source "$source_dir"
 python3 "$project_dir/tests/test_config_threads.py" --source "$source_dir"
 "$build_dir/bin/melonDS-coop$suffix" --coop-capabilities
 python3 "$project_dir/tests/smoke_gba.py" "$build_dir/bin/gba-worker$suffix"
+python3 "$project_dir/tests/smoke_xrom.py" "$build_dir/bin/gba-worker$suffix"
