@@ -28,7 +28,14 @@ execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/scripts/pre
 if(NOT xrom_prepare_result EQUAL 0)
     message(FATAL_ERROR "Cannot prepare pinned mGBA XROM extension")
 endif()
+# mGBA 0.10.5 declares CMake 3.1. CMake 4 removed policy compatibility below
+# 3.5; apply that policy floor only while configuring the pinned dependency.
+set(xrom_saved_policy_minimum "${CMAKE_POLICY_VERSION_MINIMUM}")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0")
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
 add_subdirectory("${COUCHSPLIT_MGBA_XROM_SOURCE}" mgba EXCLUDE_FROM_ALL)
+set(CMAKE_POLICY_VERSION_MINIMUM "${xrom_saved_policy_minimum}")
 add_executable(gba-worker Worker.cpp)
 target_include_directories(gba-worker PRIVATE ../display ../saves ../launcher)
 target_link_libraries(gba-worker PRIVATE couchsplit-mgba-core Qt6::Core ${COOP_SDL_TARGET})
