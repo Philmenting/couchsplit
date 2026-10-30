@@ -2,10 +2,11 @@
 
 [English](../README.md) · **Deutsch** · [Projektübersicht](../../README.md#deutsch)
 
-Im aktuellen Entwicklungsbuild unterstützt: **Project PM / Pokémon Platin**, zusätzlich **GBA-Spiele und ROM-Hacks mit getrennten Sitzungen**. Die veröffentlichten Alpha-8-Pakete unterstützen nur Platin. Die Launcher-Sprache verändert die Spiel-ROM nicht. Befehle werden, soweit nicht anders angegeben, im Projektverzeichnis ausgeführt. Historische Berichte behalten ihr Datum und ihre Prüfgrenzen.
+Im aktuellen Quellcode unterstützt: **Project PM / Pokémon Platin**, **GBA-Spiele und ROM-Hacks mit getrennten Sitzungen** und ein **aktivierbarer deutscher Feuerrot-Koop-Testmodus**. Die veröffentlichten Alpha-8-Pakete unterstützen nur Platin. Die Launcher-Sprache verändert die Spiel-ROM nicht. Befehle werden, soweit nicht anders angegeben, im Projektverzeichnis ausgeführt. Historische Berichte behalten ihr Datum und ihre Prüfgrenzen.
 
 - [Plattformpakete](platforms.md)
-- [GBA-Spiele: Einrichtung und Grenzen](firered.md)
+- [GBA-Spiele und experimenteller Feuerrot-Koop mit Original-ROM](firered.md)
+- [Bazzite: Feuerrot aus dem Quellcode testen](bazzite-firered-test.md)
 - [Bazzite: Ein-Datei-Installation](one-file-installer.md)
 - [Entwicklerbuild](bazzite-installation.md)
 - [Project PM 0.4.5: Voraussetzungen](project-pm-045.md)

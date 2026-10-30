@@ -1,0 +1,496 @@
+{
+  "format": "couchsplit-firered-matrix-1",
+  "profile": "full",
+  "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "checkpoint_sha256": "fdc343d9e0c35e97f65172c83d86b25b2a5660aad97a9fe09cf4fa612ad73ab8",
+  "selected_cases": [],
+  "private_save_sha256": [
+    "d9c73e6a262b941ec4438e59b7470073c7c9ca6de78e81b90961d3341b16e768",
+    "8fcb61657c5489ba94664f6ba0d3716e2b78d334c1b50c7eb833fe814d7604bb"
+  ],
+  "results": [
+    {
+      "name": "native-component-and-launcher-tests",
+      "status": "pass",
+      "seconds": 12.44
+    },
+    {
+      "name": "python-tests",
+      "status": "pass",
+      "seconds": 4.41,
+      "tests": 60,
+      "skipped_tests": 0
+    },
+    {
+      "name": "pair/single",
+      "status": "pass",
+      "seconds": 5.28
+    },
+    {
+      "name": "pair/single-leader2",
+      "status": "pass",
+      "seconds": 5.31
+    },
+    {
+      "name": "pair/wild",
+      "status": "pass",
+      "seconds": 5.91
+    },
+    {
+      "name": "pair/single-multiturn",
+      "status": "pass",
+      "seconds": 7.33
+    },
+    {
+      "name": "pair/trainer-single",
+      "status": "pass",
+      "seconds": 5.75
+    },
+    {
+      "name": "pair/trainer",
+      "status": "pass",
+      "seconds": 7.0
+    },
+    {
+      "name": "pair/single-multiturn-leader2",
+      "status": "pass",
+      "seconds": 7.22
+    },
+    {
+      "name": "pair/trainer-single-leader2",
+      "status": "pass",
+      "seconds": 5.74
+    },
+    {
+      "name": "pair/escape",
+      "status": "pass",
+      "seconds": 4.84
+    },
+    {
+      "name": "pair/payday",
+      "status": "pass",
+      "seconds": 6.29
+    },
+    {
+      "name": "pair/owners",
+      "status": "pass",
+      "seconds": 5.77
+    },
+    {
+      "name": "pair/leader2",
+      "status": "pass",
+      "seconds": 5.75
+    },
+    {
+      "name": "pair/escape-leader2",
+      "status": "pass",
+      "seconds": 4.81
+    },
+    {
+      "name": "pair/escape-player2",
+      "status": "pass",
+      "seconds": 4.92
+    },
+    {
+      "name": "pair/scripted",
+      "status": "pass",
+      "seconds": 5.23
+    },
+    {
+      "name": "pair/legendary",
+      "status": "pass",
+      "seconds": 5.22
+    },
+    {
+      "name": "pair/grass-rendezvous",
+      "status": "pass",
+      "seconds": 5.32
+    },
+    {
+      "name": "pair/action-stats",
+      "status": "pass",
+      "seconds": 5.75
+    },
+    {
+      "name": "pair/deferred-script",
+      "status": "pass",
+      "seconds": 6.73
+    },
+    {
+      "name": "pair/capture",
+      "status": "pass",
+      "seconds": 7.9
+    },
+    {
+      "name": "pair/capture-leader2",
+      "status": "pass",
+      "seconds": 7.85
+    },
+    {
+      "name": "pair/capture-scripted",
+      "status": "pass",
+      "seconds": 7.94
+    },
+    {
+      "name": "pair/capture-legendary",
+      "status": "pass",
+      "seconds": 7.9
+    },
+    {
+      "name": "pair/capture-full-native",
+      "status": "pass",
+      "seconds": 7.84
+    },
+    {
+      "name": "pair/capture-denied",
+      "status": "pass",
+      "seconds": 5.81
+    },
+    {
+      "name": "pair/capture-party-space",
+      "status": "pass",
+      "seconds": 7.74
+    },
+    {
+      "name": "pair/capture-pc",
+      "status": "pass",
+      "seconds": 7.75
+    },
+    {
+      "name": "pair/capture-both",
+      "status": "pass",
+      "seconds": 8.35
+    },
+    {
+      "name": "pair/capture-both-leader2",
+      "status": "pass",
+      "seconds": 8.37
+    },
+    {
+      "name": "pair/capture-sequential",
+      "status": "pass",
+      "seconds": 8.84
+    },
+    {
+      "name": "pair/capture-unown",
+      "status": "pass",
+      "seconds": 7.76
+    },
+    {
+      "name": "pair/capture-spinda",
+      "status": "pass",
+      "seconds": 7.71
+    },
+    {
+      "name": "pair/party-menu-cancel",
+      "status": "pass",
+      "seconds": 9.98
+    },
+    {
+      "name": "pair/party-menu-forced",
+      "status": "pass",
+      "seconds": 10.12
+    },
+    {
+      "name": "pair/party-menu-single",
+      "status": "pass",
+      "seconds": 13.47
+    },
+    {
+      "name": "pair/party-menu-summary",
+      "status": "pass",
+      "seconds": 10.14
+    },
+    {
+      "name": "pair/party-menu-exp-share",
+      "status": "pass",
+      "seconds": 8.58
+    },
+    {
+      "name": "pair/party-menu-rollback",
+      "status": "pass",
+      "seconds": 9.33
+    },
+    {
+      "name": "pair/defeat",
+      "status": "pass",
+      "seconds": 11.11
+    },
+    {
+      "name": "pair/evolution",
+      "status": "pass",
+      "seconds": 13.41
+    },
+    {
+      "name": "pair/exp-share",
+      "status": "pass",
+      "seconds": 5.95
+    },
+    {
+      "name": "pair/exhaust",
+      "status": "pass",
+      "seconds": 24.38
+    },
+    {
+      "name": "pair/exp-share-leader2",
+      "status": "pass",
+      "seconds": 5.9
+    },
+    {
+      "name": "pair/exp-share-trainer",
+      "status": "pass",
+      "seconds": 7.19
+    },
+    {
+      "name": "pair/exp-share-trainer-leader2",
+      "status": "pass",
+      "seconds": 7.29
+    },
+    {
+      "name": "pair/bench",
+      "status": "pass",
+      "seconds": 36.59
+    },
+    {
+      "name": "pair/exp-share-evolution",
+      "status": "pass",
+      "seconds": 11.07
+    },
+    {
+      "name": "pair/exp-share-learn",
+      "status": "pass",
+      "seconds": 7.83
+    },
+    {
+      "name": "pair/exp-share-evolution-leader2",
+      "status": "pass",
+      "seconds": 10.94
+    },
+    {
+      "name": "pair/exp-share-overflow",
+      "status": "pass",
+      "seconds": 0.43
+    },
+    {
+      "name": "pair/exp-share-overflow-leader2",
+      "status": "pass",
+      "seconds": 0.43
+    },
+    {
+      "name": "pair/exp-share-enigma",
+      "status": "pass",
+      "seconds": 0.43
+    },
+    {
+      "name": "pair/exp-share-enigma-leader2",
+      "status": "pass",
+      "seconds": 0.42
+    },
+    {
+      "name": "pair/exp-share-many",
+      "status": "pass",
+      "seconds": 6.12
+    },
+    {
+      "name": "pair/exp-share-learn-leader2",
+      "status": "pass",
+      "seconds": 7.92
+    },
+    {
+      "name": "pair/exp-share-many-leader2",
+      "status": "pass",
+      "seconds": 6.1
+    },
+    {
+      "name": "campaign/surf",
+      "status": "pass",
+      "seconds": 7.97
+    },
+    {
+      "name": "campaign/cut",
+      "status": "pass",
+      "seconds": 8.87
+    },
+    {
+      "name": "campaign/strength",
+      "status": "pass",
+      "seconds": 7.69
+    },
+    {
+      "name": "campaign/national-dex",
+      "status": "pass",
+      "seconds": 5.95
+    },
+    {
+      "name": "campaign/network-0",
+      "status": "pass",
+      "seconds": 5.82
+    },
+    {
+      "name": "campaign/network-1",
+      "status": "pass",
+      "seconds": 5.87
+    },
+    {
+      "name": "campaign/network-2",
+      "status": "pass",
+      "seconds": 5.9
+    },
+    {
+      "name": "campaign/network-loaded",
+      "status": "pass",
+      "seconds": 6.16
+    },
+    {
+      "name": "campaign/network-guard",
+      "status": "pass",
+      "seconds": 6.11
+    },
+    {
+      "name": "campaign/marowak",
+      "status": "pass",
+      "seconds": 22.61
+    },
+    {
+      "name": "campaign/hall-of-fame",
+      "status": "pass",
+      "seconds": 6.62
+    },
+    {
+      "name": "campaign/grass-rendezvous",
+      "status": "pass",
+      "seconds": 10.34
+    },
+    {
+      "name": "gyms/misty",
+      "status": "pass",
+      "seconds": 11.96
+    },
+    {
+      "name": "gyms/surge",
+      "status": "pass",
+      "seconds": 13.4
+    },
+    {
+      "name": "gyms/erika",
+      "status": "pass",
+      "seconds": 14.62
+    },
+    {
+      "name": "campaign/shared-champion-rendezvous",
+      "status": "pass",
+      "seconds": 27.19
+    },
+    {
+      "name": "gyms/koga",
+      "status": "pass",
+      "seconds": 13.91
+    },
+    {
+      "name": "gyms/sabrina",
+      "status": "pass",
+      "seconds": 14.46
+    },
+    {
+      "name": "gyms/blaine",
+      "status": "pass",
+      "seconds": 15.95
+    },
+    {
+      "name": "gyms/misty-full",
+      "status": "pass",
+      "seconds": 12.52
+    },
+    {
+      "name": "gyms/giovanni",
+      "status": "pass",
+      "seconds": 18.33
+    },
+    {
+      "name": "progression/bill-full",
+      "status": "pass",
+      "seconds": 8.05
+    },
+    {
+      "name": "progression/rocket-door",
+      "status": "pass",
+      "seconds": 22.35
+    },
+    {
+      "name": "progression/tower-grunt",
+      "status": "pass",
+      "seconds": 20.16
+    },
+    {
+      "name": "progression/bill-full-leader2",
+      "status": "pass",
+      "seconds": 8.1
+    },
+    {
+      "name": "connections",
+      "status": "pass",
+      "seconds": 5.2
+    },
+    {
+      "name": "progression/lostelle-full-berry",
+      "status": "pass",
+      "seconds": 20.25
+    },
+    {
+      "name": "map-setup",
+      "status": "pass",
+      "seconds": 29.02
+    },
+    {
+      "name": "public-saves/early-and-late",
+      "status": "pass",
+      "seconds": 6.0
+    },
+    {
+      "name": "public-pair/wild-0",
+      "status": "pass",
+      "seconds": 8.82
+    },
+    {
+      "name": "public-pair/wild-1",
+      "status": "pass",
+      "seconds": 9.12
+    },
+    {
+      "name": "public-pair/brock",
+      "status": "pass",
+      "seconds": 13.96
+    },
+    {
+      "name": "public-pair/sync",
+      "status": "pass",
+      "seconds": 13.28
+    },
+    {
+      "name": "public-pair/questlog",
+      "status": "pass",
+      "seconds": 7.62
+    },
+    {
+      "name": "production-session/crash-and-backup",
+      "status": "pass",
+      "seconds": 4.18
+    },
+    {
+      "name": "private-inputs-unchanged",
+      "status": "pass"
+    }
+  ],
+  "complete_natural_campaign": false,
+  "physical_controllers_verified": false,
+  "scenarios_use_authored_prerequisites": true,
+  "known_limitations": [
+    "More than six required battle slots including EXP Share holders are rejected.",
+    "A held Enigma Berry is rejected in shared battles."
+  ],
+  "date": "2026-10-29",
+  "platform": "Zorin OS Linux, virtual inputs; no physical controllers",
+  "build": "Local feature/gba-support development build; private scenarios previously built and verified",
+  "checkpoint_provenance": "Created from a separately supplied public early-game battery save using create-firered-checkpoint; original inputs unchanged.",
+  "interpretation": "One result combines the component CTest suite; another combines the Python suite. The remaining entries are targeted scenarios or input-integrity checks, not a continuous natural campaign."
+}

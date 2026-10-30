@@ -19,9 +19,11 @@
 #include "CoopIPC.h"
 #include "SaveStore.h"
 #include "Rom.h"
+#include "../gba/FireRedErrors.h"
 namespace coop {
 struct Settings {
     QString emulator, rom, bios9, bios7, firmware, gbaEmulator;
+    QString fireRedAudio="player1";
     int layout=0; bool horizontal=false; bool patchedConfirmed=false;
 };
 inline QString executableSuffix() {
@@ -52,6 +54,16 @@ inline QString knownPreparedRom(const QString& sha256) {
     if(sha256=="8ef9d4eeee81513f2d6e13c36125cdbfa4c6f498b039ef4b99faa7095d39cfa5") return i18n::text("Project PM 0.4.5 · Englisch");
     return {}; // A header or an unknown hash is not a patch compatibility test.
 }
+inline QString expShareCapacityMessageSource() {
+    return QStringLiteral("Zu viele EP-Teiler für diesen gemeinsamen Kampf. Letzte Spielstände laden und EP-Teiler ablegen. Nicht gespeicherter Fortschritt seit dem letzten Speichern kann verloren sein.");
+}
+inline QString workerExitMessage(bool fireRedPair, int player, int code, QProcess::ExitStatus how) {
+    if(fireRedPair && how==QProcess::NormalExit && code==firered::ExpShareCapacityExitCode)
+        return i18n::text(expShareCapacityMessageSource());
+    if(fireRedPair && how==QProcess::NormalExit && code==firered::EnigmaBerryExitCode)
+        return i18n::text("Die Enigmabeere wird im gemeinsamen Kampf noch nicht unterstützt. Letzte Spielstände laden und die Beere ablegen. Nicht gespeicherter Fortschritt seit dem letzten Speichern kann verloren sein.");
+    return i18n::text("Emulator %1 beendet (Code %2%3). Sitzung wird gestoppt.").arg(player+1).arg(code).arg(how==QProcess::CrashExit?i18n::text(", Absturz"):QString());
+}
 inline void validateFirmware(const Settings& s) {
     bool any=!s.bios9.isEmpty()||!s.bios7.isEmpty()||!s.firmware.isEmpty();
     if(!any) return; // upstream's built-in free BIOS + generated firmware, direct boot
@@ -66,7 +78,7 @@ class Session : public QObject {
     std::array<std::unique_ptr<QProcess>,2> workers;
     std::unique_ptr<QTemporaryDir> runtime;
     std::array<std::unique_ptr<QFile>,2> logs;
-    bool active=false, stopping=false, failed=false, gba=false;
+    bool active=false, stopping=false, failed=false, gba=false, fireRedPair=false;
 #ifdef _WIN32
     HANDLE job = nullptr;
 #endif
@@ -95,7 +107,7 @@ public:
         QObject::connect(&monitor,&QTimer::timeout,this,[this]{
             if(stopping) return;
             for(int i=0;i<2;i++) {
-                if(!workers[i] || workers[i]->state()==QProcess::NotRunning) { stop(); return; }
+                if(!(fireRedPair && i==1) && (!workers[i] || workers[i]->state()==QProcess::NotRunning)) { stop(); return; }
                 auto n=maps[i]->data->frame.load();
                 if(n!=lastFrame[i]) { lastFrame[i]=n; lastProgress[i]=elapsed.elapsed(); }
                 if(elapsed.elapsed()-lastProgress[i]>15000) {
@@ -104,6 +116,16 @@ public:
                 }
             }
             if(gba) {
+                if(fireRedPair) {
+                    const auto owner=maps[0]->data->role.load();
+                    const auto state=maps[0]->data->bridgeActive.load();
+                    if(status)status(state==2
+                        ?i18n::text("Feuerrot-Testmodus · Warte auf Spieler %1").arg(owner)
+                        :state
+                        ?(owner?i18n::text("Feuerrot-Testmodus · Teamkampf · Spieler %1 am Zug").arg(owner):i18n::text("Feuerrot-Testmodus · Gemeinsamer Kampf"))
+                        :i18n::text("Feuerrot-Testmodus · Partneransicht · Welt-Ereignisse noch unvollständig"));
+                    return;
+                }
                 if(status)status(i18n::text("GBA läuft · Zwei getrennte Spiele · Keine Link-Verbindung"));
                 return;
             }
@@ -115,6 +137,7 @@ public:
     ~Session() { stop(); }
     bool running() const { return active; }
     bool isGba() const {return gba;}
+    bool isFireRedPair() const {return fireRedPair;}
     Shared* shared(int p) const { return maps.at(p)?maps.at(p)->data:nullptr; }
     bool copyFrame(int p, QImage& top, QImage& bottom) {
         if(!maps[p] || !maps[p]->acquire()) return false;
@@ -127,6 +150,10 @@ public:
     void start(const Settings& s) {
         if(active) fail(i18n::text("Sitzung läuft bereits."));
         const auto info=inspectRom(s.rom);gba=info.system==GameSystem::GameBoyAdvance;game=info.sha256;
+        // Explicit developer opt-in while story events and edge cases remain
+        // incomplete. Ordinary GBA/DS sessions retain their existing behavior.
+        fireRedPair=gba && qEnvironmentVariable("COUCHSPLIT_FIRERED_EXPERIMENT")=="1";
+        if(fireRedPair && game!=QLatin1String(GermanFireRedSha256))fail(i18n::text("Der Feuerrot-Testmodus benötigt die exakt unterstützte deutsche Original-ROM."));
         if(!gba) {
             if(!s.patchedConfirmed) fail(i18n::text("Die vorbereitete Project-PM-ROM muss bestätigt werden. Eine normale Platin-ROM bietet keine gemeinsame Spielwelt."));
             requireMultiplayerPatch(game); validateFirmware(s);
@@ -138,12 +165,15 @@ public:
         QProcess capability; capability.start(executable,{"--coop-capabilities"});
         const bool ready=capability.waitForFinished(5000) && capability.exitCode()==0;
         const auto features=capability.readAllStandardOutput();
-        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1") || (gba&&!features.contains("GBA=1")) || (info.extendedGba&&!features.contains("GBA_XROM=1"))) {
+        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1") || (gba&&!features.contains("GBA=1")) || (info.extendedGba&&!features.contains("GBA_XROM=1")) || (fireRedPair&&!features.contains("FIRERED_PAIR_EXPERIMENT=1"))) {
             capability.kill(); capability.waitForFinished(1000); fail(i18n::text("Emulator unterstützt die benötigte Co-op-Spielstandschnittstelle nicht. Launcher und Emulator gemeinsam aktualisieren."));
         }
         saves.acquire();
         failed=false; stopping=false; elapsed.start(); lastFrame={{0,0}}; lastProgress={{0,0}};
         try {
+            // A previous interrupted paired restore must be rolled back before
+            // any mode can start workers against the same save profiles.
+            saves.recoverPair(game);
 #ifdef _WIN32
             job=CreateJobObjectW(nullptr,nullptr);
             JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};limits.BasicLimitInformation.LimitFlags=JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
@@ -165,12 +195,17 @@ public:
                 saves.backup(i,game);
                 saves.prepareSave(i,game,s.rom);
             }
+            if(fireRedPair) saves.backupPair(game);
+            // A paired worker must receive BOTH existing mappings at launch.
             for(int i=0;i<2;i++) {
+                const auto ipc=runtime->path()+"/player"+QString::number(i+1)+".ipc";
+                maps[i]=std::make_unique<Mapping>();maps[i]->open(ipc.toUtf8().toStdString(),true);
+            }
+            for(int i=0;i<(fireRedPair?1:2);i++) {
                 const auto profile=saves.profile(i,game);
                 QString toml="LimitFPS = true\nTargetFPS = 60.0\n[Emu]\nDirectBoot = true\nExternalBIOSEnable = "+QString(s.bios9.isEmpty()?"false":"true")+"\n[Screen]\nUseGL = false\n[\"3D\"]\nRenderer = 0\n[DS]\nBIOS9Path = "+quoted(s.bios9)+"\nBIOS7Path = "+quoted(s.bios7)+"\nFirmwarePath = "+quoted(s.firmware)+"\n[Instance0]\nJoystickID = -1\nSaveFilePath = "+quoted(profile+"/saves")+"\nSavestatePath = "+quoted(profile+"/states")+"\nCheatFilePath = "+quoted(profile+"/cheats")+"\n[Instance0.Audio]\nVolume = 128\n[Instance0.Firmware]\nUsername = "+quoted("Spieler "+QString::number(i+1))+"\n";
                 if(!gba)atomicWrite(profile+"/melonDS.toml",toml.toUtf8());
                 auto ipc=runtime->path()+"/player"+QString::number(i+1)+".ipc";
-                maps[i]=std::make_unique<Mapping>(); maps[i]->open(ipc.toStdString(),true);
                 workers[i]=std::make_unique<QProcess>();
                 workers[i]->setWorkingDirectory(profile);
 #ifdef __linux__
@@ -183,6 +218,12 @@ public:
                 for(const auto& key:env.keys()) if(key.startsWith("MELONDS_AP")||key.startsWith("PMCOOP_")) env.remove(key);
                 if(!gba){env.insert("PMCOOP_ROLE",i?"join":"host"); env.insert("PMCOOP_PORT",QString::number(port));}
                 env.insert("PMCOOP_IPC",ipc); env.insert("PMCOOP_PROFILE",profile);
+                if(fireRedPair) {
+                    env.insert("PMCOOP_FIRERED_PAIR","1");
+                    env.insert("PMCOOP_IPC2",runtime->path()+"/player2.ipc");
+                    env.insert("PMCOOP_PROFILE2",saves.profile(1,game));
+                    env.insert("PMCOOP_FIRERED_AUDIO",s.fireRedAudio);
+                }
                 env.insert("PMCOOP_SAVE_NAME","game");
                 env.insert("QT_QPA_PLATFORM","offscreen");
                 workers[i]->setProcessEnvironment(env);
@@ -192,8 +233,8 @@ public:
                 QObject::connect(workers[i].get(),&QProcess::readyReadStandardOutput,this,[this,i]{ if(workers[i]&&logs[i]) { logs[i]->write(workers[i]->readAllStandardOutput()); logs[i]->flush(); } });
                 QObject::connect(workers[i].get(),qOverload<int,QProcess::ExitStatus>(&QProcess::finished),this,[this,i](int code,QProcess::ExitStatus how){
                     if(!stopping && active) {
-                        failed=true;
-                        if(error) error(i18n::text("Emulator %1 beendet (Code %2%3). Sitzung wird gestoppt.").arg(i+1).arg(code).arg(how==QProcess::CrashExit?i18n::text(", Absturz"):QString()));
+                        failed=true;monitor.stop();
+                        if(error) error(workerExitMessage(fireRedPair,i,code,how));
                         // Avoid deleting a QProcess inside its signal emission.
                         QTimer::singleShot(0,this,[this]{stop();});
                     }
@@ -226,7 +267,8 @@ public:
             if(logs[i]) { logs[i]->write(workers[i]->readAllStandardOutput()); logs[i]->flush(); }
         }
         bool notify=active; cleanup();
-        if(status) status(failed?"Sitzung mit Fehler beendet · Logs/Backups prüfen":"Sitzung beendet · Spielstände bleiben getrennt erhalten");
+        // Preserve the actionable error and its error styling after cleanup.
+        if(status && !failed) status("Sitzung beendet · Spielstände bleiben getrennt erhalten");
         if(notify&&ended) ended();
     }
 };

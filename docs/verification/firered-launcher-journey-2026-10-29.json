@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "scope": "Normal launcher journey using the exact unmodified German FireRed ROM, two real emulator cores, isolated profiles and virtual SDL gamepads",
+  "base_commit": "54465a3",
+  "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "environment": {
+    "platform": "Zorin OS 18.1 Linux x86_64",
+    "rendering": "Qt offscreen capture",
+    "controllers": "two virtual SDL gamepads",
+    "physical_gamepads_available": false,
+    "audio_verified": false,
+    "native_windows_tested": false,
+    "native_bazzite_tested": false
+  },
+  "public_save_sources": [
+    {
+      "description": "English early save with Bulbasaur and Rattata, curated complete Pokédex and full PC collection",
+      "url": "https://github.com/Xieon/XFork_ProjectCompleteDexSaves/blob/4e4dbb57c9d3669c4c9ac71a9f6ec4aef3a80b4a/Gen%203%20-%20FireRed%20%28ENG%29.sav",
+      "sha256": "d9c73e6a262b941ec4438e59b7470073c7c9ca6de78e81b90961d3341b16e768"
+    },
+    {
+      "description": "Japanese early save with Squirtle, curated complete Pokédex and full PC collection",
+      "url": "https://github.com/Xieon/XFork_ProjectCompleteDexSaves/blob/4e4dbb57c9d3669c4c9ac71a9f6ec4aef3a80b4a/Gen%203%20-%20FireRed%20%28JPN%29.sav",
+      "sha256": "ad7d98fa274915a6eb5ca8ae4b9b1359f2346a739aa67f481c1ce8ecfaa43acd"
+    },
+    {
+      "description": "English late save with eight badges and an existing six-Pokémon team",
+      "url": "https://github.com/fran12385/Frans-Pokemon-fire-red-savefile-I-got-a-Dragonite-DDD-/blob/4b934a8fa8f79890ca048844014d2f006917d65f/Pokemon%20-%20FireRed%20Version%20%28USA%2C%20Europe%29%20%28Rev%201%29.sav",
+      "sha256": "8fcb61657c5489ba94664f6ba0d3716e2b78d334c1b50c7eb833fe814d7604bb"
+    }
+  ],
+  "early_world_and_battle": {
+    "method": "Existing public-save positions, parties, flags and inventory; all subsequent movement, menu choices, encounters and saving performed through launcher input. No map teleport or authored party/encounter in this journey.",
+    "initial_badges": [
+      0,
+      0
+    ],
+    "separate_controllers_and_partner_visibility": true,
+    "viridian_route1_connection_and_connected_view": true,
+    "pokemon_center_door_and_both_visible_inside": true,
+    "independent_center_healing": true,
+    "native_wild_battle_started_by_normal_walking": true,
+    "same_battle_visible_on_both_screens": true,
+    "non_owner_battle_input_ignored": true,
+    "owner_only_switch_menu_and_native_switch": true,
+    "shared_wild_win": true,
+    "own_hp_and_pp_survive_native_save_and_launcher_restart": true,
+    "native_capture_owner": 2,
+    "capture_survives_native_save_and_launcher_restart": true,
+    "captured_pokemon_trainer_id_and_name_match_player_two": true,
+    "poke_ball_quantities_before": [
+      4,
+      5
+    ],
+    "poke_ball_quantities_after": [
+      0,
+      4
+    ],
+    "party_species_before": [
+      [
+        1,
+        19
+      ],
+      [
+        7
+      ]
+    ],
+    "party_species_after": [
+      [
+        1,
+        19
+      ],
+      [
+        7,
+        16
+      ]
+    ],
+    "private_save_and_rom_source_files_unchanged": true
+  },
+  "late_story_pair": {
+    "method": "Early English public save plus eight-badge public save, entered normally via the production launcher; no map placement edits in this test",
+    "initial_badges": [
+      0,
+      8
+    ],
+    "badges_after_sync": [
+      8,
+      8
+    ],
+    "first_sync_player_one_flags": 145,
+    "first_sync_player_one_stages": 17,
+    "first_sync_player_one_own_rewards": 23,
+    "player_one_original_team_and_wallet_preserved": true,
+    "player_two_original_team_preserved": true,
+    "both_used_native_save_and_launcher_restarted": true,
+    "badge_count_visible_after_launcher_restart": [
+      8,
+      8
+    ],
+    "no_new_campaign_transaction_in_log_after_restart": true,
+    "native_save_fresh_battery_continue_checked_for_both": true
+  },
+  "known_defects": [
+    {
+      "id": "single-wild-opponent-alias",
+      "status": "open",
+      "evidence": "Natural launcher fight displayed two enemies. A separate authored one-enemy native scenario observed both opponent battlers active with party indexes [0,0] and absent flags 0.",
+      "effect": "The duplication affects battle logic as well as display; single-opponent co-op is not certified."
+    },
+    {
+      "id": "guest-ball-uses-leader-name-in-text",
+      "status": "open",
+      "evidence": "Player two selected and spent their own ball and received the Pokémon, but the native message named player one as using the ball."
+    }
+  ],
+  "automated_suites": {
+    "ctest_passed": 20,
+    "ctest_failed": 0,
+    "single_opponent_diagnostic_reports_known_alias": true,
+    "targeted_native_regressions": [
+      "single opponent diagnostic",
+      "trainer payout",
+      "capture and rollback",
+      "own party menu cancel and import"
+    ]
+  },
+  "limitations": [
+    "Not a continuous campaign or postgame run",
+    "Public curated saves are not proof of cross-language compatibility",
+    "Real gamepads, audible output, Windows and Bazzite were unavailable on this host",
+    "The published Alpha 8 release does not include this development worker",
+    "Other campaign, experience-sharing and partner-world limitations remain in the existing runtime report"
+  ],
+  "source_material_excluded": "No ROM, battery save, checkpoint or gameplay screenshot is included in this report or repository.",
+  "fixed_defects": [
+    {
+      "id": "wild-escape-disabled-by-synthetic-double",
+      "prior_behavior": "Two human escape selections in a natural wild battle displayed an impossible-escape message; the original routine skips the speed calculation in doubles.",
+      "change": "The experimental worker lets the original speed/RNG escape calculation run for human battlers in reviewed wild encounters, without changing the global battle flags or trainer/link behavior.",
+      "verification": {
+        "exact_rom_with_authored_one_opponent_fixture": true,
+        "real_cores": 2,
+        "battle_initiators": [
+          1,
+          2
+        ],
+        "player_two_only_escape": true,
+        "both_separate_saves_and_fresh_continue": true,
+        "owner_wallet_bag_and_pc_preserved": true,
+        "unit_fixture_covers_wild_trainers_opponents_link_context_and_invalid_register_state": true,
+        "production_launcher_after_fix": {
+          "real_public_save_teams": true,
+          "native_wild_encounter_from_walking": true,
+          "first_player_two_escape_attempt_failed": true,
+          "later_escape_succeeded": true,
+          "both_returned_to_field": true,
+          "native_escape_outcome": 4,
+          "virtual_controllers": true
+        }
+      }
+    },
+    {
+      "id": "route22-early-rival-not-shared",
+      "prior_behavior": "A natural shared rival win and equal reward left the guest at the pre-battle scene stage without their own rival receipt.",
+      "change": "Synchronize the guest only when the source has both the original rival win receipt and the completed native scene stage, selecting the guest rival variant from the guest starter.",
+      "verification": {
+        "unit_coverage_all_three_starters": true,
+        "does_not_invent_win_from_stage_or_unfinished_scene": true,
+        "post_battle_public_saves_exact_rom": true,
+        "guest_own_stage_and_variant_persist_after_native_save": true,
+        "teams_bags_pc_and_wallets_preserved": true,
+        "no_repeat_after_fresh_continue": true,
+        "production_launcher_live_delivery": true,
+        "production_launcher_guest_saved_and_restarted": true,
+        "production_launcher_guest_walked_original_trigger_after_restart": true
+      }
+    }
+  ],
+  "natural_route22_rival": {
+    "method": "From existing early saves, both entered the Pokémon Center and healed normally, walked to Route 22, and player one triggered the original rival scene without a teleport or authored party.",
+    "both_players_joined_same_native_trainer_battle": true,
+    "two_human_controlled_battle_actions": true,
+    "player_two_forced_replacement_from_own_party": true,
+    "player_one_replacements_from_own_party": true,
+    "native_trainer_win": true,
+    "native_total_prize": 144,
+    "player_prize_each": [
+      72,
+      72
+    ],
+    "wallets_before": [
+      3000,
+      3080
+    ],
+    "wallets_after": [
+      3072,
+      3152
+    ],
+    "earned_levels_preserved_in_separate_saves": [
+      8,
+      5
+    ],
+    "after_win_before_fix_rival_scene_stages": [
+      2,
+      1
+    ],
+    "after_sync_fix_rival_scene_stages": [
+      2,
+      2
+    ],
+    "each_player_has_own_starter_rival_variant": true,
+    "native_save_and_fresh_battery_continue": true,
+    "actual_launcher_saved_and_restarted": true,
+    "player_two_walked_through_old_rival_trigger_after_restart": true,
+    "player_two_saved_at_original_trigger_without_repeating_scene": true
+  }
+}

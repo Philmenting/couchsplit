@@ -167,17 +167,18 @@ class Launcher : public QWidget {
             if(auto* label=qobject_cast<QLabel*>(widget))label->setText(i18n::text(source.toString()));
             else if(auto* button=qobject_cast<QPushButton*>(widget))button->setText(i18n::text(source.toString()));
         }
-        const auto known=knownPreparedRom(romFingerprint);
+        const auto known=fireRedExperimentSelected()?i18n::text("Pokémon Feuerrot · Koop-Testmodus"):knownPreparedRom(romFingerprint);
         romLabel->setText(settings.rom.isEmpty()?i18n::text("Noch keine Spiel-ROM ausgewählt"):(known.isEmpty()?QFileInfo(settings.rom).fileName():known));
         updatePadLabel();statusLabel->setText(i18n::text(statusSource));
-        if(auto* start=findChild<QPushButton*>("startGame"))start->setText(i18n::text(gbaSelected()?"Splitscreen starten":"Koop-Spiel starten"));
-        if(auto* subtitle=findChild<QLabel*>("subtitle"))subtitle->setText(i18n::text(gbaSelected()?"Zwei Spieler. Zwei eigene Abenteuer.":"Zwei Spieler. Ein gemeinsames Abenteuer."));
+        if(auto* start=findChild<QPushButton*>("startGame"))start->setText(i18n::text(fireRedExperimentSelected()?"Feuerrot-Testmodus starten":gbaSelected()?"Splitscreen starten":"Koop-Spiel starten"));
+        if(auto* subtitle=findChild<QLabel*>("subtitle"))subtitle->setText(i18n::text(fireRedExperimentSelected()?"Gemeinsame Kämpfe. Welt-Koop noch in Entwicklung.":gbaSelected()?"Zwei Spieler. Zwei eigene Abenteuer.":"Zwei Spieler. Ein gemeinsames Abenteuer."));
         play->refreshHelp();
         play->update();updateAppearance();
     }
     QString romFingerprint;
     bool selectedGba=false;
     bool gbaSelected() const {return selectedGba;}
+    bool fireRedExperimentSelected() const {return selectedGba && romFingerprint==QLatin1String(GermanFireRedSha256) && qEnvironmentVariable("COUCHSPLIT_FIRERED_EXPERIMENT")=="1";}
     void rememberLanguage(const QString& value,bool fullSettings=false) {
         if(!i18n::supported(value))fail(i18n::text("Nicht unterstützte Sprache."));
         const auto before=stored;
@@ -197,6 +198,7 @@ class Launcher : public QWidget {
         stored["rom"]=settings.rom;
         stored["bios9"]=settings.bios9; stored["bios7"]=settings.bios7; stored["firmware"]=settings.firmware;
         stored["layout"]=settings.layout; stored["horizontal"]=settings.horizontal;
+        stored["fireRedAudio"]=settings.fireRedAudio;
         stored["patchedConfirmed"]=settings.patchedConfirmed;
         QJsonArray mapping; for(auto n:controllers.buttons) mapping.append(n); stored["buttons"]=mapping;
         atomicWrite(root+"/settings.json",QJsonDocument(stored).toJson());
@@ -242,6 +244,14 @@ class Launcher : public QWidget {
         language.setCurrentIndex(language.findData(i18n::language()));
         form.addRow(i18n::text("Sprache"),&language);
         QLabel languageHelp(i18n::text("Die Sprache gilt für den Launcher, nicht für die Spiel-ROM."));languageHelp.setWordWrap(true);form.addRow(&languageHelp);
+        QComboBox fireRedAudio;fireRedAudio.setObjectName("fireRedAudioCombo");
+        fireRedAudio.addItem(i18n::text("Spieler 1"),"player1");fireRedAudio.addItem(i18n::text("Spieler 2"),"player2");
+        fireRedAudio.addItem(i18n::text("Beide Spieler"),"both");fireRedAudio.addItem(i18n::text("Stumm"),"mute");
+        fireRedAudio.setCurrentIndex(qMax(0,fireRedAudio.findData(settings.fireRedAudio)));
+        QLabel audioHelp(i18n::text("Gilt ab dem nächsten Start des Feuerrot-Testmodus."));audioHelp.setWordWrap(true);
+        if(qEnvironmentVariable("COUCHSPLIT_FIRERED_EXPERIMENT")=="1") {
+            form.addRow(i18n::text("Feuerrot-Koop: Ton"),&fireRedAudio);form.addRow(&audioHelp);
+        }
         QLineEdit emu(settings.emulator), b9(settings.bios9), b7(settings.bios7),fw(settings.firmware);
         auto row=[&](QString title,QLineEdit& line){ auto* box=new QWidget(&dialog);auto* layout=new QHBoxLayout(box); layout->addWidget(&line); auto* browse=new QPushButton(i18n::text("Auswählen"),box);layout->addWidget(browse);connect(browse,&QPushButton::clicked,&dialog,[&,title]{auto file=QFileDialog::getOpenFileName(&dialog,title);if(!file.isEmpty())line.setText(file);});form.addRow(title,box); };
         row("Emulator",emu);row("ARM9 BIOS (optional)",b9);row("ARM7 BIOS (optional)",b7);row(i18n::text("DS-Firmware (optional)"),fw);
@@ -249,7 +259,7 @@ class Launcher : public QWidget {
         QDialogButtonBox ok(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);theme::labelButtons(ok);outer.addWidget(&ok);
         connect(&ok,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(&ok,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
         dialog.resize(QSize(qMin(760,qMax(360,width()-48)),qMin(650,qMax(280,height()-48))));
-        if(dialog.exec()==QDialog::Accepted) {settings.emulator=emu.text();settings.bios9=b9.text();settings.bios7=b7.text();settings.firmware=fw.text();rememberLanguage(language.currentData().toString(),true);}
+        if(dialog.exec()==QDialog::Accepted) {settings.emulator=emu.text();settings.bios9=b9.text();settings.bios7=b7.text();settings.firmware=fw.text();settings.fireRedAudio=fireRedAudio.currentData().toString();rememberLanguage(language.currentData().toString(),true);}
         // These line edits have automatic storage; remove them before parent teardown.
         for(auto* line:{&emu,&b9,&b7,&fw}) line->setParent(nullptr);
     }
@@ -282,6 +292,15 @@ class Launcher : public QWidget {
             if(theme::question(&dialog,i18n::text("Spielstand wiederherstellen"),i18n::text("Der aktuelle Stand wird zuerst gesichert. Gewähltes Backup wiederherstellen?"))!=QMessageBox::Yes)return;
             saves.acquire();try{saves.restore(player.currentIndex(),game,path,settings.rom);saves.release();}catch(...){saves.release();throw;}
             QMessageBox::information(&dialog,i18n::text("Spielstände"),i18n::text("Backup erfolgreich wiederhergestellt."));
+        });});
+        QPushButton restorePair(i18n::text("Beide Spieler gemeinsam wiederherstellen"));restorePair.setObjectName("restorePairAction");
+        QLabel pairHelp(i18n::text("Das Paar-Backup enthält die zuletzt gespeicherten Spielstände. Beide sollten vorher im Spiel speichern."));pairHelp.setWordWrap(true);
+        if(fireRedExperimentSelected()) {form.addRow(&restorePair);form.addRow(&pairHelp);}
+        connect(&restorePair,&QPushButton::clicked,&dialog,[&]{guarded([&]{
+            const auto path=QFileDialog::getExistingDirectory(&dialog,i18n::text("Paar-Backupordner auswählen"),saves.pairBackupsDir(game));if(path.isEmpty())return;
+            if(theme::question(&dialog,i18n::text("Beide Spielstände wiederherstellen"),i18n::text("Beide aktuellen Spielstände werden zuerst gesichert. Gewähltes Paar-Backup wiederherstellen?"))!=QMessageBox::Yes)return;
+            saves.acquire();try{saves.restorePair(game,path);saves.release();}catch(...){saves.release();throw;}
+            QMessageBox::information(&dialog,i18n::text("Spielstände"),i18n::text("Beide Spielstände wurden wiederhergestellt."));
         });});
         QDialogButtonBox close(QDialogButtonBox::Close);theme::labelButtons(close);form.addRow(&close);connect(&close,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);dialog.exec();
     }
@@ -364,6 +383,8 @@ public:
         if(i18n::supported(savedLanguage))i18n::setLanguage(savedLanguage);
         settings.emulator=stored.value("emulator").toString(bundledEmulator());settings.rom=stored.value("rom").toString();
         settings.gbaEmulator=stored.value("gbaEmulator").toString(bundledGbaEmulator());
+        settings.fireRedAudio=stored.value("fireRedAudio").toString("player1");
+        if(!QStringList{"player1","player2","both","mute"}.contains(settings.fireRedAudio))settings.fireRedAudio="player1";
         if(!settings.rom.isEmpty()) {try{const auto info=inspectRom(settings.rom);romFingerprint=info.sha256;selectedGba=info.system==GameSystem::GameBoyAdvance;}catch(const std::exception&){}}
         if(!QFileInfo(settings.emulator).isExecutable()) settings.emulator=bundledEmulator();
         settings.bios9=stored.value("bios9").toString();settings.bios7=stored.value("bios7").toString();settings.firmware=stored.value("firmware").toString();
@@ -425,8 +446,15 @@ public:
         play->leave=[this]{pages->setCurrentIndex(0);};
         play->endSession=[this]{session.stop();pages->setCurrentIndex(0);};
         session.status=[this](QString text){statusSource=text;statusLabel->setProperty("tone","normal");statusLabel->setText(i18n::text(text));statusLabel->style()->unpolish(statusLabel);statusLabel->style()->polish(statusLabel);};
-        session.error=[this](QString text){statusSource=text;statusLabel->setProperty("tone","error");statusLabel->setText(i18n::text(text));statusLabel->style()->unpolish(statusLabel);statusLabel->style()->polish(statusLabel);};
-        session.ended=[this]{pages->setCurrentIndex(0);};
+        session.error=[this](QString text){statusSource=text==i18n::text(expShareCapacityMessageSource())?expShareCapacityMessageSource():text;statusLabel->setProperty("tone","error");statusLabel->setText(i18n::text(statusSource));statusLabel->style()->unpolish(statusLabel);statusLabel->style()->polish(statusLabel);};
+        session.ended=[this,menuScroll]{
+            pages->setCurrentIndex(0);
+            if(statusLabel->property("tone").toString()=="error")
+                // Word wrapping can resize the label after the menu is shown.
+                QTimer::singleShot(80,menuScroll,[this,menuScroll]{
+                    if(statusLabel->property("tone").toString()=="error")menuScroll->ensureWidgetVisible(statusLabel,0,12);
+                });
+        };
         setWindowTitle("CouchSplit");resize(QSize(1280,800).boundedTo(screen()->availableGeometry().size()));
         retranslate();
         start->setFocus();

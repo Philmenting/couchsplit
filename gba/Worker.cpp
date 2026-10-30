@@ -16,6 +16,8 @@
 #include <memory>
 #include "CoopIPC.h"
 #include "Rom.h"
+#include "FireRedPairWorker.h"
+#include "FireRedErrors.h"
 
 static bool validSaveSize(qsizetype size) {
     return size==512 || size==8192 || size==32768 || size==65536 || size==131072;
@@ -49,7 +51,7 @@ struct CoreOwner {
 int main(int argc,char** argv) {
     QCoreApplication app(argc,argv);
     if(app.arguments().contains("--coop-capabilities")) {
-        puts("PMCOOP_ABI=2 STABLE_SAVE=1 GBA=1 MGBA=0.10.5 GBA_XROM=1 GBA_MAX_ROM_MIB=512");return 0;
+        puts("PMCOOP_ABI=2 STABLE_SAVE=1 GBA=1 MGBA=0.10.5 GBA_XROM=1 GBA_MAX_ROM_MIB=512 FIRERED_PAIR_EXPERIMENT=1");return 0;
     }
     std::signal(SIGTERM,requestQuit);std::signal(SIGINT,requestQuit);
     SDL_AudioDeviceID audio=0;
@@ -57,6 +59,7 @@ int main(int argc,char** argv) {
         CoreLog log;
         if(argc!=2)coop::fail("Usage: gba-worker game.gba (requires launcher IPC/profile)");
         const QString rom=QFileInfo(QString::fromLocal8Bit(argv[1])).absoluteFilePath();
+        if(qEnvironmentVariable("PMCOOP_FIRERED_PAIR")=="1")return runFireRedPairWorker(rom,quitRequested);
         const auto romInfo=coop::inspectRom(rom);
         if(romInfo.system!=coop::GameSystem::GameBoyAdvance)coop::fail("Not a supported GBA ROM");
         const auto ipc=qEnvironmentVariable("PMCOOP_IPC"), profile=qEnvironmentVariable("PMCOOP_PROFILE");
@@ -154,6 +157,14 @@ int main(int argc,char** argv) {
         if(audio)SDL_CloseAudioDevice(audio);
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
         return 0;
+    } catch(const coop::firered::ExpShareCapacityError& e) {
+        if(audio)SDL_CloseAudioDevice(audio);
+        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        fprintf(stderr,"[GBA] %s\n",e.what());return coop::firered::ExpShareCapacityExitCode;
+    } catch(const coop::firered::EnigmaBerryError& e) {
+        if(audio)SDL_CloseAudioDevice(audio);
+        SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        fprintf(stderr,"[GBA] %s\n",e.what());return coop::firered::EnigmaBerryExitCode;
     } catch(const std::exception& e) {
         if(audio)SDL_CloseAudioDevice(audio);
         SDL_QuitSubSystem(SDL_INIT_AUDIO);

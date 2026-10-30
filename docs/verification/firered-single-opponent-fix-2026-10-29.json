@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "base_commit": "8afe0c4",
+  "scope": "Follow-up on the experimental German FireRed paired worker; native Linux with two mGBA cores and isolated test profiles.",
+  "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "fixes": {
+    "single_enemy_battle": {
+      "original_failure": "A converted battle with one wild Pokémon or a trainer with one Pokémon exposed two active battlers referring to the same opponent party slot.",
+      "behavior": "The missing opponent is marked absent and inert; the opponent intro and menu reshow do not recreate its sprite or healthbox. A guest ball targets the real opposing battler.",
+      "unit_tests": "Checked native instruction preimages, absent flags, disabled ability/HP/item, ball target, scoped single-opponent intro/reshow, unaffected two-opponent and trainer paths, invalid contexts and hook removal.",
+      "native_rom_fixtures": "Both initiators, one-opponent wild and one-Pokémon trainer, multiple turns with the real opponent using moves and the absent battler spending no PP, bag and own-six party menus, capture and separate native save/fresh Continue.",
+      "unmodified_two_opponent_regressions": "Wild and trainer battles, trainer prize and simultaneous rendezvous.",
+      "additional_native_scenarios": "Scripted and legendary wild encounters, revealed Marowak, separate PC/party capture, full recipient rejection and escape.",
+      "trainer_fixture_prize_each": 112
+    },
+    "ball_user_message": {
+      "original_failure": "Guest used their own ball and received the catch, but the native text used the initiating trainer name.",
+      "behavior": "The ball-use message reads the executing trainer name from temporary battle text scratch space without changing either saved trainer identity.",
+      "native_rom_fixtures": "Both owners and both initiators, including sequential failed-then-successful throws, captured trainer identity, bag and PC ownership, rollback, and native save/fresh Continue."
+    }
+  },
+  "production_launcher_natural_encounter": {
+    "platform": "Zorin OS Linux x86_64",
+    "input": "two virtual SDL gamepads; Qt offscreen output",
+    "method": "Existing public early-save teams; both reached Route 22 through native Continue, player one walked into grass, and player two used their own Poké Balls. No map, team, encounter or inventory was authored for this run.",
+    "one_visible_wild_opponent_before_and_after_bag": true,
+    "ball_message_used_player_two_name": true,
+    "player_two_first_ball_failed_second_caught": true,
+    "player_two_ball_count_before": 4,
+    "player_two_ball_count_after": 2,
+    "captured_species": 56,
+    "player_two_caught_pokemon_in_own_party": true,
+    "player_two_native_save_and_actual_launcher_restart": true,
+    "player_two_catch_visible_after_continue": true,
+    "independent_native_save_reload_confirms_own_original_trainer": true,
+    "save_sources_and_prior_context": "See firered-launcher-journey-2026-10-29.json. Public English/Japanese save imports on the German ROM do not establish cross-language compatibility.",
+    "single_opponent_logic_checked_in_targeted_native_fixtures": true
+  },
+  "verification": {
+    "ctest_passed": 20,
+    "ctest_failed": 0,
+    "rom_fixture_scenarios": [
+      "single",
+      "single-leader2",
+      "single-multiturn",
+      "single-multiturn-leader2",
+      "trainer-single",
+      "trainer-single-leader2",
+      "trainer-single-multiturn",
+      "party-menu-single",
+      "capture",
+      "capture-leader2",
+      "capture-denied",
+      "capture-both-leader2",
+      "capture-sequential",
+      "capture-full-native",
+      "capture-pc",
+      "capture-scripted",
+      "capture-legendary",
+      "wild",
+      "trainer",
+      "escape-player2",
+      "party-menu-cancel",
+      "marowak",
+      "scripted",
+      "legendary",
+      "grass-rendezvous",
+      "rendezvous"
+    ],
+    "original_rom_and_source_saves_unchanged": true,
+    "includes_commercial_assets_private_saves_or_gameplay_screenshots": false
+  },
+  "limits": [
+    "No continuous two-player campaign or postgame run",
+    "Physical controllers and audible output were unavailable",
+    "Native Windows and Bazzite were not tested",
+    "This development worker is not included in published Alpha 8",
+    "The remaining campaign, EXP Share, evolution and partner-world limits remain open"
+  ]
+}

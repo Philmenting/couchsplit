@@ -138,7 +138,7 @@ class CommandTests(unittest.TestCase):
             child = int(pidfile.read_text()); status = Path(f'/proc/{child}/stat')
             try:
                 state = status.read_text().split()[2]
-            except FileNotFoundError:
+            except (FileNotFoundError, ProcessLookupError):
                 pass  # The terminated child was reaped between inspection and read.
             else:
                 self.assertEqual(state, 'Z')

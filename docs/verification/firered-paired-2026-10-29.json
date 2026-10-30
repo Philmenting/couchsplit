@@ -1,0 +1,302 @@
+{
+  "date": "2026-10-29",
+  "status": "local opt-in experiment; complete FireRed co-op unfinished",
+  "engine": "mGBA 0.10.5",
+  "mgba_commit": "26b7884bc25a5933960f3cdcd98bac1ae14d42e2",
+  "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "checkpoint_sha256": "835a1924731dc0951a168de8fd8095526958c99c78bb77e10fb6419c71995391",
+  "evidence_kind": "native mGBA execution, owned source tests and authored fixtures; no REA-provider evidence",
+  "environment": {
+    "os": "Linux, Zorin OS 18.1",
+    "qt": "6.4.2 offscreen",
+    "audio": "SDL dummy",
+    "input": "virtual SDL and native core test buttons",
+    "physical_controllers": false,
+    "audible_audio": false
+  },
+  "native_suites": 14,
+  "python_tests": 60,
+  "python_skipped": 0,
+  "battle_acceptance": [
+    {
+      "scenario": "action-stats",
+      "passed": true,
+      "native_frames": 2018,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "3c8c897210fcc9e5cf9965797334c81cfd7141b4aadf70416afae7cbd02a3311"
+    },
+    {
+      "scenario": "bench",
+      "passed": true,
+      "native_frames": 48857,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "7252ee5e8894534a36958c7b61388ae77153e7b0d2e2f74a81c370fd64fe20a0"
+    },
+    {
+      "scenario": "capture",
+      "passed": true,
+      "native_frames": 3040,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "a5eaa1c171f570147ba62fee42c7c007d3c87377793e45a7a6175a51c9a3b75e"
+    },
+    {
+      "scenario": "capture-both",
+      "passed": true,
+      "native_frames": 3340,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "264d485fad09e360042132e1c22dea62a0c21fb918f9bf6b556bcf8ca9f722cd"
+    },
+    {
+      "scenario": "capture-denied",
+      "passed": true,
+      "native_frames": 1989,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "98fcd296258458900dd06bc47e65a3bb9accfa19636afb8922ecfe3c2fdf49c3"
+    },
+    {
+      "scenario": "capture-full-native",
+      "passed": true,
+      "native_frames": 3040,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "649e049fe208dfee4f1cea0b1aeac03e7b16d6951e54a9f592480e4e88069c2e"
+    },
+    {
+      "scenario": "capture-party-space",
+      "passed": true,
+      "native_frames": 3040,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "bd24b353f263f73b7eccd8c1bd25404f9b1ec567b3920318fb67cf79920d81e8"
+    },
+    {
+      "scenario": "capture-pc",
+      "passed": true,
+      "native_frames": 3040,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "eaf4d587ec2eadfef142ba52de89db7a046e98c5577bab0b96513d7a52be4efb"
+    },
+    {
+      "scenario": "capture-sequential",
+      "passed": true,
+      "native_frames": 3879,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "387967458489c77dd825246a77ba3a21ced2482fa5f0c3c2cc8e71fa72bca197"
+    },
+    {
+      "scenario": "capture-spinda",
+      "passed": true,
+      "native_frames": 2950,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "63d15274491f9d3279042be43fd73d67acce2c04674340fe8c55d2a3e0c1b226"
+    },
+    {
+      "scenario": "capture-unown",
+      "passed": true,
+      "native_frames": 2950,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "180bd7cbf5cfff51eb9237e4b869bbf7214c5515c30a59ec66c3feee631c7781"
+    },
+    {
+      "scenario": "capture-unown-first",
+      "passed": true,
+      "native_frames": 2950,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "8070f6f5a589eaea33bdc521442ab773a76072f380c9e1e316d54a21769757a2"
+    },
+    {
+      "scenario": "defeat",
+      "passed": true,
+      "native_frames": 4097,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "d13b33dd0d45221ffe785fefb8d0b4a035fa83906744b1c499fce531d4d90204"
+    },
+    {
+      "scenario": "evolution",
+      "passed": true,
+      "native_frames": 7197,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "77b8a45723b70fc0a27ec634f5d48864c9d7933cb548e7427d8b8e208035673b"
+    },
+    {
+      "scenario": "exhaust",
+      "passed": true,
+      "native_frames": 4988,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "fd55a9e3ae59852867a997d13d4e73dbba39232abc03eaa4111a5225c63e6e1d"
+    },
+    {
+      "scenario": "leader2",
+      "passed": true,
+      "native_frames": 2018,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "00c96768c901903a5256a8004692054148e8501907438665886b580456932685"
+    },
+    {
+      "scenario": "owners",
+      "passed": true,
+      "native_frames": 2018,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "0e1b762906d3bffef43343006a0762f5f1e0b8213798276e6643cfd192a3e4ff"
+    },
+    {
+      "scenario": "payday",
+      "passed": true,
+      "native_frames": 2538,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "31f3dbb44e5d848e770d5b91854cec43a31b9eb9ed9ea51ddc4c270a583a5b68"
+    },
+    {
+      "scenario": "single",
+      "passed": true,
+      "native_frames": 1419,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "af1aef12848257de812b4e4eb5a09597561a29acbd7e3cf3f23b9611c277757e"
+    },
+    {
+      "scenario": "trainer",
+      "passed": true,
+      "native_frames": 3738,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "58b0b3666e22407ff705903e205a99995650171c987a2325c351e8d530e898d5"
+    },
+    {
+      "scenario": "wild",
+      "passed": true,
+      "native_frames": 2018,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "5e77c8bf64fb1b8e5b00746326d1a055e9fedad7ee2350270cb46f1efee5dfc5"
+    }
+  ],
+  "story_acceptance": [
+    {
+      "scenario": "brock",
+      "passed": true,
+      "native_frames": 8465,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "43f5eb7d326b041bbe3c9d501afe306af05aa2ccbd7a4749b60aa4e567f06c9c"
+    },
+    {
+      "scenario": "brock-full",
+      "passed": true,
+      "native_frames": 8465,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "8f82480b2806c7534b42ccb20648ce4c7cf4a279e960fad94eccdaaf1f1c2897"
+    },
+    {
+      "scenario": "defeat",
+      "passed": true,
+      "native_frames": 3702,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "7028a196afbae48c88f2c04d45209b1823bdb38ca2382afad9336abab84214eb"
+    },
+    {
+      "scenario": "dex",
+      "passed": true,
+      "native_frames": 7120,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "e7f9a3f707d96e5ba12163e6ab3147ee7a3048cfbe719b34f087ed2d36a310dc"
+    },
+    {
+      "scenario": "parcel",
+      "passed": true,
+      "native_frames": 1022,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "ad8353155567d2d59a4aef2452314cf08f8337caaa60af2a86310ec275fda0c7"
+    },
+    {
+      "scenario": "rival",
+      "passed": true,
+      "native_frames": 5928,
+      "both_native_saves_and_fresh_battery_boots": true,
+      "private_report_sha256": "e1c3f1d6b1605061ca27e0a82a488121ebcae3850d1801cfb3a79365bd5f7d11"
+    }
+  ],
+  "scope": {
+    "two_distinct_mgba_cores": true,
+    "one_paired_worker_process": true,
+    "ipc_abi": 2,
+    "actual_rom_and_checkpoints_unchanged": true,
+    "prior_user_saves_modified": false,
+    "battle_fixtures_author_parties_and_encounters": true,
+    "first_rival_starts_from_native_movement_and_script": true,
+    "second_first_rival_trainer_identity_is_fixture": true,
+    "first_rival_loss_authors_hp_and_move": true,
+    "parcel_dex_brock_author_quest_or_map_prerequisites": true,
+    "parcel_dex_brock_run_original_native_scenes": true,
+    "native_save_helpers_use_memory_flash_clones_not_user_battery_paths": true,
+    "production_session_worker_checks": "boot, both framebuffers, virtual input, restart, graceful stop, child crash, save preservation and lock lifetime; separate from direct-core shared-battle acceptance",
+    "native_money_buffer_matches_share": [
+      "trainer",
+      "payday"
+    ],
+    "six_originals_each_fight_after_exhaustion_refills": true,
+    "resident_evolution_owner_and_statistics_verified": true,
+    "full_free_six_mon_selection_and_twelve_mon_exp_share": false,
+    "reviewed_story_events": [
+      "lab rival",
+      "Oak Parcel",
+      "Pokedex",
+      "Brock"
+    ],
+    "complete_campaign_world_sync": false,
+    "native_partner_collision_or_terrain_occlusion": false,
+    "native_windows_or_bazzite_execution": false,
+    "release_published": false
+  },
+  "reproduction": {
+    "normal_tests": [
+      "ctest --test-dir build/launcher --output-on-failure",
+      "python3 -m unittest discover -s tests -p 'test_*.py'"
+    ],
+    "rom_dependent_tools": [
+      "tests/verify_firered_pair.cpp",
+      "tests/verify_firered_story.cpp",
+      "tests/smoke_firered_pair_worker.py",
+      "tests/smoke_firered_pair_session.py"
+    ],
+    "private_rom_save_and_checkpoint_files_distributed": false
+  },
+  "owned_source_sha256": {
+    "CMakeLists.txt": "6b370862da390afbea7a3a6f1dda106130b66bc2e001db946911071df8d29a91",
+    "gba/CMakeLists.txt": "df5bcd7abf5336f7013394aa01cebb656397cd64bc73d98683422687f7a67893",
+    "gba/FireRedBattle.h": "a8b578523923765f982d8013b27ecca2b17e82a9be6c6133d3473a8222da4226",
+    "gba/FireRedBattleHooks.h": "946fc0ce4e95fe96b8ce87f5585c6e87408171332a68a4bf5eb863eea2959174",
+    "gba/FireRedBench.h": "56dfd08c50a4ded806f702975d9b4bdd23a1855f7defd43c4a5266cbe01d25d3",
+    "gba/FireRedCapture.h": "cd620f4caa8dd6b5a0b690f85a82f687de3c165fd9bd0d2ccadccd6d94bb075b",
+    "gba/FireRedDex.h": "1f8ff28a760cbd3ffd6bf3fbfbd7a0fa9fdcdc9a08260b1b85c4b190156a5dbf",
+    "gba/FireRedInventory.h": "ac0f7ff8cafd33ad4af362c3468194c7dba72304eec11592dd4463ffcdb46c90",
+    "gba/FireRedPairWorker.cpp": "22740b80c57934953098a1cf9f271466fe8cb07953bb332afbd1c439fe7449eb",
+    "gba/FireRedPairWorker.h": "f9c667ff27560d0603ea0c7b5ace1d4765a6614189b3f0d5fe03f4823e4291d8",
+    "gba/FireRedPersonal.h": "1801b1a419c81b503cc440479acc6bf1c1cbc4be677d6f0088a4ce024d727699",
+    "gba/FireRedPokemon.h": "7ac348adcfed44825be5b2053fd9074c8e2edecfc2ccf76b61cd59ec238811c0",
+    "gba/FireRedProgress.h": "0642627769ba6c9216c9f8c45db4c961f4805bf522447b9ec3b115fdc518f6ae",
+    "gba/FireRedRewards.h": "d9365ec1a386b8c4aaa26258ca5dbc3d17662b35ebb6caaa98d6e468170f1238",
+    "gba/FireRedStatistics.h": "e96deeeeeebe5678abf0c91c62801404adf64a7f2221e265e7be9cc8952ae80d",
+    "gba/FireRedStorage.h": "3b678caaab6e9795ada9c1b8c95870bac7e10334683f498f7b56316e252cee1e",
+    "gba/FireRedWorld.h": "4d24ebebda695cbf1c0384212f36146f291a03e98e8f105f4fcbacf63d40709b",
+    "gba/Worker.cpp": "374207eaade870d284cc0fc9c873ae1de098a8f767ef8cf76a7193e00bcfbb64",
+    "launcher/Session.h": "db40d6e2f7a250376f74ea096016401755dd79e9b1d4035b8802fa7be492adae",
+    "launcher/Translations.h": "7837c96aed31473208a05aa96a9e4a7d7cacc0c0b3eba0c0460762781faecbeb",
+    "launcher/main.cpp": "7d427174ca7258552f972553769ce90201e7087e6fc26ce73be5f7bfde7ac3bc",
+    "tests/FireRedProgressAcceptance.h": "d3aeaf58ce64e2f703b74a0a2f390f7b917ccaa27dc2df181dc67de02e0d6b03",
+    "tests/FireRedSaveAcceptance.h": "6e1b7018099e5e1189f215c7e9bbeb7adcedbce29eeb85cb702f3da38b56a01a",
+    "tests/smoke_firered_pair_session.py": "65fa6eedd9ba2b3c50c9ee0eac48529ecdbf07500ee098e8d26ef93652358872",
+    "tests/smoke_firered_pair_worker.py": "02133ec1e05cc14b08e4e225a1d838bdd3e9892af43dd6f44b16cf232b8dbdca",
+    "tests/test_firered_bench.cpp": "b213fb670aa9fdaabe3e1f06c553eeafef85305542d2d96d1f30dc189c23cd9a",
+    "tests/test_firered_capture.cpp": "7a8786700af1f5494fef792d1a2eb9560982bdf5e7dcad0b03a2eb9fb074b03f",
+    "tests/test_firered_dex.cpp": "688ebd270758775f92b6230450308c6e3cad60eb8a571b675cc12b341f981d82",
+    "tests/test_firered_hooks.cpp": "d76e2528f77168cf952d1fc01098cbff779cc366ba4317260987e48e8b0aaef5",
+    "tests/test_firered_inventory.cpp": "87f1bd8c6a017e122dfd1776cc6d0217f2e83c9f53beebaaea60857ed21799f0",
+    "tests/test_firered_personal.cpp": "77687860b9003230fa6e9dc5f1d00b4c1b8c8d1c4817978f8557ec32ed178d6c",
+    "tests/test_firered_pokemon.cpp": "32e0efeaa47e59ad410c3479a41b3185378b8c2a195171680c78a70b998e91e9",
+    "tests/test_firered_progress.cpp": "6bf774406f7a146e8f1cc0683da5e293cef4989f05aa66e66a03322591182294",
+    "tests/test_firered_rewards.cpp": "56ed63cc3b6aad0f046992823d87b9559b4af8aedce4624373efa5dc1853ea48",
+    "tests/test_firered_statistics.cpp": "715e7e478179c42987e7c20f411ea138ce483601eb9161f3b0db5af725e29ab5",
+    "tests/test_firered_storage.cpp": "426003de070f3f904ca0af4e1f6098d687ced1854da35c8e3f35ae98b87abe86",
+    "tests/test_firered_world.cpp": "2bb898cd7c102d85c577e104a47730940011080f9cb1032702849598a8400855",
+    "tests/verify_firered_pair.cpp": "9c1105a4c06a7a94e9880c1b4b4125e37e39f6c31bad4c95ad17682062073fab",
+    "tests/verify_firered_story.cpp": "423f4d894fc308e33272e596bcf2b139f96735944168af1ceef53094f16aa384",
+    "tests/verify_firered_team_input.cpp": "7722f8c30054d710f5334199a8ee92f77dc93fd5d29d305202432798832aa935"
+  },
+  "production_worker_sha256": "4464e6e262020e47aca8a7c3336e3dfd045a0c8fed1100cc75dd8246ab219af9",
+  "source_license_boundary": "Original implementation; no GBA-PK multiplayer CC-BY-NC script copied. Pinned mGBA remains MPL-2.0 with corresponding-source packaging unchanged."
+}

@@ -1,6 +1,186 @@
-# Entwicklungsstatus — 21.10.2026
+# Entwicklungsstatus — 29.10.2026
 
 [English](../development-status.md) · **Deutsch** · [Anleitungen](README.md)
+
+## Feuerrot: Paar-Backup und Ton — 29. Oktober 2026
+
+Der lokale Testbuild ergänzt die gemeinsame Sicherung und Wiederherstellung der
+beiden letzten Ingame-Spielstände. Prüfsummen, Sicherung vor Wiederherstellung
+und ein Journal schützen vor einer unterbrochenen Wiederherstellung; vor einer
+neuen Sitzung wird das Paar zurückgesetzt. Das sind keine zeitgleichen Emulator-
+Savestates. Die EP-Teiler-Kapazitätsgrenze wird auf Deutsch und Englisch erklärt
+und die Fehlermeldung bleibt nach dem Worker-Ende sichtbar. Die eigene Tonwahl
+für Spieler 1, Spieler 2, beide oder Stumm ist von
+[SplitEmu](https://github.com/JosipFX/splitemu) inspiriert; der gemeinsame
+Kampfton wird nur einmal abgespielt. Die Idee konkreter Fehlerhinweise stammt
+auch aus [GBA-PK Multiplayer](https://github.com/TheHunterManX/GBA-PK-multiplayer/releases/tag/1.0);
+dessen anders lizenzierter Code wurde nicht übernommen.
+
+Prüfung unter Zorin OS: 21 native Tests und alle 60 Python-Tests bestanden;
+nach der letzten Wiederherstellungsänderung bestanden die betroffenen Kern- und
+Launchertests erneut. Mit der exakten deutschen Original-ROM startete der echte
+Paar-Worker mit jeder Tonwahl, legte ein geprüftes Paar aus angelegten Test-Saves
+an und erhielt diese beim absichtlich beendeten Kindprozess außerhalb eines
+Kampfes. Die produktive Oberfläche mit Original-ROM-Auswahl, Test-Saves und
+Test-Worker prüfte Paar-Wiederherstellung und Kapazitätshinweis auf Deutsch und
+Englisch bei 640×360. Eine vorbereitete Zwei-Kern-Begegnung mit der Original-ROM
+prüfte die EP-Teiler-Ablehnung für beide Initiatoren; sie nutzte nicht den ganzen
+produktiven Worker-Fehlerpfad. Abbruch, beschädigte/fehlende Dateien und
+Rücksetzung beider Dateien wurden in Komponententests simuliert. Hörbarer Ton,
+physische Controller, echtes Bazzite/Windows, Stromausfall und eine vollständige
+Kampagne wurden nicht getestet.
+
+## Feuerrot: EP-Teiler und Bills Ticket — 29. Oktober 2026
+
+Der experimentelle Paar-Worker berücksichtigt nun berechtigte EP-Teiler-Träger
+aus späteren Teamplätzen im sechsköpfigen nativen Arbeitsteam, bevor das Spiel
+die EP verteilt. Vorbereitete Zwei-Kern-Fälle mit der Original-ROM prüfen beide
+Kampfinitiatoren, eigene EP/EV, vier Träger einer Person, Attackenlernen trotz
+entgegengesetzter Eingaben des Partners, Entwicklung, natives Speichern und
+frisches Laden. Passen die nötigen aktiven Pokémon und Träger nicht in sechs
+Plätze, stoppt die experimentelle Sitzung vor der Teamumwandlung statt EP falsch
+zu verteilen. Eine unbegrenzte Virtualisierung aller zwölf Pokémon und sämtliche
+Sondergegenstände sind damit noch nicht abgedeckt.
+
+Für beide Ausgangsspieler wurde außerdem Bills originaler Ticket-Dialog mit
+vorbereiteter Verwandlung und vollem Schlüsselgegenstand-Beutel des Partners
+geprüft. Ohne Platz entsteht kein falscher Empfang; nach dem Freimachen wird
+genau ein Ticket zugestellt und nach Speichern und frischem Weiter behalten.
+Die originale ROM bleibt unverändert. [Prüfung und Grenzen](../verification/firered-exp-share-2026-10-29.json).
+
+## Feuerrot-Tests mit öffentlichen Spielständen und Rückblick-Korrektur — 29. Oktober 2026
+
+Zwei unabhängig veröffentlichte Spielstände mit null und acht Orden wurden mit
+der unveränderten deutschen Original-ROM geladen. Ihre vorhandenen Teams gewannen
+gemeinsame wilde Kämpfe, einmal von Spieler 1 und einmal von Spieler 2 gestartet.
+Eigenes Team, Beutel,
+PC, Geld sowie natives Speichern und erneutes Laden wurden geprüft. Ein separater
+originaler Rocko-Kampf teilte 1.400 Pokédollar in je 700 auf. Für diesen Kampf
+wurden beide Spieler auf die Arena-Karte gesetzt und die automatische Synchronisierung
+aufgeschoben; Teams und Begegnung wurden nicht künstlich geändert.
+
+An den ursprünglichen Speicherorten synchronisierten sich geprüfte Story- und
+Kampagnen-Meilensteine. Nach getrenntem Speichern und erneutem Laden wurden keine
+Belohnungen doppelt vergeben. Unter den öffentlichen Dateien waren englische und
+japanische Spielstände: Die Prüfung bestätigt diese Fälle, nicht allgemein jeden
+Sprachwechsel. Der Produktionslauncher und Paar-Worker starteten die zwei Saves
+unter Linux auch mit virtuellen Controllern. Fünf öffentliche Saves bestanden das
+einzelne native Speichern/Laden. Ein weiterer wurde wegen doppelter Gegenstandsstapel
+zurückgewiesen, eine unvollständige Datei bereits vor dem Laden.
+
+Dabei wurde ein Fehler behoben: Der Spielrückblick enthält frühere Felddaten,
+die der Worker bisher für den aktuellen Spielstand halten konnte. Er wartet nun
+auf beide aktuellen Spielwelten, bevor er Fortschritt synchronisiert oder Kämpfe
+zusammenführt, und blendet Rückblick-Avatare aus. Rückblick und normale Aufzeichnung
+werden getrennt geprüft. **Alle 20 nativen Tests bestehen.** Das öffentliche Alpha 8
+bleibt unverändert; vollständige Kampagne, echte Controller und native Windows-/
+Bazzite-Tests sind weiterhin offen. [Quellen, Belege und Grenzen](../verification/firered-public-saves-2026-10-29.json).
+
+## Feuerrot-Launcher-Laufzeitarbeiten — 29. Oktober 2026
+
+Die originale deutsche ROM bleibt unverändert. Der lokale Paar-Worker zeigt im
+nativen Wechselmenü jetzt die eigenen sechs Pokémon und lädt eigene Reserven
+sicher nach. Vor der Rückkehr wird das interne Kampfteam wiederhergestellt.
+Native Prüfungen decken freiwilligen/erzwungenen Wechsel, Abbruch/erneutes Öffnen,
+Pokémon-Info und Rücksetzung mitten im Menü ab. Ausstehende EP und gebundene native
+Referenzen bleiben geschützt; vollständig belegte Arbeitsplätze können weiter
+Rücksetzung verlangen. Die spätere EP-Teiler-Nachprüfung oben ersetzt die damalige
+Einschränkung für nicht geladene Träger; alle Lern- und Entwicklungspfade für
+zwölf Pokémon sind weiterhin nicht vollständig abgedeckt.
+
+Partner sind jetzt über beidseitige Außenkarten-Verbindungen sichtbar, auch bei
+Koordinatenversatz. Ein echter Übergang zu Fuß und unveränderte Maschinenschnappschüsse
+bestehen. Rocket-Tür/Turmrüpel und Lostelle bei vollem Beerenbeutel erreichen beide
+Spieler. Eiskaskadenhöhle, bestehende Seeschaum-Varianten, eigene Puppen und alle
+sieben Tanoby-Beleuchtungen behalten eigenen Zustand und native Saves.
+
+**20 native Tests, alle 60 Python-Tests ohne Auslassungen, 34 Paar-Kampffälle,
+elf Kartenfälle, drei Story-Sperren und zwei Kartenverbindungen bestehen.**
+Produktions-Worker/Session und allgemeine GBA-Speicher-/Eingabe-/Neustartprüfungen
+bestehen ebenfalls; ASan/UBSan/Leckprüfungen für Menü, Topologie, Kampagnenkatalog,
+Laufzeit und Hooks auch. Lokale Launcher-/Worker-Dateien sind neu gebaut.
+Alpha 8 bleibt unverändert. [Datierte Belege und Grenzen](../verification/firered-launcher-runtime-2026-10-29.json).
+Ein natürlicher Gesamtdurchlauf, Partnerkollision/Geländeverdeckung, Spezialmodi,
+lange Sitzungen und native Windows-/Bazzite-/Hardwareabnahme bleiben offen.
+
+## Feuerrot-Kampagnensynchronisierung — 29. Oktober 2026
+
+Der lokale Testmodus teilt jetzt geprüfte Kanto-/Sevii-Meilensteine, die sieben
+weiteren Arenen mit eigenen TM-Empfängen, Story-Schlüssel/VMs und geladene
+NPCs/Türen/Kollisionen. Dazu kommen aktuelle Top-Vier-Ausgänge, eigene native
+Ruhmeshallen, Nationaldex und Saphir-Netzwerkabschluss mit eigenem Wander-Pokémon.
+Menüs/Zwischenszenen werden abgewartet; passende Begegnungen setzen beide eigenen
+nativen Skripte fort. Gleichzeitige Grasbegegnungen werden zusammengeführt,
+verschiedene Skriptobjekte bleiben nacheinander an der Reihe.
+[Verhalten und offene Grenzen](firered.md#kampagnensynchronisierung--29-oktober-2026).
+
+Gezielte ROM-Abnahmen prüfen alle sieben weiteren Leiter plus vollen TM-Stapel,
+originales Knogga, Zerschneider/Surfer/Stärke, zwei Champion-Fortsetzungen, eigene
+native Ruhmeshallen, Nationaldex, alle drei Wander-Pokémon und bereits geladene
+Netzwerkmaschinen/Wächter. Vorbereitete Voraussetzungen/starke Teams werden von
+originaler Spielausführung getrennt ausgewiesen. Eigene native Saves und frisches
+Weiter sind geprüft. Durchgehende natürliche Kampagne, nicht unterstützte
+Kartenoperationen, vollständiger EP-Teiler, native Partnerkollision und
+Zielhardware bleiben offen. Alpha 8 bleibt unverändert.
+[Datierte Belege](../verification/firered-campaign-2026-10-29.json).
+
+Frühere Kampagnenerweiterungs-Prüfungen: **18 native Tests, alle 60
+Python-Tests ohne Auslassungen und 30 gezielte ROM-Szenarien** bestehen.
+Produktions-Worker-/Session-Tests bestätigen Neustart, sauberen Stopp,
+Absturz-/Sperrbehandlung und Save-Erhalt; die allgemeine GBA-Regression besteht.
+Die ROM-Szenarien verwenden die Produktionslogik in separaten Prüfwerkzeugen.
+
+## Frühere Paar-Kampf-Basis — 28.–29. Oktober 2026
+
+Der lokale Quellstand enthält einen ausdrücklich einzuschaltenden Zwei-Kern-Worker,
+eine Partneransicht auf derselben Karte und gemeinsame native Kämpfe mit eigenen
+menschlichen Aktionen sowie getrennten Ergebnissen und Saves. Normales GBA und DS
+bleiben der Standard. Das ist **kein vollständiger Welt-Koop-Release**.
+[Einrichtung, Prüfwerkzeuge und offene Anforderungen](firered.md#entwicklungsziel-feuerrot-koop--28-oktober-2026).
+
+Unter Linux mit der exakten deutschen Original-ROM geprüft: normale wilde und
+Trainerkämpfe, eigene Traineridentität/EP, AP, Fang-/Beutel-/PC-/Pokédex-Zuordnung,
+Geldobergrenzen und geteilte Trainer-/Zahltagbelohnung, vollständige Maschinen-/
+Flash-Rücksetzung, Fortsetzung durch den überlebenden Partner sowie eigene native
+Niederlagenbehandlung. Ein voller Initiator-PC blockiert keinen Gast mit Platz;
+ein tatsächlich voller Empfänger erhält die native Ablehnung. Bei zwei gewählten
+Bällen wird nur der tatsächlich ausgeführte Wurf bezahlt. Jede Abnahme nutzt das
+normale Speichermenü und frisches Weiter allein aus dem Batteriespeicher für beide
+Trainer, mit eigenen Teams, Beuteln, Geld, PC, Pokédex und Identität.
+
+Der erste Rivalenkampf startet zusätzlich durch echte Bewegung und sein originales
+Feldskript, ohne künstlich ausgelöste Begegnung. Seine Tutorialsteuerung wird auf
+zwei menschliche Verbündete umgestellt; Originalflags und Fortsetzung kehren zurück.
+Sieg und Niederlage beenden die Laborszene, heilen beide Trainer über die native
+Engine, teilen diesen geprüften Meilenstein und überstehen getrenntes Speichern/
+Laden. Spieler 2 erhält ausdrücklich eine andere Test-Traineridentität; der
+Niederlagentest setzt niedrige KP und Heuler. Das ist eine gezielte echte
+Spielprüfung und kein vollständiger Kampagnendurchlauf.
+
+Getrennte Prüfungen mit Produktions-Session/PlayView und Paarworker bestätigen
+beide Bilder, virtuelle Eingaben, Neustart, geordneten Stopp, Absturzerkennung,
+Sperrlebensdauer und Erhalt vorheriger Saves. Alle 60 Python-Tests bestehen mit
+installierter ARM-Abhängigkeit. Native Kern-/UI- und Feuerrot-Komponententests
+sowie Produktions-Worker-Regressionen für SRAM/Flash/EEPROM und 64/512-MiB-XROM
+bestehen. Physische Controller, hörbarer Ton, native Windows-/Bazzite-Ausführung
+und eine vollständige Kampagne bleiben ungeprüft.
+
+Die früheren vier geprüften Story-Ereignisse (Laborrivale, Eichs Paket, Pokédex und Rocko) besaßen
+einen ausdrücklichen Ereignis-/Belohnungsmechanismus und native NPC-Aktualisierung.
+Empfangsflags im eigenen Save erlauben Nachlieferung nach Neustart. Diese ursprüngliche begrenzte
+Liste und sicheres Nachladen erschöpfter Reserven ersetzten keine kampagnenweite
+Story-/NPC-Synchronisierung, freie Sechserteam-Auswahl, vollständige EP-Teiler-/
+Entwicklungsbehandlung, Partnerkollision oder Geländeverdeckung. Der frühere
+[Einzelkern-Bericht](../verification/firered-team-input-2026-10-28.json) behält seinen
+historischen Umfang. Die öffentlichen Alpha-8-Pakete bleiben unverändert.
+
+
+Frühere Basis-Abnahme: **14 native Tests, alle 60 Python-Tests ohne
+Auslassungen, 21 Paar-Kampfszenarien und 6 native Story-Szenarien** bestehen.
+Die 27 ROM-Prüfungen umfassen getrenntes natives Speichern/frisches Batterieladen,
+persönliche Fangdaten, Team-AP, Entwicklungs-/Aktionsstatistiken und geprüfte
+Quest-/Ruhmesdatei-Empfänge. Auch die nativen Trainer-/Zahltag-Zahlenpuffer passen
+zum tatsächlichen geteilten Preisgeld. [Maschinenlesbarer Umfang](../verification/firered-paired-2026-10-29.json).
 
 ## Große GBA-ROMs: 23. Oktober 2026
 

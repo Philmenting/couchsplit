@@ -125,6 +125,101 @@ static void gbaSelection() {
     capture(launcher,"gba-menu-en");
     Launcher reopened(data.path());assert(reopened.findChild<QPushButton*>("startGame")->text()=="Start split screen");
 }
+static void fireRedAudioPreferences() {
+    const bool present=qEnvironmentVariableIsSet("COUCHSPLIT_FIRERED_EXPERIMENT");
+    const auto previous=qgetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
+    qputenv("COUCHSPLIT_FIRERED_EXPERIMENT","1");
+    QTemporaryDir data;
+    atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"language","en"}}).toJson());
+    auto choose=[&](Launcher& launcher,const QString& expected,const QString& selected,bool accept) {
+        bool visited=false;QTimer timer;timer.setInterval(10);
+        QObject::connect(&timer,&QTimer::timeout,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());if(!dialog)return;
+            auto* combo=dialog->findChild<QComboBox*>("fireRedAudioCombo");if(!combo)return;
+            assert(combo->count()==4 && combo->currentData().toString()==expected);
+            assert(combo->itemText(2)=="Both players" && combo->itemText(3)=="Mute");
+            combo->setCurrentIndex(combo->findData(selected));visited=true;timer.stop();
+            if(accept)dialog->accept();else dialog->reject();
+        });timer.start();launcher.findChild<QPushButton*>("settingsAction")->click();timer.stop();assert(visited);
+    };
+    {Launcher launcher(data.path());launcher.show();
+        choose(launcher,"player1","both",false);
+        assert(!preferences(data.path()).contains("fireRedAudio"));
+        choose(launcher,"player1","both",true);
+        assert(preferences(data.path())["fireRedAudio"]=="both");}
+    {Launcher launcher(data.path());launcher.show();choose(launcher,"both","mute",true);
+        assert(preferences(data.path())["fireRedAudio"]=="mute");}
+    if(present)qputenv("COUCHSPLIT_FIRERED_EXPERIMENT",previous);else qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
+    i18n::setLanguage("de");
+}
+// Optional private integration: no ROM or real save is copied into the repo.
+// The fixture only simulates a paired worker's exit, it does not emulate a battle.
+static void fireRedRealRomUi(const QString& fixture) {
+    const auto rom=qEnvironmentVariable("COOP_VERIFY_FIRERED_ROM");if(rom.isEmpty())return;
+    assert(hashFile(rom)==QLatin1String(GermanFireRedSha256));
+    const bool present=qEnvironmentVariableIsSet("COUCHSPLIT_FIRERED_EXPERIMENT");
+    const auto previous=qgetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
+    qputenv("COUCHSPLIT_FIRERED_EXPERIMENT","1");
+    for(const auto& language:{QString("de"),QString("en")}) {
+        QTemporaryDir data;SaveStore store(data.path());store.acquire();
+        const auto game=validateRom(rom);
+        const std::array<QByteArray,2> original{{QByteArray(131072,'a'),QByteArray(131072,'b')}};
+        const std::array<QByteArray,2> later{{QByteArray(131072,'c'),QByteArray(131072,'d')}};
+        std::array<QString,2> saves;
+        for(int p=0;p<2;p++) {saves[p]=store.profile(p,game)+"/saves/game.sav";assert(QDir().mkpath(QFileInfo(saves[p]).path()));atomicWrite(saves[p],original[p]);}
+        const auto backup=store.backupPair(game);assert(!backup.isEmpty());
+        for(int p=0;p<2;p++)atomicWrite(saves[p],later[p]);store.release();
+        atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"language",language},{"rom",rom},{"gbaEmulator",fixture}}).toJson());
+        Launcher launcher(data.path());launcher.resize(640,360);launcher.show();spin(40);
+        int stage=0;QTimer drive;drive.setInterval(10);
+        QObject::connect(&drive,&QTimer::timeout,[&]{
+            auto* modal=QApplication::activeModalWidget();if(!modal)return;
+            if(auto* file=qobject_cast<QFileDialog*>(modal)) {
+                if(stage!=1)return;stage=2;file->setDirectory(backup);file->selectFile(backup);
+                QMetaObject::invokeMethod(file,"accept",Qt::QueuedConnection);return;
+            }
+            if(auto* box=qobject_cast<QMessageBox*>(modal)) {
+                if(stage==2 && box->standardButtons().testFlag(QMessageBox::Yes)) {
+                    stage=3;QTimer::singleShot(0,box->button(QMessageBox::Yes),&QPushButton::click);
+                } else if(stage==3 && box->standardButtons().testFlag(QMessageBox::Ok)) {
+                    stage=4;QTimer::singleShot(0,box->button(QMessageBox::Ok),&QPushButton::click);
+                }
+                return;
+            }
+            auto* dialog=qobject_cast<QDialog*>(modal);if(!dialog)return;
+            auto* restore=dialog->findChild<QPushButton*>("restorePairAction");if(!restore)return;
+            if(stage==0) {stage=1;capture(*dialog,"paired-restore-"+language);QTimer::singleShot(0,restore,&QPushButton::click);}
+            else if(stage==4) {stage=5;QTimer::singleShot(0,dialog,&QDialog::accept);}
+        });drive.start();
+        QTimer watchdog;watchdog.setSingleShot(true);
+        QObject::connect(&watchdog,&QTimer::timeout,[&]{if(auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget()))dialog->reject();});watchdog.start(10000);
+        for(auto* button:launcher.findChildren<QPushButton*>())if(button->text()==i18n::text("Spielstände"))button->click();
+        drive.stop();watchdog.stop();assert(stage==5);
+        for(int p=0;p<2;p++){QFile f(saves[p]);assert(f.open(QIODevice::ReadOnly));assert(f.readAll()==original[p]);}
+        // Simulate the dedicated capacity exit through production widgets.
+        int a=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);
+        int b=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);assert(a>=0&&b>=0);
+        auto* ja=SDL_JoystickOpen(a);auto* jb=SDL_JoystickOpen(b);assert(ja&&jb);
+        qputenv("COOP_FIXTURE_EXIT_CODE","71");launcher.findChild<QPushButton*>("startGame")->click();spin(1000);
+        auto* status=launcher.findChild<QLabel*>("sessionStatus");assert(status && status->property("tone").toString()=="error");
+        assert(status->text().contains(language=="de"?"EP-Teiler":"Exp. Shares"));
+        auto* menuScroll=launcher.findChild<QScrollArea*>("menuScroll");assert(menuScroll);
+        const QRect statusRect(status->mapTo(menuScroll->viewport(),QPoint()),status->size());
+        if(!menuScroll->viewport()->rect().contains(statusRect)) {
+            fprintf(stderr,"Error status outside viewport: status=(%d,%d %dx%d), viewport=%dx%d, scroll=%d/%d\n",statusRect.x(),statusRect.y(),statusRect.width(),statusRect.height(),menuScroll->viewport()->width(),menuScroll->viewport()->height(),menuScroll->verticalScrollBar()->value(),menuScroll->verticalScrollBar()->maximum());
+            capture(launcher,"paired-error-failed-"+language);
+        }
+        assert(menuScroll->viewport()->rect().contains(statusRect));
+        assert(!QFileInfo::exists(data.path()+"/session.lock"));qunsetenv("COOP_FIXTURE_EXIT_CODE");
+        capture(launcher,"paired-error-"+language);
+        const auto other=language=="de"?QString("en"):QString("de");
+        configureLanguage(launcher,other);
+        assert(status->property("tone").toString()=="error" && status->text().contains(other=="de"?"EP-Teiler":"Exp. Shares"));
+        SDL_JoystickClose(ja);SDL_JoystickClose(jb);SDL_JoystickDetachVirtual(b);SDL_JoystickDetachVirtual(a);
+    }
+    if(present)qputenv("COUCHSPLIT_FIRERED_EXPERIMENT",previous);else qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
+    assert(hashFile(rom)==QLatin1String(GermanFireRedSha256));i18n::setLanguage("de");
+}
 static void menuFits() {
     QTemporaryDir data;
     atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"rom",QString(250,'r')+".nds"}}).toJson());
@@ -229,7 +324,7 @@ int main(int argc,char** argv) {
     QTemporaryDir mouseData,controllerData,sessionData;
     languagePreferences();
     for(auto language:{"en","de"}) {i18n::setLanguage(language);menuFits();playHelpFits();}
-    gbaSelection();i18n::setLanguage("de");backgroundMenu();assignedMenu();
+    gbaSelection();fireRedAudioPreferences();fireRedRealRomUi(QFileInfo(argv[1]).absoluteFilePath());i18n::setLanguage("de");backgroundMenu();assignedMenu();
     {
         QTemporaryDir keyboardData;Launcher launcher(keyboardData.path());launcher.show();spin(40);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit);exit->setFocus();

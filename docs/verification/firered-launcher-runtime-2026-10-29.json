@@ -1,0 +1,549 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "project": "CouchSplit",
+  "scope": "Local launcher/paired-worker runtime extension over the unmodified German FireRed original",
+  "environment": {
+    "os": "Zorin OS 18.1 Linux x86_64",
+    "physical_controllers": false,
+    "audible_audio": false,
+    "native_windows_or_bazzite": false
+  },
+  "base_commit": "be031d4213601ecde0bfc9e35aeb1ca3acf7120b",
+  "branch": "feature/gba-support",
+  "public_alpha_8_unchanged": true,
+  "published": false,
+  "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "rom_file_bytes_unchanged": true,
+  "private_checkpoint_sha256": "835a1924731dc0951a168de8fd8095526958c99c78bb77e10fb6419c71995391",
+  "pinned_mgba_commit": "26b7884bc25a5933960f3cdcd98bac1ae14d42e2",
+  "pinned_game_metadata_source_commit": "ce6406d8c2eaf46d543c8a2606de0c3cb1951982",
+  "native_suites": {
+    "passed": 20,
+    "failed": 0,
+    "private_log_sha256": "5dc2b84db20642aaa32a2e0a176279d948a3787face81bbd78cca78ba432811e"
+  },
+  "python_tests": {
+    "passed": 60,
+    "skipped": 0,
+    "failed": 0,
+    "private_log_sha256": "df09b5c8c8d9196521c0d3db73e8521f39e08bd8e58cd9d5cca1d55930e65b85"
+  },
+  "asan_ubsan_leak_checks": {
+    "connections": 72,
+    "party_menu": 4423,
+    "campaign_catalog": 274,
+    "campaign_runtime": 1729,
+    "native_hook_fixtures": "passed"
+  },
+  "targeted_native_case_count": 50,
+  "targeted_native_cases": [
+    {
+      "group": "paired_battle",
+      "case": "action-stats",
+      "frames": 2018,
+      "private_report_sha256": "3c8c897210fcc9e5cf9965797334c81cfd7141b4aadf70416afae7cbd02a3311",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "bench",
+      "frames": 73067,
+      "private_report_sha256": "6c6d97ebb10ebc1b6a83ab2be057a9c808124bd13ed5c2ca35f2b4e4495b0484",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture",
+      "frames": 3040,
+      "private_report_sha256": "a5eaa1c171f570147ba62fee42c7c007d3c87377793e45a7a6175a51c9a3b75e",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-both",
+      "frames": 3340,
+      "private_report_sha256": "264d485fad09e360042132e1c22dea62a0c21fb918f9bf6b556bcf8ca9f722cd",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-denied",
+      "frames": 1989,
+      "private_report_sha256": "98fcd296258458900dd06bc47e65a3bb9accfa19636afb8922ecfe3c2fdf49c3",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-full-native",
+      "frames": 3040,
+      "private_report_sha256": "649e049fe208dfee4f1cea0b1aeac03e7b16d6951e54a9f592480e4e88069c2e",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-legendary",
+      "frames": 2980,
+      "private_report_sha256": "27b9b1955b4eb432b1fc9e811ad30a7d00fad4ffed8449e1f4b71c7734cbc3c9",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-party-space",
+      "frames": 3040,
+      "private_report_sha256": "bd24b353f263f73b7eccd8c1bd25404f9b1ec567b3920318fb67cf79920d81e8",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-pc",
+      "frames": 3040,
+      "private_report_sha256": "eaf4d587ec2eadfef142ba52de89db7a046e98c5577bab0b96513d7a52be4efb",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-scripted",
+      "frames": 3040,
+      "private_report_sha256": "beccd05dea516012d9057a32b7d07d6bb9662ac733afca73a25ed333ae5d7df0",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-sequential",
+      "frames": 3879,
+      "private_report_sha256": "387967458489c77dd825246a77ba3a21ced2482fa5f0c3c2cc8e71fa72bca197",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-spinda",
+      "frames": 2950,
+      "private_report_sha256": "63d15274491f9d3279042be43fd73d67acce2c04674340fe8c55d2a3e0c1b226",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-unown",
+      "frames": 2950,
+      "private_report_sha256": "180bd7cbf5cfff51eb9237e4b869bbf7214c5515c30a59ec66c3feee631c7781",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "capture-unown-first",
+      "frames": 2950,
+      "private_report_sha256": "8070f6f5a589eaea33bdc521442ab773a76072f380c9e1e316d54a21769757a2",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "defeat",
+      "frames": 4097,
+      "private_report_sha256": "d13b33dd0d45221ffe785fefb8d0b4a035fa83906744b1c499fce531d4d90204",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "deferred-script",
+      "frames": 2898,
+      "private_report_sha256": "8fe228ce1e00790c745633c348f702d60c1250b0315f3dd7b8f8bf28b542d8ac",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "evolution",
+      "frames": 7197,
+      "private_report_sha256": "77b8a45723b70fc0a27ec634f5d48864c9d7933cb548e7427d8b8e208035673b",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "exhaust",
+      "frames": 4988,
+      "private_report_sha256": "fd55a9e3ae59852867a997d13d4e73dbba39232abc03eaa4111a5225c63e6e1d",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "grass-rendezvous",
+      "frames": 1419,
+      "private_report_sha256": "f8a91667c3fd63a8c8178d8e24c18a615fd96f655d087042f4e77d8f1ae1891f",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "leader2",
+      "frames": 2018,
+      "private_report_sha256": "00c96768c901903a5256a8004692054148e8501907438665886b580456932685",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "legendary",
+      "frames": 1359,
+      "private_report_sha256": "eb46f387ca6be98594022ae325e5ce74111bf4b31363c80240e956199124d564",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "marowak",
+      "frames": 1809,
+      "private_report_sha256": "5325199beaee4445f285eeed1c91c11f3aeecf8e30528a2874643bbf9c8a0597",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "owners",
+      "frames": 2018,
+      "private_report_sha256": "0e1b762906d3bffef43343006a0762f5f1e0b8213798276e6643cfd192a3e4ff",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "party-menu",
+      "frames": 4474,
+      "private_report_sha256": "f3dea1430f76093f75f3571a5cd7e88c3bcad7caa3b6d0938a65a1ab7dde4b4a",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "party-menu-cancel",
+      "frames": 5044,
+      "private_report_sha256": "fa5f1d83584c22b7f349c3fd2ea5a9117b706f62fd0981d92c0ee92c06ddafd0",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "party-menu-forced",
+      "frames": 6754,
+      "private_report_sha256": "d6d6ad687772bf11c3799676e845dad89fa86e98244c01f712cd0b4a2f0ba2fb",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "party-menu-rollback",
+      "frames": 4474,
+      "private_report_sha256": "75d957c2d23b2baa3a38e842e7a0687037fd9f7ed43d6499197f0f0773947c85",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "party-menu-summary",
+      "frames": 6364,
+      "private_report_sha256": "c9bb538ef74832f802d648f15b28fdbd35bbfa5fcb5b14f5b1eeb5c231fc0a64",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "payday",
+      "frames": 2538,
+      "private_report_sha256": "31f3dbb44e5d848e770d5b91854cec43a31b9eb9ed9ea51ddc4c270a583a5b68",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "rendezvous",
+      "frames": 3738,
+      "private_report_sha256": "0dc1df290c8f4b8614ec9f895104ca47391c22b5ddb456a81a337d155cf5eba1",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "scripted",
+      "frames": 1419,
+      "private_report_sha256": "98239e2937fbad241658d9ac2e9aaa3562c380fa5c3dbd157b49e76efd051a7e",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "single",
+      "frames": 1419,
+      "private_report_sha256": "af1aef12848257de812b4e4eb5a09597561a29acbd7e3cf3f23b9611c277757e",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "trainer",
+      "frames": 3738,
+      "private_report_sha256": "58b0b3666e22407ff705903e205a99995650171c987a2325c351e8d530e898d5",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "paired_battle",
+      "case": "wild",
+      "frames": 2018,
+      "private_report_sha256": "5e77c8bf64fb1b8e5b00746326d1a055e9fedad7ee2350270cb46f1efee5dfc5",
+      "authored_parties_and_encounter_prerequisites": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "seafoam-b3f",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "seafoam-b4f",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "icefall-owned-ice",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "lorelei-owned-dolls",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "tanoby-monean",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "tanoby-liptoo",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "tanoby-weepth",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "tanoby-dilford",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "tanoby-scufib",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "tanoby-rixy",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_map_setup",
+      "case": "tanoby-viapois",
+      "private_report_sha256": "8596813031e548a3ec592e019b1a8e9e5ace2280dbcce84f2ae629fe9eb2a1b1",
+      "authored_map_and_quest_prerequisites": true,
+      "native_save_and_fresh_continue": true,
+      "own_grid_party_bag_position_and_personal_counter_preserved": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_story_gate",
+      "case": "rocket-door",
+      "frames": 9926,
+      "private_report_sha256": "d54f46f453fdfc594d60fa4fb5566be8f4c4a95901f1be8187034dc4ee67d15c",
+      "authored_map_quest_and_party_prerequisites": true,
+      "original_native_encounter_and_post_scene": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_story_gate",
+      "case": "tower-grunt",
+      "frames": 6194,
+      "private_report_sha256": "f8acb3686c8e498dd300427c3dc81202501b1aac5c44d01164a7bd744f2041c1",
+      "authored_map_quest_and_party_prerequisites": true,
+      "original_native_encounter_and_post_scene": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "native_story_gate",
+      "case": "lostelle-full-berry",
+      "frames": 10867,
+      "private_report_sha256": "4c5ee7689aa4bc381b0f71ce2c80222038329f327d6741756a3f6db9fbdb59f7",
+      "authored_map_quest_and_party_prerequisites": true,
+      "original_native_encounter_and_post_scene": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "connected_world_presentation",
+      "case": "pallet-route1",
+      "private_report_sha256": "da1edac28d0f1d3030e5607b83a0a6f4ec11ce39aac663e9547e79946c7074cf",
+      "authored_map_quest_prerequisites": true,
+      "both_native_avatar_views": true,
+      "presentation_machine_snapshot_unchanged": true,
+      "native_walking_connection": true,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    },
+    {
+      "group": "connected_world_presentation",
+      "case": "route1-viridian-signed-offset",
+      "private_report_sha256": "da1edac28d0f1d3030e5607b83a0a6f4ec11ce39aac663e9547e79946c7074cf",
+      "authored_map_quest_prerequisites": true,
+      "both_native_avatar_views": true,
+      "presentation_machine_snapshot_unchanged": true,
+      "native_walking_connection": false,
+      "native_save_and_fresh_continue_both_owners": true,
+      "production_launcher": false
+    }
+  ],
+  "production_boundary_smokes": {
+    "worker": {
+      "passed": true,
+      "private_report_sha256": "91a3d796231355cd1c7b35fc3e7d683d442da8cd50982e3824c94ae30b3c05ef"
+    },
+    "session": {
+      "passed": true,
+      "private_report_sha256": "b1b21f1214b5472ceb1b4d49a8ab1296ad89b7f965f2d5d15f6ecf585bc3cf0d"
+    },
+    "generic-gba": {
+      "passed": true,
+      "private_report_sha256": "9154ed3c5b337b95cb359d42a468a503b8a49204f831b4485da6b649af582756"
+    }
+  },
+  "source_sha256": {
+    "CMakeLists.txt": "448b84a61346054dee184ae391cdfe1ac6ec9c73c63f11d5db61736dfab11035",
+    "gba/FireRedBattle.h": "4bb9299a24eba183d92088a988c00f6e9b9c89d0d38024a5933f5bc0341fa6d7",
+    "gba/FireRedBattleHooks.h": "60e3f465c2fb297f3f98a85a36612ec4462b66f9f1a60e6fc023be0c7897461c",
+    "gba/FireRedPartyMenu.h": "6380222250c94d4fcc15a3e6d9de89c9fa829e76d8af7c904597c17fe404061c",
+    "gba/FireRedConnections.h": "a9fda79524fb030e194d44b39ac0f1361b6a5989dbcf03cce6a60d34ea9de29d",
+    "gba/FireRedWorld.h": "619aa1a8017e186b964ccedf1afab5d9f995aafbb1d6898429eba08d5332903c",
+    "gba/FireRedPairWorker.cpp": "e5b761f7ab2d51426daec35433eb4f64d42e2682402b2c57d003779e8681a873",
+    "gba/FireRedCampaign.h": "61f78a88e2dea5dcb7182a52fe1f05d4453cc9207abc2399235b5579424ffb96",
+    "gba/FireRedCampaignRuntime.h": "3eeac739e49e5e5991d75f7618a72ada88b45c07d41eafb9c3080e8370549699",
+    "tests/test_firered_party_menu.cpp": "ecd3a8fba3517b094ac51ee7e9dfea0c386e9fcb45c92a6280a8028567d88dd1",
+    "tests/test_firered_connections.cpp": "09440e7f19dab55bad2d97c78603bc8fb928bc5e6b547c44c96f4124d9b40e7f",
+    "tests/test_firered_hooks.cpp": "a1efe81fc449f0be5d78c9920936d3513b859a74bd75e848220331eff78a28f0",
+    "tests/test_firered_campaign.cpp": "4d70ce630e38a7d41f5abc1aa79a18e14c4a6d93a009775287bc132bf34dc630",
+    "tests/test_firered_campaign_runtime.cpp": "27282044adbe91781b7413ac6bba244018144eee098702f7b066994bdd2b7e13",
+    "tests/verify_firered_pair.cpp": "2bfc73a2cc90892d0a1f73573b3ca60b329be668ec04735bc315bdc9fcb09b67",
+    "tests/verify_firered_progression.cpp": "60fe75f4571e44a7d31b54d9732df1f1b3196d2319aa293aa27976ba64496a56",
+    "tests/verify_firered_connections.cpp": "a134d5902aaa0bd5f5786f11c8b3dde70f62b38d85fbd7bf1df996d7606cdcd9",
+    "tests/verify_firered_map_setup.cpp": "972ac96da72faaf9ab8d37a43d6bdbea3ebb3370f863399cc3f776ee71186bff"
+  },
+  "source_reference_use": "Reviewed numeric metadata and native behavior; no game scripts, assets, ROMs, saves or checkpoints distributed",
+  "remaining_limits": [
+    "No continuous natural two-player campaign or postgame certification",
+    "Unloaded EXP Share and all twelve-Pokemon learning/evolution paths remain unfinished",
+    "Active/queued/Wish/evolution/pending-EXP/resident-EXP-Share references stay resident; a fully pinned working set can require whole-battle rollback",
+    "Partner is a framebuffer overlay, without native collision or terrain/roof occlusion; battle joining still requires the same map",
+    "A new Seafoam layout variant and unknown executed map setup operations still defer until reviewed native re-entry",
+    "Optional link/facility/Safari modes are not converted",
+    "Duplicate PID/OT identities across profiles remain rejected",
+    "Physical controllers, audible audio, long sessions and native Windows/Bazzite acceptance remain unverified",
+    "Experimental mode is exact-German-ROM opt-in; generic GBA games retain independent sessions"
+  ],
+  "local_binary_sha256": {
+    "build/bin/gba-worker": "0feda482806e229c3e446be2ad8145f8193ac5eae7986c6a02c4a3ea54cc3165",
+    "build/bin/platinum-coop": "812bed6f1b5fe7bb409138023170d0b8344454c1e3e5384bcb582034f89d1bd6"
+  }
+}

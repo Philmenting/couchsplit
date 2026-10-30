@@ -49,6 +49,58 @@ void saveTest() {
 QByteArray readBytes(const QString& path) {
     QFile f(path);assert(f.open(QIODevice::ReadOnly));return f.readAll();
 }
+void pairedSaveTest() {
+    QTemporaryDir temp;SaveStore store(temp.path()),other(temp.path());
+    const auto game=QString(64,'a');
+    rejects([&]{store.backupPair(game);});rejects([&]{store.recoverPair(game);});
+    store.acquire();rejects([&]{other.acquire();});
+    const std::array<QString,2> path{{store.profile(0,game)+"/saves/game.sav",store.profile(1,game)+"/saves/game.sav"}};
+    for(const auto& file:path)assert(QDir().mkpath(QFileInfo(file).path()));
+    const std::array<QByteArray,2> original{{QByteArray(131072,'a'),QByteArray(131072,'b')}};
+    const std::array<QByteArray,2> later{{QByteArray(131072,'c'),QByteArray(131072,'d')}};
+    atomicWrite(path[0],original[0]);assert(store.backupPair(game).isEmpty());
+    atomicWrite(path[1],original[1]);const auto backup=store.backupPair(game);assert(!backup.isEmpty());
+    for(int p=0;p<2;p++)atomicWrite(path[p],later[p]);
+    rejects([&]{store.restorePair(game,temp.path());});
+    store.restorePair(game,backup);
+    for(int p=0;p<2;p++)assert(readBytes(path[p])==original[p]);
+    assert(!QFileInfo::exists(store.pairBackupsDir(game)+"/restore-pending.json"));
+    // A corrupt selected pair is rejected before changing either live save.
+    const auto clean=store.backupPair(game);
+    atomicWrite(backup+"/player2.sav",QByteArray(131072,'z'));
+    for(int p=0;p<2;p++)atomicWrite(path[p],later[p]);
+    rejects([&]{store.restorePair(game,backup);});
+    for(int p=0;p<2;p++)assert(readBytes(path[p])==later[p]);
+    // Simulate a process stopping between the two atomic file replacements.
+    // Recovery uses a durable pair manifest before a new session may start.
+    const auto recovery=store.backupPairBeforeRestore(game);
+    const auto journal=store.pairBackupsDir(game)+"/restore-pending.json";
+    auto marker=[&](const QString& snapshot) {
+        atomicWrite(journal,QJsonDocument(QJsonObject{{"format","couchsplit-firered-restore-1"},{"rom",game},{"backup",QFileInfo(snapshot).fileName()}}).toJson());
+    };
+    marker(recovery);atomicWrite(path[0],original[0]);
+    store.recoverPair(game);
+    for(int p=0;p<2;p++)assert(readBytes(path[p])==later[p]);
+    assert(!QFileInfo::exists(journal));
+    // Damaged recovery data keep the journal and both files untouched.
+    const auto damagedRecovery=store.backupPairBeforeRestore(game);
+    marker(damagedRecovery);atomicWrite(damagedRecovery+"/player2.sav",QByteArray(131072,'q'));
+    rejects([&]{store.recoverPair(game);});assert(QFileInfo::exists(journal));
+    for(int p=0;p<2;p++)assert(readBytes(path[p])==later[p]);
+    atomicWrite(damagedRecovery+"/player2.sav",later[1]);store.recoverPair(game);
+    for(int p=0;p<2;p++)assert(readBytes(path[p])==later[p]);
+    assert(!QFileInfo::exists(journal));
+    // A valid pair can also repair an absent or truncated current save.
+    assert(QFile::remove(path[1]));atomicWrite(path[0],"truncated");
+    store.restorePair(game,clean);
+    for(int p=0;p<2;p++)assert(readBytes(path[p])==original[p]);
+    // A rollback restores both prior bytes and prior absence, not a mixture.
+    assert(QFile::remove(path[1]));
+    const auto absentRecovery=store.backupPairBeforeRestore(game);
+    marker(absentRecovery);atomicWrite(path[0],later[0]);atomicWrite(path[1],later[1]);
+    store.recoverPair(game);assert(readBytes(path[0])==original[0] && !QFileInfo::exists(path[1]));
+    store.release();rejects([&]{store.restorePair(game,clean);});
+}
 void saveMigrationTest() {
     QTemporaryDir temp;SaveStore store(temp.path());const auto game=QString(64,'b');
     rejects([&]{store.prepareSave(0,game,"original.nds");});
@@ -154,7 +206,20 @@ void validationTest() {
 void processTest(const QString& fixture) {
     QTemporaryDir temp;SaveStore store(temp.path());Session session(store);Settings s;s.emulator=fixture;
     s.rom=temp.path()+"/legal-test-header.nds";QByteArray header(1024,0);header.replace(12,4,"CPUE");atomicWrite(s.rom,header);s.patchedConfirmed=true;
-    int errors=0;session.error=[&](QString){errors++;};
+    int errors=0;QString lastSignal;
+    session.error=[&](QString){errors++;lastSignal="error";};
+    session.status=[&](QString){lastSignal="status";};
+    i18n::setLanguage("de");
+    assert(workerExitMessage(true,0,firered::ExpShareCapacityExitCode,QProcess::NormalExit).contains("EP-Teiler"));
+    assert(workerExitMessage(true,0,firered::EnigmaBerryExitCode,QProcess::NormalExit).contains("Enigmabeere"));
+    i18n::setLanguage("en");
+    assert(workerExitMessage(true,0,firered::ExpShareCapacityExitCode,QProcess::NormalExit).contains("Exp. Shares"));
+    assert(workerExitMessage(true,0,firered::EnigmaBerryExitCode,QProcess::NormalExit).contains("Enigma Berry"));
+    assert(workerExitMessage(false,0,firered::EnigmaBerryExitCode,QProcess::NormalExit).contains("Emulator 1"));
+    assert(workerExitMessage(true,0,firered::EnigmaBerryExitCode,QProcess::CrashExit).contains("crash"));
+    assert(workerExitMessage(false,0,firered::ExpShareCapacityExitCode,QProcess::NormalExit).contains("Emulator 1"));
+    assert(workerExitMessage(true,0,firered::ExpShareCapacityExitCode,QProcess::CrashExit).contains("crash"));
+    i18n::setLanguage("de");
     const auto game=validateRom(s.rom),directory=store.profile(0,game)+"/saves";QDir().mkpath(directory);
     atomicWrite(directory+"/legal-test-header.sav","player one progress");
     for(int i=0;i<3;i++) {
@@ -164,12 +229,12 @@ void processTest(const QString& fixture) {
         session.stop();assert(!session.running()&&!store.locked());
         const auto renamed=temp.path()+"/renamed-"+QString::number(i)+".nds";atomicWrite(renamed,header);s.rom=renamed;
     }
-    qputenv("COOP_FIXTURE_CRASH_PLAYER","1");session.start(s);spin(700);assert(!session.running()&&!store.locked()&&errors>0);qunsetenv("COOP_FIXTURE_CRASH_PLAYER");
+    qputenv("COOP_FIXTURE_CRASH_PLAYER","1");session.start(s);spin(700);assert(!session.running()&&!store.locked()&&errors>0&&lastSignal=="error");qunsetenv("COOP_FIXTURE_CRASH_PLAYER");
     s.emulator=temp.path()+"/missing";rejects([&]{session.start(s);});assert(!store.locked());
 }
 int main(int argc,char**argv) {
     QApplication app(argc,argv);assert(argc==2);auto fixture=QFileInfo(argv[1]).absoluteFilePath();
-    ipcTest(fixture);layoutTest();saveTest();saveMigrationTest();controllerTest();validationTest();processTest(fixture);
+    ipcTest(fixture);layoutTest();saveTest();pairedSaveTest();saveMigrationTest();controllerTest();validationTest();processTest(fixture);
     std::cout<<"PASS: IPC across processes, 4:3 layouts, profile locks, verified restore, corruption rejection, virtual controller isolation/hotplug/touch, validation, repeated starts, graceful stop, worker failure cleanup\n";
     return 0;
 }

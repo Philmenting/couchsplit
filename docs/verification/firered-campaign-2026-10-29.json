@@ -1,0 +1,356 @@
+{
+  "date": "2026-10-29",
+  "scope": "Local opt-in exact-German-FireRed campaign synchronization experiment",
+  "base_source_commit": "f2eb3d8",
+  "platform": "Zorin OS 18.1 Linux x86_64; software emulation and virtual input; dummy audio",
+  "original_rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "rom_bytes_unchanged": true,
+  "pinned_mgba_commit": "26b7884bc25a5933960f3cdcd98bac1ae14d42e2",
+  "pinned_game_source_metadata_commit": "ce6406d8c2eaf46d543c8a2606de0c3cb1951982",
+  "source_reference_use": "Independent numeric metadata/behavior review; no original ROM, scripts, assets or saves distributed",
+  "native_suites": {
+    "passed": 18,
+    "failed": 0
+  },
+  "python_tests": {
+    "passed": 60,
+    "skipped": 0,
+    "failed": 0
+  },
+  "sanitizers": {
+    "runtime_checks": 1716,
+    "broker_checks": 73,
+    "catalog_checks": 242,
+    "asan_ubsan_and_leaks": "passed"
+  },
+  "native_acceptance_cases": [
+    {
+      "case": "native-hall-of-fame-two-owners",
+      "group": "native_campaign",
+      "frames": 2420,
+      "private_report_sha256": "1f5eed038c9f1d08ae727c08cf3ed54d55183d2fbed106f47cb3dd3b39b0ccfc",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "cut",
+      "group": "native_campaign",
+      "frames": 2341,
+      "private_report_sha256": "e08c1c7c01e308daf70aa746a8cb174532c83e292f8bbd1d698a0de063c3b525",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "surf",
+      "group": "native_campaign",
+      "frames": 1711,
+      "private_report_sha256": "a284b717a49ac815c648fccdff20e748d9aa10bd0748cc0f8e699f74d2fbc7c8",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "strength",
+      "group": "native_campaign",
+      "frames": 1081,
+      "private_report_sha256": "b07ac1ed5f2b0551da81cbdccca833cf8d9431cee26c669ca54ea5a6a66ae4ef",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "national-dex",
+      "group": "native_campaign",
+      "frames": 2,
+      "private_report_sha256": "6b8decf04202a5aa31e6fc9115fc969fa686d85a4157b5c58313ee5db0949b09",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "network-0",
+      "group": "native_campaign",
+      "frames": 7,
+      "private_report_sha256": "c5b31e1e10d1f23f6e4d35e4cce20b37e952bf9104cf41ca61fedc6fc4304ef8",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "network-1",
+      "group": "native_campaign",
+      "frames": 7,
+      "private_report_sha256": "ec41dda0617242beb8c11c933ad3cbd52e78e522bd25969d795678498adaf453",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "network-2",
+      "group": "native_campaign",
+      "frames": 7,
+      "private_report_sha256": "6940f5470ddcc4f9697ee854938ef2a20991c4e6549b7842dabfc75c8c036d23",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "marowak",
+      "group": "native_campaign",
+      "frames": 3121,
+      "private_report_sha256": "66cb0dc977b1b8ce23a15e24464cb5cd8dcff7401bb82f6afe61199d10297fdd",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "shared-champion",
+      "group": "native_campaign",
+      "frames": 20390,
+      "private_report_sha256": "7010bac45cb3a8c8713a635008c3cd3fbfbf84e82276909b0ec6c4a0d51023b8",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "shared-champion-rendezvous",
+      "group": "native_campaign",
+      "frames": 21590,
+      "private_report_sha256": "273e62efaac623106212761d9d70aaedf9179e8b1d16ddb2d5c8cafc8695eb79",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "network-loaded",
+      "group": "native_campaign",
+      "frames": 9,
+      "private_report_sha256": "1651df05a3fa4d91b892f1a46abff06ad9bdf339adf28c2e379da3c462396282",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "network-guard",
+      "group": "native_campaign",
+      "frames": 6,
+      "private_report_sha256": "fb8844f9c362129ffbfa5d5af017c62d74494235a1fc7f6e501522ed6964c327",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "grass-rendezvous",
+      "group": "native_campaign",
+      "frames": 1965,
+      "private_report_sha256": "b1060d5f2f974cb239bc0f1b4e3854239522efe8b20dfc3395b61940cccdd55b",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "misty",
+      "group": "native_gym",
+      "frames": 7861,
+      "private_report_sha256": "44648e5cc8019ed42b1da59b1086b78cb9d690f51f6b61617da8602c0356ce15",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "surge",
+      "group": "native_gym",
+      "frames": 7896,
+      "private_report_sha256": "24365f603b2e5e0267191ca997e4c5e2b8bc5af01557ac8f64cb75dc6f6af7ca",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "erika",
+      "group": "native_gym",
+      "frames": 10171,
+      "private_report_sha256": "43981aa81000c78173d5d57718f6e0cb71e763f806353736a67d0c0037f28ea1",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "koga",
+      "group": "native_gym",
+      "frames": 10681,
+      "private_report_sha256": "6ce5e9d6f511d2fcd5ad7015e4a38c216644bd2e83a8bdf5961707356f4f9672",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "sabrina",
+      "group": "native_gym",
+      "frames": 10891,
+      "private_report_sha256": "86840d5f9f6b098e4611b32758883be0b3deb9f0ad63cb1eaad03b71735c4c25",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "blaine",
+      "group": "native_gym",
+      "frames": 9695,
+      "private_report_sha256": "99b78c4c1e7f5eda42a6105c492b9295b37b91f5b8b6807e1cfb2f4d95981d69",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "giovanni",
+      "group": "native_gym",
+      "frames": 13531,
+      "private_report_sha256": "3c82d71d3124ff12362a392ac5c2dd71342c45618b27e9ce55d652ec8610f96e",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "misty-full",
+      "group": "native_gym",
+      "frames": 7861,
+      "private_report_sha256": "cc9ad4f2b7d7bd3220de0664c28187c31d8ba73c1ff55d802ecd551ee95982be",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "marowak",
+      "group": "authored_encounter_native_battle",
+      "frames": 1809,
+      "private_report_sha256": "5325199beaee4445f285eeed1c91c11f3aeecf8e30528a2874643bbf9c8a0597",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "scripted",
+      "group": "authored_encounter_native_battle",
+      "frames": 1419,
+      "private_report_sha256": "98239e2937fbad241658d9ac2e9aaa3562c380fa5c3dbd157b49e76efd051a7e",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "legendary",
+      "group": "authored_encounter_native_battle",
+      "frames": 1359,
+      "private_report_sha256": "eb46f387ca6be98594022ae325e5ce74111bf4b31363c80240e956199124d564",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "capture-scripted",
+      "group": "authored_encounter_native_battle",
+      "frames": 3040,
+      "private_report_sha256": "beccd05dea516012d9057a32b7d07d6bb9662ac733afca73a25ed333ae5d7df0",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "capture-legendary",
+      "group": "authored_encounter_native_battle",
+      "frames": 2980,
+      "private_report_sha256": "27b9b1955b4eb432b1fc9e811ad30a7d00fad4ffed8449e1f4b71c7734cbc3c9",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "rendezvous",
+      "group": "authored_encounter_native_battle",
+      "frames": 3738,
+      "private_report_sha256": "0dc1df290c8f4b8614ec9f895104ca47391c22b5ddb456a81a337d155cf5eba1",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "grass-rendezvous",
+      "group": "authored_encounter_native_battle",
+      "frames": 1419,
+      "private_report_sha256": "f8a91667c3fd63a8c8178d8e24c18a615fd96f655d087042f4e77d8f1ae1891f",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    },
+    {
+      "case": "deferred-script",
+      "group": "authored_encounter_native_battle",
+      "frames": 2898,
+      "private_report_sha256": "8fe228ce1e00790c745633c348f702d60c1250b0315f3dd7b8f8bf28b542d8ac",
+      "authored_prerequisites": true,
+      "production_launcher": false
+    }
+  ],
+  "native_acceptance_case_count": 30,
+  "native_scene_boundary": "Native campaign/gym cases author prerequisite maps/stages and often strong level100/stat999 parties. Original conversations, encounters, controllers, continuations, save menu and fresh Continue are executed. Network/National Dex source trigger is explicitly authored native-special invocation. Fixture battle group authors encounters/callbacks; it is distinct from the genuine Route1/Marowak/Champion native-trigger cases.",
+  "shared_ownership": [
+    "Own trainer identity, party, bag, PC, dex and wallet",
+    "Personal native reward receipts and full-bag deferral",
+    "Native Hall of Fame records/ribbons and first-clear metadata",
+    "Own-starter native roaming legendary and one-shot postgame completion"
+  ],
+  "reviewed_campaign": [
+    "Existing lab rival/Parcel/Pokedex/Brock ledger",
+    "All seven later Gyms and own TM receipts",
+    "Bill, SS ticket, story HMs and keys, Tower/Flute/Snorlax, Silph and Sevii milestones",
+    "Current League expedition exit doors and native WhiteOut resets",
+    "Both native Champion scenes or original idle-peer Hall of Fame entry",
+    "Native National Dex and network completion with loaded map refresh"
+  ],
+  "live_map_execution": [
+    "Original Mart questionnaire",
+    "Surge beams, Blaine doors, Rocket/Silph barriers",
+    "Native NPC positions/graphics in Viridian/Fuchsia/Saffron",
+    "All four own League room exits and native expedition reset",
+    "Already-loaded network machine and Cerulean guard"
+  ],
+  "encounter_concurrency": [
+    "Pending menus/cutscenes and first-lab readiness wait",
+    "Ordinary simultaneous grass encounters coalesce once",
+    "Scripted objects compare continuation and active return stack; different objects remain queued",
+    "Matching pending partner resumes own original callback without duplicate battle counts"
+  ],
+  "production_smokes": {
+    "paired_worker_boot_restart_sigterm_boundaries": "passed",
+    "production_session_child_failure_locks_prior_save_preservation": "passed",
+    "generic_gba_worker_storage_input_restart": "passed",
+    "paired_campaign_through_production_ui": false
+  },
+  "private_log_sha256": {
+    "campaign-build-final.log": "b2adf3ad6f302ada2bc97779ea87be6a8d12fc41d45ececda193a0e2c667b12e",
+    "campaign-ctest-final.log": "f3d7ca23f22a4e3132faf3b42ce16707bed1c45f12c38bc5fb1f998f67c64ec8",
+    "campaign-python-final.log": "4da3f62442537a22ce7685271a5890583dc01b4b720113c6a63b3d845e8582df",
+    "campaign-worker-final.log": "8948fc77d4b7f21834476cbc91e7a71cef120b67ab31d2cde413a66f323f13f1",
+    "campaign-session-final.log": "b1b21f1214b5472ceb1b4d49a8ab1296ad89b7f965f2d5d15f6ecf585bc3cf0d",
+    "campaign-gba-final.log": "aed1f7320dc67090237e1d4aed52d203ed88d7f28dae91599e80a138a51b2056",
+    "campaign-runtime-e4.log": "835bb4419e094be53dcb3d73638cd0b2712e7d49be2293630309b85de7c29ab4",
+    "campaign-runtime-mart.log": "0532deb906f506c6a454d74f270821bc68e21afca3a847410e39abf47c91d3ac",
+    "campaign-runtime-blockers.log": "c130c87500bdfca4650c6be683e4cdabcf5f54fed58c6a7b4b1e253330a78df8",
+    "campaign-runtime-league-production.log": "009207bfc79ba6736056db2a027f9695aec7e22ad6cfab605812ae28e503082c"
+  },
+  "source_snapshot_sha256": {
+    "CMakeLists.txt": "48553ef4de8d43c27ce916ef12f1ef7605bc473a291ea1f495300b0181058078",
+    "gba/FireRedBattle.h": "3172fa16931852a4b63dd9b2b87f5f705cfd90cb1459c53e30814762e3a1ce53",
+    "gba/FireRedBattleHooks.h": "ada56225a5a4679e75d0651854e6a8238ea88ab5269618c9ab4eddbd85dbee3b",
+    "gba/FireRedCampaign.h": "b5db849fac8f175138d8b9da0cc4a3e659c0eaf95c830c0047815255f945929a",
+    "gba/FireRedCampaignCompletion.h": "3eb3cda2255d90f9420d0aa4cea283a740d626c953379c66d5fef7d25e1b04b0",
+    "gba/FireRedCampaignRuntime.h": "873271de6f5e85da2afd7417db8bb84a04bc3b0bbb7f4c00926a980558ce925a",
+    "gba/FireRedCampaignSync.h": "777ba8f027380a03df5b5750b65d2030fa3ed68a96dacd349ebf6f2af2ff58b8",
+    "gba/FireRedEncounter.h": "8dc8fdc2e6c3606be31f89927abf3e1a878664e97b7fb405e9e64c4e16dd4d8e",
+    "gba/FireRedLeague.h": "f449ad7aeacff7e0125a294ad934064551768af1fe5cbde991d0098f1acc3669",
+    "gba/FireRedPairWorker.cpp": "0cefadc93a4756832b77dd580077299a196b1304bef0e9ea889477a07980ddf3",
+    "gba/FireRedRewards.h": "b79f7f1ba0d4f6f0591e64b8cb7a4106ecb7bf41ef861784ed0d57ace3bba635",
+    "launcher/Session.h": "9a07254c120154d8d1999548b42b22cd4232e6e0b100a6b647071283fec2251c",
+    "launcher/Translations.h": "6d6f7d221d37ce4b554b5c01e45ec690ea3a593ad575fdbe9c5f585731b1f09d",
+    "tests/test_firered_campaign.cpp": "02362d5d17b9792999ec59b3a7375a4fd8c126b034f14ba0cbb8914b496a21f9",
+    "tests/test_firered_campaign_runtime.cpp": "3dc3d76970c73fcbf6d399abdc9ec4e31630e446a43e27b65d8b5358d77c9a17",
+    "tests/test_firered_campaign_sync.cpp": "88bfe720d09ffb4e9b339fff721312f0843da0f464907a9d59864fad96ff631d",
+    "tests/test_firered_encounter.cpp": "05f0ac973a7aa27686414fc904d9c90ca1cea656a4d7549b829e0477685d2dae",
+    "tests/test_firered_hooks.cpp": "90d058ccead039d8a50052c34e169fb80ada38f2757a2d680289a6c891fbde34",
+    "tests/test_firered_rewards.cpp": "0a0b97ea0e97d9b662b84c967a129cb4f2608b7a46ca3b72f5ad3833b627fc36",
+    "tests/verify_firered_campaign.cpp": "b8c62d7a7497021e40702f8373586cb83036c2d669d121799908e5a3c9b1e82e",
+    "tests/verify_firered_gyms.cpp": "24f8f642598f6b7cc6f7421fe60f36a162a0979100314d227eec860f5ad5a595",
+    "tests/verify_firered_pair.cpp": "fa6fcb894c39df6941d45618e5b6dcc89ddd98486e13cd4400529e984546e3af"
+  },
+  "local_binary_sha256": {
+    "launcher": "812bed6f1b5fe7bb409138023170d0b8344454c1e3e5384bcb582034f89d1bd6",
+    "gba_worker": "12a71347bdefa2ec0913e0f9c53ea149f2f9395b6fb9cc565ea35e3ff4e6b9cb"
+  },
+  "limitations": [
+    "No continuous natural beginning-to-postgame playthrough",
+    "Unsupported executed map setup operations defer the entire associated update",
+    "Initial native battle working set has three viable Pokemon per player, with safe exhaustion refills; full independent six-slot selection/EXP Share and all evolution/learning paths remain incomplete",
+    "Partner is a framebuffer overlay; no native partner collision, roof/terrain occlusion or connected-map certification",
+    "Safari/link/facility controllers are not converted to team battles",
+    "Identical Pokemon PID/OT pairs across profiles are rejected",
+    "No physical-controller, audible-output, native Windows or Bazzite acceptance",
+    "No public release or push of this local branch; Alpha8 unchanged"
+  ],
+  "earlier_battle_baseline": "firered-paired-2026-10-29.json",
+  "complete_world_coop_certified": false,
+  "commercial_binaries_or_raw_checkpoints_in_repository": false
+}

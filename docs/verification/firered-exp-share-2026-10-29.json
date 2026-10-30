@@ -1,0 +1,278 @@
+{
+  "date": "2026-10-29",
+  "scope": "Local opt-in FireRed experiment; not a release or complete campaign certification",
+  "platform": "Zorin OS 18.1 Linux, virtual input",
+  "original_rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "original_rom_unchanged": true,
+  "base_commit": "bc85785",
+  "native_suites": {
+    "passed": 20,
+    "total": 20
+  },
+  "python_tests": {
+    "passed": 60,
+    "skipped": 0
+  },
+  "targeted_actual_rom_cases": [
+    {
+      "scenario": "marowak",
+      "group": "late",
+      "result": "pass",
+      "frames": 4351,
+      "result_sha256": "fc9eac016d2eb24feb73d4a9552cb9c22e943a115b8f5f44b7fa27e0cf3064eb",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": false
+    },
+    {
+      "scenario": "network-0",
+      "group": "late",
+      "result": "pass",
+      "frames": 7,
+      "result_sha256": "c85dd190cf64e16fe1ae9b2fb93d6bfc771aa1970a247b2c1afb05b068b641cf",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": false
+    },
+    {
+      "scenario": "shared-champion-rendezvous",
+      "group": "late",
+      "result": "pass",
+      "frames": 21590,
+      "result_sha256": "b8c9fa4e0c77b6efd2583c27b6d40ad7b7bddbefb359d8affe2ee587ca8e161e",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": false
+    },
+    {
+      "scenario": "blaine",
+      "group": "late",
+      "result": "pass",
+      "frames": 9695,
+      "result_sha256": "99b78c4c1e7f5eda42a6105c492b9295b37b91f5b8b6807e1cfb2f4d95981d69",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": false
+    },
+    {
+      "scenario": "giovanni",
+      "group": "late",
+      "result": "pass",
+      "frames": 13531,
+      "result_sha256": "3c82d71d3124ff12362a392ac5c2dd71342c45618b27e9ce55d652ec8610f96e",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": false
+    },
+    {
+      "scenario": "exp-share",
+      "group": "pair",
+      "result": "pass",
+      "frames": 2374,
+      "result_sha256": "0240686b81051bb4dc53dc4998a6753fc13a17e8c25de7554192f5707affe5b4",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-leader2",
+      "group": "pair",
+      "result": "pass",
+      "frames": 2374,
+      "result_sha256": "7b0533375e07bdb6e44a5cafcf976039db765f944846c604a0b6d644471fe9cd",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-trainer",
+      "group": "pair",
+      "result": "pass",
+      "frames": 4098,
+      "result_sha256": "c5fce1f6cda84ba5ff3d6bd0dc644b891897bede3fe5682e98226fa0c0e3d1c9",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-trainer-leader2",
+      "group": "pair",
+      "result": "pass",
+      "frames": 4098,
+      "result_sha256": "7f4ff6dd236a73dcd0b11137cec540ef0912700969a3a4547ee2f7fa0827a15e",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-evolution",
+      "group": "pair",
+      "result": "pass",
+      "frames": 5697,
+      "result_sha256": "a55caf43eddc86d239e1a1703ee1aa265d0a27cfb255e6eff68147c59ab5981c",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-evolution-leader2",
+      "group": "pair",
+      "result": "pass",
+      "frames": 5697,
+      "result_sha256": "0d142f9d034885a6764c3ef5672b7c9680b2470453063c28344b64e89f298c8d",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-learn",
+      "group": "pair",
+      "result": "pass",
+      "frames": 4955,
+      "result_sha256": "255e25bb310ba81884bf64ff46c2682ab0540a0e1c73f3a87821c7c33779c614",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-learn-leader2",
+      "group": "pair",
+      "result": "pass",
+      "frames": 4955,
+      "result_sha256": "2a16b0de8e530b49c9acfa364c2b82ef1410769dd7c3043998127710ca3d0465",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "evolution",
+      "group": "pair",
+      "result": "pass",
+      "frames": 7197,
+      "result_sha256": "77b8a45723b70fc0a27ec634f5d48864c9d7933cb548e7427d8b8e208035673b",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-many",
+      "group": "pair",
+      "result": "pass",
+      "frames": 2730,
+      "result_sha256": "a1997e49ed42cf50d0e804061c5e7b97886af4829b1553e8da4bf525d55a7ffb",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-many-leader2",
+      "group": "pair",
+      "result": "pass",
+      "frames": 2730,
+      "result_sha256": "1266969b367e0ec37af9e85bae2b14d43da5578f9b723922de29d0ebd40d4b2d",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "exp-share-overflow",
+      "group": "pair",
+      "result": "pass",
+      "frames": null,
+      "result_sha256": "7fc217515cebb00016d7526ee2f4b7674737762800702f4e20e103b342b27845",
+      "actual_native_gameplay": false,
+      "native_save_and_fresh_reload": false
+    },
+    {
+      "scenario": "exp-share-overflow-leader2",
+      "group": "pair",
+      "result": "pass",
+      "frames": null,
+      "result_sha256": "1b890ce9b4d5bbe764f5c83a7c922b48d5b2a1b4f98df55a604fc0735452ff45",
+      "actual_native_gameplay": false,
+      "native_save_and_fresh_reload": false
+    },
+    {
+      "scenario": "party-menu-forced",
+      "group": "pair",
+      "result": "pass",
+      "frames": 6754,
+      "result_sha256": "d6d6ad687772bf11c3799676e845dad89fa86e98244c01f712cd0b4a2f0ba2fb",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "party-menu-exp-share",
+      "group": "pair",
+      "result": "pass",
+      "frames": 4830,
+      "result_sha256": "cdabb472686eaac73169ed2122ab36223e7ea327810fd07dfca90a3a40fb1a8b",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "bill-full",
+      "group": "story",
+      "result": "pass",
+      "frames": 1771,
+      "result_sha256": "993118de1913172f6d7ffd518adda54af468b5363b2928009c45ace61c723779",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "bill-full-leader2",
+      "group": "story",
+      "result": "pass",
+      "frames": 1771,
+      "result_sha256": "2e94ba5019596c617d701f0c67108c86c4cc057df2b437638a606f5addffd6d7",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "lostelle-full-berry",
+      "group": "story",
+      "result": "pass",
+      "frames": 6637,
+      "result_sha256": "36e1f1140846243d82f36c984192ce71cad525a4f04cd9ae14d71ee22a20b9a3",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "rocket-door",
+      "group": "story",
+      "result": "pass",
+      "frames": 9926,
+      "result_sha256": "4898b51e5f8f7b3cc6807372d82a7bdb3c1e49518040f417cee37c0f7a5af4be",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    },
+    {
+      "scenario": "tower-grunt",
+      "group": "story",
+      "result": "pass",
+      "frames": 6194,
+      "result_sha256": "a542d9e997415b8abdaa3ee6f5b35d5ca4b86d47f4d017a1bb259b4105de0811",
+      "actual_native_gameplay": true,
+      "native_save_and_fresh_reload": true
+    }
+  ],
+  "targeted_case_count": 25,
+  "new_exp_share_evidence": [
+    "Both sixth-slot holders receive native EXP and EVs with either battle initiator and in wild/trainer battles.",
+    "Two owners evolve their late-slot holders and retain their own dex, EXP and items after native saving and reload.",
+    "The second owner learns a move while the first presses B, with either battle initiator.",
+    "Four EXP Share holders owned by one player receive native EXP and EVs with either initiator.",
+    "Both owners select their sixth Pokemon while a resident late-slot EXP Share holder still receives its award.",
+    "When mandatory slots exceed six, both actual machine states, parties and wallets remain unchanged at rejection."
+  ],
+  "story_evidence": [
+    "Original Bill ticket conversation with either source player and a full recipient key-item pocket: no false receipt, one delayed ticket, native save and fresh Continue.",
+    "Regression cases for Rocket barrier, Tower grunt, full-berry Lostelle, Marowak, Blaine, Giovanni, paired Champion and the own-starter network special."
+  ],
+  "production_boundary_smokes": {
+    "paired_worker_boot_restart_shutdown_and_save_isolation": true,
+    "session_worker_failure_lock_and_save_preservation": true,
+    "generic_gba_authored_storage_input_and_restart": true
+  },
+  "test_method": "Original German game executed in two mGBA cores with authored parties, maps and/or quest prerequisites. The Bill transformation is a fixture; Bill ticket dialogue is original. The network scenario uses an authored invocation of the original native special. Some combat encounters are authored. The acceptance cases are not production-launcher gameplay.",
+  "limitations": [
+    "Only the exact supported German original and opt-in worker are covered; original ROM bytes are not edited.",
+    "Six native working slots remain. If both leads plus living EXP Share holders exceed capacity the experimental worker stops before party conversion and retains the last validated disk saves; unsaved progress since the last save is not guaranteed.",
+    "Temporary pinned references can still block a reserve switch and roll back a battle.",
+    "Special item effects such as Enigma Berry and all twelve-Pokemon level-up and evolution paths are not fully implemented or verified.",
+    "No continuous two-player natural campaign/postgame, physical controllers, audible audio or native Windows/Bazzite acceptance.",
+    "No ROM, game save or private checkpoint is included in this report or repository."
+  ],
+  "source_sha256": {
+    "gba/FireRedPokemon.h": "abbf67df19182c43564c7075ca5b369fe15436ae5118ed8077184861efe52e48",
+    "gba/FireRedBench.h": "5053e9ea0c63bdd5a454ab93bedf72fc69e1407a58848f278999055a1e33363d",
+    "gba/FireRedPartyMenu.h": "0429add124e8f63cfb9c434dc0ccaf79eeab34a025fdd38932f884fbd0423959",
+    "tests/test_firered_pokemon.cpp": "948d5da5933643c4a7fdc90d8e3d055e46cf7b8d939a09aeff24926f38fba154",
+    "tests/verify_firered_pair.cpp": "699d226dc65461644dc3601ca3e5726c30c162ace1df2af42a9f627f68be1ca4",
+    "tests/verify_firered_progression.cpp": "3e6591017320d2c079bc8d3479e9cf14521118994ea2cda53471f45cfa62de6e"
+  }
+}

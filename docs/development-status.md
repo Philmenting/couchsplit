@@ -2,7 +2,176 @@
 
 **English** · [Deutsch](de/development-status.md) · [Documentation](README.md)
 
-Updated 21 October 2026. Current public release: **[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, supporting Project PM / Pokémon Platinum. The local development build additionally supports GBA games and ROM hacks as independent split-screen sessions. Historical results below apply to the versions and environments named; they are not full-playthrough or target-hardware certification.
+Updated 29 October 2026. Current public release: **[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, supporting Project PM / Pokémon Platinum. The local development build additionally supports GBA games and ROM hacks as independent split-screen sessions. Historical results below apply to the versions and environments named; they are not full-playthrough or target-hardware certification.
+
+## FireRed paired recovery and audio — 29 October 2026
+
+The local experimental build adds paired backup/restore of the two latest
+in-game battery saves, with hash verification, pre-restore backup, and an
+interrupted-restore journal recovered before a new session uses the profiles.
+These are not simultaneous emulator savestates. A dedicated EXP Share capacity
+error is translated into German/English and stays visible after worker exit.
+Selectable player-one/player-two/mixed/muted audio is inspired by
+[SplitEmu](https://github.com/JosipFX/splitemu) and implemented independently;
+shared battles play the native source once. The more specific failure guidance
+follows the idea of actionable connection errors in
+[GBA-PK multiplayer](https://github.com/TheHunterManX/GBA-PK-multiplayer/releases/tag/1.0),
+whose differently licensed code has not been copied.
+
+Verification on Zorin OS: 21 native tests and all 60 Python tests passed; after
+the last recovery change, the affected core and launcher tests passed again.
+With the exact German original ROM, the production paired worker started with
+each audio selection, created and verified a pair from authored test saves, and
+kept those saves after a deliberately terminated child outside a battle. A real
+ROM selection with the production launcher UI, authored saves and a test worker
+covered paired restore and the capacity error in German and English at 640×360.
+An authored two-core original-ROM encounter checked the EXP Share rejection in
+both initiator directions; it was not the full production worker error path.
+Interrupted restoration, corrupt/missing files and both-file rollback were
+simulated in component tests. No audible output, physical controllers, actual
+Bazzite or Windows, power loss, or complete campaign was tested.
+
+## FireRed EXP Share and Bill ticket follow-up: 29 October 2026
+
+The experimental paired worker now includes eligible EXP Share holders from
+later party positions in its six-slot native working set before the game
+calculates EXP. Prepared two-core original-ROM cases cover both initiators,
+EXP and EV ownership, four holders belonging to one player, learning with the
+other player's conflicting input, evolution, native saving and fresh reload.
+More mandatory leads/holders than available slots stop the experimental session
+before conversion rather than silently distributing incorrect EXP. This is not
+unlimited twelve-Pokémon virtualization or complete special-item coverage.
+
+Both source-player directions also exercise Bill's original ticket dialogue,
+with an authored transformation prerequisite and a full recipient key-item bag.
+The recipient gets no false receipt, receives one ticket after making space and
+retains it after native save and fresh Continue. The original ROM is unchanged.
+[Test details and limitations](verification/firered-exp-share-2026-10-29.json).
+
+## FireRed public-save checks and quest-log fix: 29 October 2026
+
+Two independently sourced public saves with zero and eight badges were loaded
+on the exact unmodified German ROM. Their original parties won shared native
+wild battles with either player starting; each owner's party, bag, PC, money and
+native save/reload were checked. A separate native Brock fight awarded the
+original 1,400 prize as 700 per player. The test moved both players to the
+selected map and delayed automatic progress synchronization for this fight;
+it did not author their Pokémon or the native encounter.
+
+With the players at their original saved locations, reviewed story/campaign
+progress synchronized, both independently saved/reloaded, and restarting did
+not repeat rewards. Public saves included English and Japanese data, so this is
+targeted evidence for those files, not general cross-language compatibility.
+The production launcher and paired worker also loaded the two saves using virtual
+controllers on Linux. Five public saves passed individual native save/reload;
+another was rejected for duplicate item stacks, and an incomplete file was
+rejected before loading.
+
+These checks exposed a real timing bug: the game's quest-log playback contains
+historical field data, which the worker could mistake for the current game. The
+worker now waits for both current worlds before synchronizing progress or joining
+encounters, and hides playback avatars. Both native replay and regular recording
+are covered. **All 20 native suites pass.** Public Alpha 8 remains unchanged;
+complete campaign, physical controllers, and native Windows/Bazzite remain open.
+[Reproducible inputs, evidence and limits](verification/firered-public-saves-2026-10-29.json).
+
+## FireRed launcher runtime follow-up: 29 October 2026
+
+The original German ROM stays unchanged. The local paired worker now shows each
+trainer's own six Pokémon in native switch menus, safely imports unloaded own
+reserves, and restores the physical battle party before returning from the menu.
+Native checks include voluntary/forced switches, cancel/reopen, Summary, and
+mid-menu rollback. Pending EXP and protected native references remain resident;
+a fully pinned working set can still require rollback. The later EXP Share
+follow-up above supersedes the unloaded-holder limitation of this historical test;
+all twelve-Pokémon learning/evolution paths remain incompletely covered.
+
+Partner avatars now cross reciprocal outdoor-map borders in both views, including
+signed offsets. A real native walking transition and read-only machine snapshots
+pass. Reviewed Rocket barrier/Tower grunt receipts and full-berry Lostelle rescue
+now reach both players. Icefall, existing Seafoam layouts, personal dolls and all
+seven Tanoby lighting updates preserve the player's own state and native saves.
+
+**20 native suites, all 60 Python tests without skips, 34 paired battle cases,
+11 map-setup cases, three native story gates and two map-connection cases pass.**
+Production worker/Session and generic GBA storage/input/restart checks also pass.
+ASan/UBSan/leak checks pass for menu, topology, campaign catalog/runtime and hooks.
+Local launcher/worker binaries are rebuilt. Public Alpha 8 is unchanged.
+[Dated evidence and limits](verification/firered-launcher-runtime-2026-10-29.json).
+A continuous natural campaign, collision/terrain occlusion, special battle modes,
+long sessions and native Windows/Bazzite/hardware acceptance remain open.
+
+## FireRed campaign synchronization: 29 October 2026
+
+The local opt-in worker now shares reviewed Kanto/Sevii milestones, the seven
+later Gyms with personal TM receipts, story keys/HMs and live NPC/door/collision
+updates. It handles current-run Elite Four exits, native Hall of Fame for each
+trainer, National Dex and Sapphire network/own-starter roamer completion.
+Menus/cutscenes wait; matching native encounters resume both personal scripts.
+Concurrent grass encounters coalesce and different scripted objects stay queued.
+[Behavior and remaining limits](firered.md#campaign-synchronization--29-october-2026).
+
+Targeted actual-ROM acceptance includes all seven later leaders and one full-TM
+case, original Marowak, Cut/Surf/Strength, two Champion continuation paths, native
+Hall of Fame, National Dex, all three roamer choices and already-loaded network
+machine/guard refresh. Each distinguishes authored prerequisites/strong parties
+from original game execution. Own native saves and fresh Continue are checked.
+A continuous natural campaign, unsupported map operations, complete EXP Share, native partner collision and target hardware remain open.
+Public Alpha 8 is unchanged. [Dated evidence](verification/firered-campaign-2026-10-29.json).
+
+Earlier campaign-extension checks: **18 native suites, all 60 Python tests
+without skips and 30 targeted ROM scenarios** pass. Production worker/Session
+checks cover restart, graceful stop, crash/lock handling and save preservation;
+the generic GBA regression passes. ROM scenarios exercise production logic
+through separate acceptance tools.
+
+## Earlier paired battle baseline: 28–29 October 2026
+
+The local source now has an explicitly enabled two-core worker, same-map partner
+overlay and shared native human-controlled battles with separate save/result
+ownership. The ordinary GBA and DS paths remain the default. This is **not a
+complete shared-world co-op release**. [Setup, acceptance tools and remaining
+requirements](firered.md#firered-co-op-development-target--28-october-2026).
+
+Verified with the exact German original on Linux: normal wild/trainer battles,
+distinct trainer ownership/EXP, PP, capture/bag/PC/dex attribution, wallet caps and
+split trainer/Pay Day rewards, whole-machine/battery rollback, exhausted-partner
+continuation and native separate blackout recovery. Full initiator PCs do not
+block a guest with capacity; a genuinely full recipient gets the native rejection.
+Two selected balls spend only the throw actually executed. Each acceptance runs
+the game's normal save menu and fresh battery-only Continue for both trainers,
+including their separate party, inventory, wallet, PC, dex and identity.
+
+The first rival fight is also triggered by actual movement and its native field
+script, without authored encounter injection. Its tutorial controllers are
+converted to two human allies; original flags/continuation are restored. Both win
+and loss tests complete the lab scene, heal both trainers through the native
+engine, share its reviewed milestone and survive separate save/reload. Player 2's
+trainer identity is explicitly rekeyed as a fixture; the loss test authors low HP
+and Growl. This is targeted actual-game evidence, not a full campaign.
+
+Production Session/PlayView and paired-worker checks separately verify both
+framebuffers, virtual input, restart, graceful stop, crash detection, lock lifetime
+and preservation of prior saves. All 60 Python tests pass with the ARM dependency
+installed. Native core/UI and FireRed components pass; SRAM/Flash/EEPROM and
+64/512-MiB XROM production-worker regression checks pass. Physical controllers,
+audible output, native Windows/Bazzite and a complete campaign remain unverified.
+
+The earlier four reviewed story events (lab rival, Oak's Parcel, Pokédex and Brock) had an
+explicit event/reward mechanism and native NPC refresh. Receipt flags in each save
+allow deferred delivery after restart. That initial bounded allowlist and safe exhaustion
+bench refill baseline did not provide campaign-wide story/NPC synchronization, free access
+to all six party members, complete EXP Share/evolution handling, partner collision
+or terrain occlusion. The earlier [single-core report](verification/firered-team-input-2026-10-28.json)
+retains its original historical scope. Public Alpha 8 assets are unchanged.
+
+
+Earlier baseline acceptance: **14 native suites, all 60 Python tests without skips,
+21 paired battle scenarios and 6 native story scenarios** pass. The 27 ROM checks
+include separate native save/fresh battery reload, personal capture metadata,
+party PP, evolution/action statistics and reviewed quest/Fame Checker receipts.
+The native trainer/Pay Day number buffers also match the actual shared prize.
+[Machine-readable scope](verification/firered-paired-2026-10-29.json).
 
 ## Extended GBA ROMs: 23 October 2026
 

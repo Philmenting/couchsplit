@@ -1,5 +1,69 @@
 # Project: CouchSplit
 
+## FireRed shared-world and team-battle requirement (28 October 2026)
+The user explicitly requires a shared FireRed world AND human-controlled team
+battles against wild Pokemon and trainers, analogous to Platinum co-op. Independent
+split-screen adventures and synchronized trainer wins alone do not satisfy this.
+An explicit COUCHSPLIT_FIRERED_EXPERIMENT=1 path now uses two real mGBA cores in
+one worker with owned battle input, transactional results, separate saves and a
+same-map/directly-connected outdoor-map partner framebuffer overlay. This does not complete shared-world co-op:
+reviewed campaign transactions now cover the Kanto/Sevii milestones, native
+Hall of Fame/National Dex/network completion and live map refresh. A continuous
+natural campaign, unsupported map setup operations, complete EXP Share/evolutions
+and native partner collision remain incomplete. Native own-six switch menus now
+work subject to protected working references; this is not unlimited twelve-mon
+battle virtualization. Keep default
+GBA/DS behavior intact.
+A single-core test-created double battle alone remains insufficient evidence.
+`verify-firered-team-input` is an EXCLUDE_FROM_ALL, ROM-dependent test tool; never
+ship it as the emulator. Never distribute its commercial-ROM checkpoint or saves.
+The inspected GBA-PK-multiplayer reference at
+6ef535cf15479ccc87ac8ced775751511e4915a3 is CC-BY-NC-4.0, not GPL; no reference
+script was copied into this repository. Its disabled Coop Doubles path controls
+both allies locally and discards the borrowed partner, so it is not a finished
+team-battle implementation. Preserve the existing DS path and ordinary GBA saves.
+
+## FireRed launcher runtime follow-up (29 October 2026)
+Keep the user's original ROM bytes unchanged. Native switch-menu virtualization
+must restore the physical combined party, flags, indexes, request and packed
+order BEFORE native battle reshow; translate the reply before native consumption.
+Only own unreferenced bench slots may be retired. Preserve living participation
+and resident EXP Share holders until their native award, along with active,
+queued, Wish and evolution references. A fully pinned working set may roll back;
+never discard earned EXP or rewind only CPU state without the C++ ownership journal.
+Connected-map partner projection reads reciprocal native topology and performs
+framebuffer composition only. Same-map battle rendezvous remains unchanged;
+no collision/terrain occlusion is implied. Icefall/personal dolls/existing Seafoam
+layouts retain own state; new layout variants still defer. Lostelle's optional
+berry must not block rescue when full, matching the original no-later-claim scene.
+See docs/verification/firered-launcher-runtime-2026-10-29.json for 20 native suites,
+60 Python tests with no skips, 50 targeted ROM cases and production boundary
+smokes. These remain authored native fixtures, not a continuous natural campaign.
+
+## FireRed campaign synchronization (29 October 2026)
+Campaign metadata is reviewed against pret/pokefirered
+ce6406d8c2eaf46d543c8a2606de0c3cb1951982. Preserve per-player native reward
+receipts and defer full bags without creating receipt flags. Never union all
+flags/vars or resettable League/puzzle state. National Dex, Hall of Fame and
+Sapphire/own-starter roamer completion require native engine operations, not
+copied completion flags. Preview their final state only for map planning; native
+operations must execute before the corresponding object/door refresh. Map plans
+reject unsupported executed setup operations and use only stopped native VM
+workspace. Flat original tile leaves require reserved return slots and the
+plan's capacity, not a hardcoded 80-byte limit.
+
+Pending native encounters wait for menus/scenes/movement. Concurrent ordinary
+wild encounters choose one shared leader. Scripted wild encounters require their
+original continuation and active return stack to identify the same object;
+different objects remain queued, never consume each other's result. A matching
+pending partner resumes its own native callback exactly once without counting
+another battle. Keep whole-machine/Flash rollback and no battery flush during a
+combined battle. Paired FireRed IPC bridgeActive values are 0 field, 1 battle,
+2 waiting; role is the active or awaited player. The DS ABI/layout is unchanged.
+Private acceptance fixtures author map/prerequisites/strong parties explicitly;
+original native scenes/save/fresh Continue are separate execution evidence.
+Do not call these a natural continuous campaign or a production-UI campaign test.
+
 ## Authorized FireRed extension (21 October 2026)
 The user explicitly requested German FireRed support. Retain the Project PM DS worker and add an independent mGBA 0.10.5 worker for the exact verified German FireRed original. Shared IPC ABI stays 2; GBA occupies the top framebuffer's first 240x160 pixels. Do not call two independent GBA adventures shared-world co-op or link multiplayer. Keep GBA saves isolated by player and ROM hash, use atomic save snapshots, and include pinned mGBA source/licenses with distributed workers. German ROM acceptance, real emulation, input isolation, in-game saves/reload and ROM integrity must be verified separately from fixtures. Never commit GBA ROMs or saves.
 
@@ -64,7 +128,7 @@ User-selected `de`/`en` is independent of ROM/firmware language. Keep both in th
 
 
 ## CouchSplit identity
-The visible project is CouchSplit and the repository is Philmenting/couchsplit. Current game support remains Project PM / Pokemon Platinum; do not infer other game support from the broader name. Retain the legacy executable/app/organization/profile/desktop/installer/runtime IDs for compatible upgrades. New distribution filenames use CouchSplit. Native CI must upgrade the exact published Alpha 7 Windows/Debian packages and preserve owned test profile/save bytes; Windows replaces only known old application shortcuts. Keep historical release assets immutable.
+The visible project is CouchSplit and the repository is Philmenting/couchsplit. Published Alpha 8 supports Project PM / Pokemon Platinum; the current source also supports independent GBA sessions and an explicitly opt-in German FireRed co-op experiment. Do not infer complete shared-world support for other games from the broader name. Retain the legacy executable/app/organization/profile/desktop/installer/runtime IDs for compatible upgrades. New distribution filenames use CouchSplit. Native CI must upgrade the exact published Alpha 7 Windows/Debian packages and preserve owned test profile/save bytes; Windows replaces only known old application shortcuts. Keep historical release assets immutable.
 
 ## Documentation languages
 English is the default for public documentation at the existing `docs/*.md` URLs. Keep German counterparts under `docs/de/` and reciprocal language links on every guide. English README sections and English guides must lead to English local documentation; the German README summary uses German guide links. Keep commands, fingerprints, technical requirements, dated evidence and limitations consistent across languages. Historical reports must not be presented as current certification. Released assets remain immutable; documentation-only updates do not require a binary release.

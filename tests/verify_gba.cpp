@@ -28,6 +28,7 @@ int main(int argc,char**argv) {
         }
         SaveStore saves(root);Session session(saves);Controllers controllers;
         Settings settings;settings.rom=QFileInfo(argv[1]).absoluteFilePath();settings.gbaEmulator=QFileInfo(argv[2]).absoluteFilePath();
+        settings.fireRedAudio=qEnvironmentVariable("COOP_VERIFY_FIRERED_AUDIO","player1");
         std::array<SDL_Joystick*,2> pads{};
         std::array<SDL_JoystickID,2> owned{};
         for(int p=0;p<2;p++) {
@@ -48,6 +49,9 @@ int main(int argc,char**argv) {
                 if(!session.copyFrame(p,top,bottom) || top.size()!=QSize(240,160) || !bottom.isNull())fail("Missing GBA framebuffer");
                 top.save(output+"/"+name+"-player"+QString::number(p+1)+".png");
                 info[QString("player%1_frames").arg(p+1)]=int(session.shared(p)->frame.load());
+                info[QString("player%1_peers").arg(p+1)]=int(session.shared(p)->peers.load());
+                info[QString("player%1_bridge_state").arg(p+1)]=int(session.shared(p)->bridgeActive.load());
+                info[QString("player%1_input_owner").arg(p+1)]=int(session.shared(p)->role.load());
                 info[QString("player%1_picture").arg(p+1)]=QString::fromLatin1(QCryptographicHash::hash(QByteArray(reinterpret_cast<const char*>(top.constBits()),top.sizeInBytes()),QCryptographicHash::Sha256).toHex());
             }
             atomicWrite(output+"/"+name+".json",QJsonDocument(info).toJson());
@@ -88,7 +92,7 @@ int main(int argc,char**argv) {
         const auto logs=session.logDir;
         session.stop();
         if(!error.isEmpty() || saves.locked())fail(error.isEmpty()?"Profile lock leaked":error);
-        QJsonObject report{{"real_mgba_workers",true},{"rom_sha256",validateRom(settings.rom)},{"logs",logs},{"clean_stop",true},{"virtual_controllers",true},{"world_coop",false}};
+        QJsonObject report{{"real_mgba_workers",true},{"rom_sha256",validateRom(settings.rom)},{"logs",logs},{"clean_stop",true},{"virtual_controllers",true},{"paired_worker_experiment",session.isFireRedPair()},{"world_coop",false}};
         for(int p=0;p<2;p++) {
             const auto save=saves.profile(p,validateRom(settings.rom))+"/saves/game.sav";
             report[QString("player%1_save_exists").arg(p+1)]=QFileInfo::exists(save);

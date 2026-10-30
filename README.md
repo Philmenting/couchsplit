@@ -6,19 +6,37 @@
 
 A split-screen couch co-op launcher for Windows and Linux.
 
-**Supports Project PM / Pokémon Platinum, plus GBA games and ROM hacks in independent split-screen sessions.**
+**Project PM / Pokémon Platinum · GBA split screen · experimental German FireRed co-op**
 
-GBA support is a local development build: [setup and limitations](docs/firered.md). Existing Alpha 8 downloads do not contain this new worker. GBA games currently run independently; GBA link multiplayer and shared-world co-op are not provided.
+The current source includes an opt-in FireRed experiment with a visible partner,
+shared human-controlled battles and reviewed story synchronization. It requires
+the exact unmodified German original ROM and remains unfinished. The published
+Alpha 8 downloads do **not** include GBA or FireRed support. [FireRed setup,
+test evidence and limitations](docs/firered.md).
 
 [![Release](https://img.shields.io/badge/Release-0.2.0%20Alpha%208-b83f35?style=flat-square)](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)
 [![Native builds](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml/badge.svg?branch=main)](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml)
 [![License](https://img.shields.io/badge/License-GPL--3.0--or--later-325666?style=flat-square)](LICENSE)
 
-[Download](#download) · [Get started](#get-started) · [Screenshots](#play-together) · [Test status](#what-has-been-tested) · [Documentation](docs/README.md) · [Deutsch](#deutsch)
+[Game modes](#game-modes) · [Download](#download) · [Get started](#get-started-with-project-pm) · [Screenshots](#project-pm-play-together) · [Test status](#what-has-been-tested) · [Deutsch](#deutsch)
 
 ![The actual retro launcher, with a clear setup menu and a prominent co-op start button.](docs/images/launcher.png)
 
 </div>
+
+## Game modes
+
+| Game | Available in | Experience |
+|---|---|---|
+| Project PM / Pokémon Platinum | Alpha 8 and current source | Local co-op with a compatible Project PM ROM. |
+| GBA games and ROM hacks | Current source | Two independent games in split screen; compatibility varies. |
+| German Pokémon FireRed | Current source, opt-in | Experimental partner display, shared battles and selected shared story progress. |
+
+FireRed's partner display covers the same map and directly connected outdoor
+maps; a shared battle requires both players to be ready on the same map.
+Partner collision and full campaign coverage are not established. Some battle
+configurations stop the session; [read the known limits](docs/firered.md) and
+save both games regularly. GBA link multiplayer is not implemented.
 
 ## Download
 
@@ -34,7 +52,7 @@ GBA support is a local development build: [setup and limitations](docs/firered.m
 
 You need **two controllers and your own compatible Project-PM-patched Platinum ROM**. No games, Nintendo BIOS, proprietary firmware or user saves are included. The launcher does not add world co-op to an unmodified Platinum ROM. All packages are alpha releases. Choose **English or Deutsch** at first launch; change it later in **Settings / Einstellungen**. This does not change the language of your game ROM.
 
-## Play together
+## Project PM: play together
 
 Two separate Project PM/melonDS processes share one window. Each player controls their own game and keeps their own save. The launcher handles controller assignment, screen layout, the local connection and orderly shutdown.
 
@@ -55,7 +73,7 @@ Two separate Project PM/melonDS processes share one window. Each player controls
 - **English and German:** choose at first launch, switch later in Settings without restarting a running session.
 - **A readable retro menu:** pixel headings, native body text, visible keyboard/controller focus and layouts that scale from small windows to 4K.
 
-## Get started
+## Get started with Project PM
 
 ![The bilingual first-launch choice offers Deutsch and English.](docs/images/language-picker.png)
 
@@ -76,6 +94,9 @@ Two separate Project PM/melonDS processes share one window. Each player controls
 
 If Steam produces duplicate inputs, disable Steam Input **for this game entry**. Bazzite requests its Steam entry through the host helper; the application-menu action can retry if it is missing. [Bazzite setup](docs/one-file-installer.md) · [Troubleshooting](docs/troubleshooting.md). Detailed guides are available in [English](docs/README.md) and [German](docs/de/README.md).
 
+To try FireRed, build the current source and enable its opt-in experiment as
+described in the [FireRed guide](docs/firered.md) or [Bazzite source-test guide](docs/bazzite-firered-test.md).
+
 ### ROM corrections and existing saves
 
 Separate tools correct two reproduced bugs in the **exact verified German PM 0.4.5 ROM**: [target selection after an opponent faints](docs/rom-target-cursor-fix.md), followed by [HP synchronization after Potions](docs/rom-coop-item-fix.md). They check the input, overlay and result against fixed fingerprints and create a new ROM copy. Updating the launcher does not automatically apply a ROM correction.
@@ -91,6 +112,7 @@ Separate tools correct two reproduced bugs in the **exact verified German PM 0.4
 | Actual Pokémon co-op | On Linux: shared-world views, movement, wild/trainer battles and independent commands. Virtual SDL controllers; no physical-hardware certification. |
 | ROM battle corrections | Actual before/after gameplay checks, plus ARM instruction tests on Linux and Windows. [Technical results](docs/verification/coop-item-sync-2026-10-19.json). |
 | Money and saving | In the tested shared victory over Sven, **each player receives 96 ₽**. Both balances and victory flags survive normal saving and a fresh launch. |
+| Experimental FireRed | On Linux, 94 result groups passed using the original ROM, prepared checkpoints and virtual inputs. They include shared battles, story milestones and save/reload checks; this is not a continuous campaign playthrough. [Test report](docs/verification/firered-matrix-2026-10-29.json). |
 
 <details>
 <summary>See both trainer cards after restarting</summary>
@@ -118,7 +140,7 @@ For all ARM tests, also install `tests/requirements-romfix.txt`; decoder tests r
 
 ## Deutsch
 
-Die lokale Entwicklungsversion unterstützt zusätzlich **GBA-Spiele und ROM-Hacks mit zwei getrennten Sitzungen im Splitscreen**. Einrichtung und Grenzen stehen in der [GBA-Anleitung](docs/de/firered.md). Die veröffentlichten Alpha-8-Downloads enthalten diese Erweiterung noch nicht. Pokémon-Bank, Regionsreisen und gemeinsame GBA-Spielwelt sind noch nicht implementiert.
+Der aktuelle Quellcode unterstützt **GBA-Spiele und ROM-Hacks mit zwei getrennten Sitzungen**. Ein ausdrücklich aktivierter **deutscher Feuerrot-Koop-Testmodus** zeigt den Partner, ermöglicht gemeinsame menschlich gesteuerte Kämpfe und synchronisiert ausgewählte Storyfortschritte. Er benötigt die exakte unveränderte deutsche Original-ROM und bleibt unvollständig; [Einrichtung, Prüfumfang und Grenzen](docs/de/firered.md). Die veröffentlichten Alpha-8-Downloads enthalten diese Erweiterungen noch nicht. Für Bazzite gibt es eine [Quellcode-Testanleitung](docs/de/bazzite-firered-test.md). Pokémon-Bank, Regionsreisen und GBA-Linkspiel sind nicht implementiert.
 
 **CouchSplit** bringt Couch-Koop und Splitscreen in ein gemeinsames Fenster. Aktuell unterstützt es Project PM / Pokémon Platin: Der native Retro-Launcher startet zwei getrennte Project-PM/melonDS-Prozesse für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 8 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, eine eigene kompatible Project-PM-ROM auswählen und beide Controller zuordnen. Beim ersten Start zwischen **Deutsch und Englisch** wählen; später unter **Einstellungen → Sprache** ändern. Die Auswahl wird gespeichert und verändert die Spiel-ROM nicht. Ausführliche Anleitungen gibt es auf [Deutsch](docs/de/README.md) und [Englisch](docs/README.md).
 
