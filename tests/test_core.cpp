@@ -53,6 +53,10 @@ void pairedSaveTest() {
     QTemporaryDir temp;SaveStore store(temp.path()),other(temp.path());
     const auto game=QString(64,'a');
     rejects([&]{store.backupPair(game);});rejects([&]{store.recoverPair(game);});
+    const auto recoveryMustSucceed=[&](const char* stage) {
+        try { store.recoverPair(game); }
+        catch(const std::exception& error) { throw std::runtime_error(std::string(stage)+": "+error.what()); }
+    };
     store.acquire();rejects([&]{other.acquire();});
     const std::array<QString,2> path{{store.profile(0,game)+"/saves/game.sav",store.profile(1,game)+"/saves/game.sav"}};
     for(const auto& file:path)assert(QDir().mkpath(QFileInfo(file).path()));
@@ -73,13 +77,14 @@ void pairedSaveTest() {
     for(int p=0;p<2;p++)assert(readBytes(path[p])==later[p]);
     // Simulate a process stopping between the two atomic file replacements.
     // Recovery uses a durable pair manifest before a new session may start.
+    // It must also close its own journal handle before removing the file on Windows.
     const auto recovery=store.backupPairBeforeRestore(game);
     const auto journal=store.pairBackupsDir(game)+"/restore-pending.json";
     auto marker=[&](const QString& snapshot) {
         atomicWrite(journal,QJsonDocument(QJsonObject{{"format","couchsplit-firered-restore-1"},{"rom",game},{"backup",QFileInfo(snapshot).fileName()}}).toJson());
     };
     marker(recovery);atomicWrite(path[0],original[0]);
-    store.recoverPair(game);
+    recoveryMustSucceed("recover interrupted paired restore");
     for(int p=0;p<2;p++)assert(readBytes(path[p])==later[p]);
     assert(!QFileInfo::exists(journal));
     // Damaged recovery data keep the journal and both files untouched.
@@ -87,7 +92,7 @@ void pairedSaveTest() {
     marker(damagedRecovery);atomicWrite(damagedRecovery+"/player2.sav",QByteArray(131072,'q'));
     rejects([&]{store.recoverPair(game);});assert(QFileInfo::exists(journal));
     for(int p=0;p<2;p++)assert(readBytes(path[p])==later[p]);
-    atomicWrite(damagedRecovery+"/player2.sav",later[1]);store.recoverPair(game);
+    atomicWrite(damagedRecovery+"/player2.sav",later[1]);recoveryMustSucceed("recover repaired safety backup");
     for(int p=0;p<2;p++)assert(readBytes(path[p])==later[p]);
     assert(!QFileInfo::exists(journal));
     // A valid pair can also repair an absent or truncated current save.
@@ -98,7 +103,7 @@ void pairedSaveTest() {
     assert(QFile::remove(path[1]));
     const auto absentRecovery=store.backupPairBeforeRestore(game);
     marker(absentRecovery);atomicWrite(path[0],later[0]);atomicWrite(path[1],later[1]);
-    store.recoverPair(game);assert(readBytes(path[0])==original[0] && !QFileInfo::exists(path[1]));
+    recoveryMustSucceed("recover prior absent save");assert(readBytes(path[0])==original[0] && !QFileInfo::exists(path[1]));
     store.release();rejects([&]{store.restorePair(game,clean);});
 }
 void saveMigrationTest() {

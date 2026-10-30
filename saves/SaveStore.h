@@ -187,7 +187,13 @@ public:
         QFile file(journal);
         if(info.isSymLink() || !info.isFile() || info.size()>4096 || !file.open(QIODevice::ReadOnly))
             fail(i18n::text("Unterbrochene Paar-Wiederherstellung prüfen; Spielstände bleiben gesperrt."));
-        QJsonParseError error;const auto doc=QJsonDocument::fromJson(file.readAll(),&error);
+        const auto journalBytes=file.readAll();
+        if(file.error()!=QFileDevice::NoError)
+            fail(i18n::text("Unterbrochene Paar-Wiederherstellung prüfen; Spielstände bleiben gesperrt."));
+        // Windows cannot remove the journal while our read handle is open.
+        // Parse its copied bytes after closing it; the profile lock remains held.
+        file.close();
+        QJsonParseError error;const auto doc=QJsonDocument::fromJson(journalBytes,&error);
         const auto data=doc.object();const auto name=data.value("backup").toString();
         if(error.error!=QJsonParseError::NoError || !doc.isObject() || data.value("format").toString()!="couchsplit-firered-restore-1" ||
            data.value("rom").toString()!=game || name.isEmpty() || name!=QFileInfo(name).fileName() || name=="." || name=="..")
