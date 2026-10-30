@@ -88,8 +88,8 @@ void objects() {
     const auto add = planCampaignObjectRefresh(&reveal.core,old,now);
     check(add.ready && add.addedObjects == 1,"Unhidden visible object was not added");
     reveal.object(0,1,0x100,100,100);
-    const auto far = planCampaignObjectRefresh(&reveal.core,old,now);
-    check(far.ready && far.code.empty(),"Far object consumed a native visible object slot");
+    const auto distantPlan = planCampaignObjectRefresh(&reveal.core,old,now);
+    check(distantPlan.ready && distantPlan.code.empty(),"Far object consumed a native visible object slot");
     reveal.object(0,1,0x100,4,3); reveal.active(1,1);
     const auto already = planCampaignObjectRefresh(&reveal.core,old,now);
     check(already.ready && already.addedObjects == 0,"Existing object was added twice");
