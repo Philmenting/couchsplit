@@ -2,7 +2,7 @@
 
 **English** · [Deutsch](de/README.md) · [Project overview](../README.md)
 
-Alpha 10 and current source: **Project PM / Pokémon Platinum**, **GBA games and ROM hacks with independent sessions**, and an **opt-in German FireRed co-op experiment**. Alpha 8 remains available as the older Platinum-only release. These guides are available in English and German. The launcher language does not change your game ROM. Commands are run from the project root unless stated otherwise.
+Alpha 11 and current source: **Project PM / Pokémon Platinum**, **GBA games and ROM hacks with independent sessions**, and an **opt-in German FireRed co-op experiment**. Alpha 8 remains available as the older Platinum-only release. These guides are available in English and German. The launcher language does not change your game ROM. Commands are run from the project root unless stated otherwise.
 
 ## Getting started
 
@@ -30,6 +30,6 @@ Alpha 10 and current source: **Project PM / Pokémon Platinum**, **GBA games and
 - [Historical original-ROM boot test](rom-boot-check.md)
 - [Historical feasibility review](technical-feasibility.md)
 
-[Release notes](releases/v0.2.0-alpha.10.md) · [Screenshot provenance](images/README.md)
+[Release notes](releases/v0.2.0-alpha.11.md) · [Screenshot provenance](images/README.md)
 
 Historical reports retain their dates and test limits; use Development status for newer evidence.

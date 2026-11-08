@@ -8,16 +8,15 @@ A split-screen couch co-op launcher for Windows and Linux.
 
 **Project PM / Pokémon Platinum · GBA split screen · experimental German FireRed co-op**
 
-Alpha 10 includes GBA split screen and an opt-in FireRed experiment with a visible
+Alpha 11 includes GBA split screen and an opt-in FireRed experiment with a visible
 partner, shared human-controlled battles and reviewed story synchronization.
-Alpha 10 keeps blocked reserve choices in the menu and adds owned Shedinja evolutions.
-Current source also fixes owned Roar/Whirlwind selection, Wish source retention and
-EXP paging at protected references. These follow-up fixes await the next release.
-[Verification details](docs/development-status.md#current-source--forced-switches-and-exp-boundaries).
+The new packages correct owned Roar/Whirlwind selection, Wish source retention
+and EXP awards through move learning and evolution.
+[Verification details](docs/development-status.md#alpha-11--forced-switches-and-exp-boundaries).
 FireRed requires the exact unmodified German original ROM and remains experimental.
 [Setup, test evidence and limitations](docs/firered.md).
 
-[![Release](https://img.shields.io/badge/Release-0.2.0%20Alpha%2010-b83f35?style=flat-square)](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)
+[![Release](https://img.shields.io/badge/Release-0.2.0%20Alpha%2011-b83f35?style=flat-square)](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)
 [![Native builds](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml/badge.svg?branch=main)](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml)
 [![License](https://img.shields.io/badge/License-GPL--3.0--or--later-325666?style=flat-square)](LICENSE)
 
@@ -31,9 +30,9 @@ FireRed requires the exact unmodified German original ROM and remains experiment
 
 | Game | Available in | Experience |
 |---|---|---|
-| Project PM / Pokémon Platinum | Alpha 10 and current source | Local co-op with a compatible Project PM ROM. |
-| GBA games and ROM hacks | Alpha 10 and current source | Two independent games in split screen; compatibility varies. |
-| German Pokémon FireRed | Alpha 10 and current source, opt-in | Experimental partner display, shared battles and selected shared story progress. |
+| Project PM / Pokémon Platinum | Alpha 11 and current source | Local co-op with a compatible Project PM ROM. |
+| GBA games and ROM hacks | Alpha 11 and current source | Two independent games in split screen; compatibility varies. |
+| German Pokémon FireRed | Alpha 11 and current source, opt-in | Experimental partner display, shared battles and selected shared story progress. |
 
 FireRed's partner display covers the same map and directly connected outdoor
 maps; a shared battle requires both players to be ready on the same map.
@@ -44,15 +43,15 @@ save both games regularly. GBA link multiplayer is not implemented.
 
 ## Download
 
-**[Get 0.2.0 Alpha 10](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)** — GBA split screen, experimental FireRed co-op, English/German language selection and independent saves.
+**[Get 0.2.0 Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)** — GBA split screen, experimental FireRed co-op, English/German language selection and independent saves.
 
 | Your system | Download | Start here |
 |---|---|---|
-| **Windows 10/11 · x64** | [Installer (.exe)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.10/CouchSplit-Windows-Setup.exe) · [Portable ZIP](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.10/CouchSplit-Windows-Portable.zip) | Install, or fully extract the ZIP and open `Start.bat`. |
-| **Bazzite · x86_64** | [Installer (.run)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.10/CouchSplit-Bazzite.run) | Run from desktop mode after marking it executable. Uses its own Distrobox runtime. |
-| **Zorin OS 18 / Ubuntu 24.04 · x86_64** | [Debian package (.deb)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.10/CouchSplit-ZorinOS18-amd64.deb) | Install through your software manager. |
+| **Windows 10/11 · x64** | [Installer (.exe)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.11/CouchSplit-Windows-Setup.exe) · [Portable ZIP](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.11/CouchSplit-Windows-Portable.zip) | Install, or fully extract the ZIP and open `Start.bat`. |
+| **Bazzite · x86_64** | [Installer (.run)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.11/CouchSplit-Bazzite.run) | Run from desktop mode after marking it executable. Uses its own Distrobox runtime. |
+| **Zorin OS 18 / Ubuntu 24.04 · x86_64** | [Debian package (.deb)](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.11/CouchSplit-ZorinOS18-amd64.deb) | Install through your software manager. |
 
-[Checksums](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.10/SHA256SUMS) · [ROM correction tools](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.10/Pokemon-PM-ROM-Korrekturen.zip) · [Release notes](docs/releases/v0.2.0-alpha.10.md) · [Platform guide](docs/platforms.md)
+[Checksums](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.11/SHA256SUMS) · [ROM correction tools](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.11/Pokemon-PM-ROM-Korrekturen.zip) · [Release notes](docs/releases/v0.2.0-alpha.11.md) · [Platform guide](docs/platforms.md)
 
 You need **two controllers and your own compatible ROM**: a Project-PM-patched Platinum ROM for DS co-op, or a GBA game for GBA split screen. The FireRed experiment requires the exact supported German original. No games, Nintendo BIOS, proprietary firmware or user saves are included. The launcher does not add world co-op to an unmodified Platinum ROM. All packages are alpha releases. Choose **English or Deutsch** at first launch; change it later in **Settings / Einstellungen**. This does not change the language of your game ROM.
 
@@ -98,7 +97,7 @@ Two separate Project PM/melonDS processes share one window. Each player controls
 
 If Steam produces duplicate inputs, disable Steam Input **for this game entry**. Bazzite requests its Steam entry through the host helper; the application-menu action can retry if it is missing. [Bazzite setup](docs/one-file-installer.md) · [Troubleshooting](docs/troubleshooting.md). Detailed guides are available in [English](docs/README.md) and [German](docs/de/README.md).
 
-To try FireRed, install Alpha 10 and enable **Settings → FireRed co-op (experimental)** as
+To try FireRed, install Alpha 11 and enable **Settings → FireRed co-op (experimental)** as
 described in the [FireRed guide](docs/firered.md) or [Bazzite test guide](docs/bazzite-firered-test.md).
 
 ### ROM corrections and existing saves
@@ -116,7 +115,7 @@ Separate tools correct two reproduced bugs in the **exact verified German PM 0.4
 | Actual Pokémon co-op | On Linux: shared-world views, movement, wild/trainer battles and independent commands. Virtual SDL controllers; no physical-hardware certification. |
 | ROM battle corrections | Actual before/after gameplay checks, plus ARM instruction tests on Linux and Windows. [Technical results](docs/verification/coop-item-sync-2026-10-19.json). |
 | Money and saving | In the tested shared victory over Sven, **each player receives 96 ₽**. Both balances and victory flags survive normal saving and a fresh launch. |
-| Experimental FireRed | Linux original-ROM checks cover twelve EXP Share recipients, owned learning/evolutions, full-party switches, native map refresh and a repeated production-session test. Authored checkpoints and virtual controllers; no continuous campaign claim. [Alpha 9 sustained evidence](docs/verification/firered-alpha9-2026-11-08.json) · [Alpha 10 ownership checks](docs/verification/firered-alpha10-2026-11-08.json). |
+| Experimental FireRed | Linux original-ROM checks cover twelve EXP Share recipients, owned learning/evolutions, full-party switches, native map refresh and a repeated production-session test. Authored checkpoints and virtual controllers; no continuous campaign claim. [Alpha 9 sustained evidence](docs/verification/firered-alpha9-2026-11-08.json) · [Alpha 10 ownership checks](docs/verification/firered-alpha10-2026-11-08.json) · [Alpha 11 runtime checks](docs/verification/firered-reserves-2026-11-08.json). |
 
 <details>
 <summary>See both trainer cards after restarting</summary>
@@ -144,11 +143,11 @@ For all ARM tests, also install `tests/requirements-romfix.txt`; decoder tests r
 
 ## Deutsch
 
-Der aktuelle Quellcode korrigiert zusätzlich Brüller/Wirbelwind, Wunschtraum-Plätze und die EP-Vergabe bei gebundenen Teamplätzen. Diese Nachbesserungen sind noch nicht in den Alpha-10-Downloads enthalten. [Prüfbericht und Stand](docs/de/development-status.md#aktueller-quellcode--erzwungene-wechsel-und-ep-vergabe).
+Alpha 11 bringt die Korrekturen für Brüller/Wirbelwind, Wunschtraum-Plätze und die EP-Vergabe samt Attackenlernen und Entwicklung in die Downloadpakete. [Prüfbericht und Stand](docs/de/development-status.md#alpha-11--erzwungene-wechsel-und-ep-vergabe).
 
-Alpha 10 unterstützt **GBA-Spiele und ROM-Hacks mit zwei getrennten Sitzungen**. Ein ausdrücklich aktivierter **deutscher Feuerrot-Koop-Testmodus** zeigt den Partner, ermöglicht gemeinsame menschlich gesteuerte Kämpfe und synchronisiert ausgewählte Storyfortschritte. Er benötigt die exakte unveränderte deutsche Original-ROM und bleibt unvollständig; [Einrichtung, Prüfumfang und Grenzen](docs/de/firered.md). Die Alpha-10-Downloads enthalten diese Erweiterungen. Für Bazzite gibt es eine [Testanleitung](docs/de/bazzite-firered-test.md). Pokémon-Bank, Regionsreisen und GBA-Linkspiel sind nicht implementiert.
+Alpha 11 unterstützt **GBA-Spiele und ROM-Hacks mit zwei getrennten Sitzungen**. Ein ausdrücklich aktivierter **deutscher Feuerrot-Koop-Testmodus** zeigt den Partner, ermöglicht gemeinsame menschlich gesteuerte Kämpfe und synchronisiert ausgewählte Storyfortschritte. Er benötigt die exakte unveränderte deutsche Original-ROM und bleibt unvollständig; [Einrichtung, Prüfumfang und Grenzen](docs/de/firered.md). Die Alpha-11-Downloads enthalten diese Erweiterungen. Für Bazzite gibt es eine [Testanleitung](docs/de/bazzite-firered-test.md). Pokémon-Bank, Regionsreisen und GBA-Linkspiel sind nicht implementiert.
 
-**CouchSplit** bringt Couch-Koop und Splitscreen in ein gemeinsames Fenster. Es unterstützt Project PM / Pokémon Platin sowie GBA-Splitscreen und den experimentellen deutschen Feuerrot-Koop: Für Platin startet der native Retro-Launcher zwei getrennte Project-PM/melonDS-Prozesse; GBA verwendet mGBA. Pakete gibt es für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 10 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)**, eine eigene kompatible ROM auswählen und beide Controller zuordnen. Feuerrot-Koop wird unter **Einstellungen → Feuerrot-Koop (experimentell)** aktiviert. Beim ersten Start zwischen **Deutsch und Englisch** wählen; später unter **Einstellungen → Sprache** ändern. Die Auswahl wird gespeichert und verändert die Spiel-ROM nicht. Ausführliche Anleitungen gibt es auf [Deutsch](docs/de/README.md) und [Englisch](docs/README.md).
+**CouchSplit** bringt Couch-Koop und Splitscreen in ein gemeinsames Fenster. Es unterstützt Project PM / Pokémon Platin sowie GBA-Splitscreen und den experimentellen deutschen Feuerrot-Koop: Für Platin startet der native Retro-Launcher zwei getrennte Project-PM/melonDS-Prozesse; GBA verwendet mGBA. Pakete gibt es für Windows, Bazzite und ZorinOS 18 / Ubuntu 24.04. **[Alpha 11 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)**, eine eigene kompatible ROM auswählen und beide Controller zuordnen. Feuerrot-Koop wird unter **Einstellungen → Feuerrot-Koop (experimentell)** aktiviert. Beim ersten Start zwischen **Deutsch und Englisch** wählen; später unter **Einstellungen → Sprache** ändern. Die Auswahl wird gespeichert und verändert die Spiel-ROM nicht. Ausführliche Anleitungen gibt es auf [Deutsch](docs/de/README.md) und [Englisch](docs/README.md).
 
 Welt-Koop und gemeinsame Kämpfe wurden unter Linux mit virtuellen SDL-Controllern geprüft. Windows-/Linux-CI prüft Builds, native Tests und Pakete. Gezielte Heilungs-/Siegszenarien nutzen vorbereitete Level-25-Spielstandkopien. Physische Hardware und ein vollständiger Durchlauf bleiben offen. ROM-Korrekturen sind separate, hashgebundene Werkzeuge; ein neuer ROM-Hash verwendet eigene Spielstandordner. [Spielstände übernehmen](docs/de/save-transfer.md) · [Einrichtung](docs/de/platforms.md).
 

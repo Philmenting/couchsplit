@@ -42,6 +42,15 @@ Change language immediately under **Settings → Language / Einstellungen → Sp
 
 The project is now CouchSplit. New downloads use `CouchSplit-…`; historical release assets retain their names. Install the new package over the existing installation. Legacy executable, profile and installer identifiers (`platinum-coop`, `pokemon-platinum-local-coop`, the Windows AppId/default folder and Bazzite runtime identity) remain for compatible upgrades. Existing settings, ROMs and saves stay in place; there is no automatic migration or merging. Launcher and application-menu names are CouchSplit. Existing Steam entries can retain the old name because their configuration is not directly rewritten.
 
+## Alpha 11
+
+Alpha 11 packages the forced-switch, Wish and EXP corrections from the verified
+runtime commit `8eb9ad1`. Windows, Bazzite and Zorin OS / Ubuntu packages include
+the changes; install over the previous version after ending the current session.
+[Release notes](releases/v0.2.0-alpha.11.md) distinguish the original-ROM evidence
+from fresh platform/package checks. The Bazzite/two-controller practical test
+remains pending.
+
 ## Alpha 10
 
 Alpha 10 retains the bundled GBA support from Alpha 9 and improves protected

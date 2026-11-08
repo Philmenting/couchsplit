@@ -2,11 +2,11 @@
 
 [English](../firered.md) · **Deutsch** · [Dokumentation](README.md)
 
-Alpha 10 und der aktuelle Quellcode können GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
+Alpha 11 und der aktuelle Quellcode können GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
 
-## Feuerrot-Koop — Alpha 10
+## Feuerrot-Koop — Alpha 11
 
-Alpha 10 enthält einen **experimentellen Feuerrot-Paarworker**:
+Alpha 11 enthält einen **experimentellen Feuerrot-Paarworker**:
 zwei echte mGBA-Kerne mit getrennten Saves, eine Partneransicht auf derselben
 oder direkt verbundenen Außenkarte und gemeinsame native Kämpfe, in denen jeder Mensch seine eigenen Aktionen wählt.
 Der vollständige Welt-Koop ist weiterhin nicht abgeschlossen. Die älteren
@@ -14,7 +14,7 @@ Alpha-8-Pakete bleiben unverändert. Der Testmodus unterstützt ausschließlich 
 unveränderte deutsche Original-ROM; andere GBA-Spiele, Sprachen und Hacks erhalten
 dadurch keinen Koop.
 
-Alpha 10 installieren und den Modus unter **Einstellungen → Feuerrot-Koop
+Alpha 11 installieren und den Modus unter **Einstellungen → Feuerrot-Koop
 (experimentell)** einschalten. Für einen Quellcode-Build Launcher und beide
 Worker gemeinsam bauen; das Skript legt sie in `build/bin` ab:
 
@@ -199,11 +199,11 @@ Das native Wechselmenü zeigt jeder Person die eigenen sechs Pokémon. Eine
 ungeladene Reserve darf einen ungebundenen eigenen Bankplatz ersetzen, auch wenn
 dessen Pokémon noch lebt. Das Journal erhält Besitz, Fortschritt und Teilnahme.
 Kampfteam/Indizes/Reihenfolge werden vor dem nativen Wiederaufbau wiederhergestellt,
-auch bei Abbruch und Rücksetzung. Alpha 10 weist eine vorerst gesperrte Auswahl
-vor dem Wechsel ab, zeigt einen deutschen Hinweis im Spiel und lässt die Person
+auch bei Abbruch und Rücksetzung. Seit Alpha 10 weist der Launcher eine vorerst
+gesperrte Auswahl vor dem Wechsel ab, zeigt einen deutschen Hinweis und lässt die Person
 im Menü eine geladene Alternative wählen oder, soweit nativ erlaubt, abbrechen.
 
-**Aktueller Quellcode nach Alpha 10:** Beide aktiven Pokémon bleiben während der
+**Alpha 11:** Beide aktiven Pokémon bleiben während der
 EP-Vergabe und beim Attackenlernen im Arbeitsteam. Nur durch vorgemerkte Wechsel
 oder Wunschtraum gebundene Bankplätze dürfen kurz für einen Empfänger verwendet
 werden. Vor der Fortsetzung des Kampfes wird die Belegung wiederhergestellt;
@@ -214,9 +214,9 @@ Unbekannte Wunschtraum-Verweise bleiben geschützt. Brüller/Wirbelwind wählen 
 Trainerkampf nur aus den eigenen ursprünglichen Pokémon, auch aus ungeladenen
 Reserven. Zufall, Levelprüfung, Fehlschlag und Wechseleffekte führt das Originalspiel
 aus. Nur die unmittelbar ersetzte eigene Wechselvormerkung wird freigegeben.
-Beschädigte Zustände führen weiterhin zum sicheren Abbruch. Diese Änderungen
-liegen im Quellcode; veröffentlichte Alpha-10-Downloads behalten ihr bisheriges
-Verhalten. [Gezielte Prüfungen](../verification/firered-reserves-2026-11-08.json).
+Beschädigte Zustände führen weiterhin zum sicheren Abbruch. Diese Korrekturen
+sind in den Alpha-11-Paketen enthalten. Der gezielte Prüfbericht entstand vor
+der Paketierung am selben Laufzeitcode. [Gezielte Prüfungen](../verification/firered-reserves-2026-11-08.json).
 
 Alpha 9 verteilt native EP/EV über alle zwölf ursprünglichen Teamplätze.
 Vorbereitete Zwei-Kern-Tests decken zwölf EP-Teiler-Träger, zwölf ausstehende
@@ -407,7 +407,7 @@ Im Spiel speichern und das Ende der Speicheranzeige abwarten. Start + Select fü
 
 Der Launcher wählt den mitgelieferten `gba-worker` automatisch. Das vorhandene DS-Emulatorfeld und die BIOS-Einstellungen bleiben unverändert und betreffen GBA nicht. mGBA nutzt seine Software-BIOS-Implementierung; ein externes GBA-BIOS ist nicht erforderlich. Select + R wird als normale GBA-Eingabe weitergegeben, weil GBA keinen zweiten Bildschirm hat. Controller-Zuordnung, Trennungsverhalten und Beenden-Tastenkombination bleiben erhalten.
 
-Build: `scripts/build.sh`; mGBA 0.10.5 ist in `config/mgba.lock.json` festgelegt. Quellpakete enthalten die festgelegte mGBA-Quelle und MPL-2.0-Lizenzen unter `gba-corresponding-source` sowie die nachvollziehbare Erweiterung `patches/mgba-xrom.patch`. CMake wendet diese auf eine separate Buildkopie an; die festgelegte Originalquelle bleibt unverändert. Offline ist `-DCOUCHSPLIT_MGBA_SOURCE=/pfad/zu/gba-corresponding-source` möglich. IPC-ABI bleibt 2. Alpha 10 enthält diese GBA-Erweiterung. Native Paketprüfungen sind von tatsächlicher Pokémon-Spielabnahme unter Windows/Bazzite zu unterscheiden; Letztere bleibt offen.
+Build: `scripts/build.sh`; mGBA 0.10.5 ist in `config/mgba.lock.json` festgelegt. Quellpakete enthalten die festgelegte mGBA-Quelle und MPL-2.0-Lizenzen unter `gba-corresponding-source` sowie die nachvollziehbare Erweiterung `patches/mgba-xrom.patch`. CMake wendet diese auf eine separate Buildkopie an; die festgelegte Originalquelle bleibt unverändert. Offline ist `-DCOUCHSPLIT_MGBA_SOURCE=/pfad/zu/gba-corresponding-source` möglich. IPC-ABI bleibt 2. Alpha 11 enthält diese GBA-Erweiterung. Native Paketprüfungen sind von tatsächlicher Pokémon-Spielabnahme unter Windows/Bazzite zu unterscheiden; Letztere bleibt offen.
 
 Produktions-Worker ohne kommerzielle Spielinhalte prüfen:
 

@@ -2,7 +2,7 @@
 
 **English** · [Deutsch](de/bazzite-firered-test.md) · [Documentation](README.md)
 
-Alpha 10 includes the experimental FireRed worker. For the normal route, install
+Alpha 11 includes the experimental FireRed worker. For the normal route, install
 [the Bazzite package](one-file-installer.md), select your own unmodified German
 FireRed ROM and enable **Settings → FireRed co-op (experimental)**. Consult the
 [FireRed guide](firered.md) for scope and remaining limits. Actual Bazzite game

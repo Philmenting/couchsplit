@@ -2,11 +2,13 @@
 
 **English** · [Deutsch](de/development-status.md) · [Documentation](README.md)
 
-Updated 8 November 2026. **[CouchSplit 0.2.0 Alpha 10](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
+Updated 8 November 2026. **[CouchSplit 0.2.0 Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
 
-## Current source — forced switches and EXP boundaries
+<a id="current-source--forced-switches-and-exp-boundaries"></a>
 
-The source after Alpha 10 keeps trainer Roar/Whirlwind within the target player's
+## Alpha 11 — forced switches and EXP boundaries
+
+Alpha 11 keeps trainer Roar/Whirlwind within the target player's
 own six Pokémon, including unloaded reserves. Wish records its original caster's
 name separately, so a fainted source can leave the working party without blocking
 a replacement or changing the later message. EXP temporarily borrows only inactive
@@ -18,9 +20,10 @@ distinguishes authored saturation from actual native cast/faint/switch/award
 execution, records both initiators and in-game SAVE/fresh Continue, and retains
 the remaining campaign and real-controller/Bazzite limitations. All 11 targeted
 native scenarios, 24 component tests and 64 Python tests passed, with no skips.
-Unexpected or
-unknown native references still fail closed. Published Alpha 10 packages are
-unchanged; these fixes are a source follow-up awaiting a future release.
+Unexpected or unknown native references still fail closed. The record predates
+packaging: Alpha 11 includes the same runtime from commit `8eb9ad1`, with release
+metadata/documentation updates and fresh native platform/package checks. No new
+ROM campaign or sustained run is claimed. [Release notes](releases/v0.2.0-alpha.11.md).
 
 ## Alpha 10 — switch rejection and native ownership edge cases
 
@@ -238,7 +241,7 @@ The local source now has an explicitly enabled two-core worker, same-map partner
 overlay and shared native human-controlled battles with separate save/result
 ownership. The ordinary GBA and DS paths remain the default. This is **not a
 complete shared-world co-op release**. [Setup, acceptance tools and remaining
-requirements](firered.md#firered-co-op--current-source).
+requirements](firered.md).
 
 Verified with the exact German original on Linux: normal wild/trainer battles,
 distinct trainer ownership/EXP, PP, capture/bag/PC/dex attribution, wallet caps and

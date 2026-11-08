@@ -2,11 +2,13 @@
 
 [English](../development-status.md) · **Deutsch** · [Anleitungen](README.md)
 
-Aktualisiert am 8. November 2026. **[CouchSplit 0.2.0 Alpha 10](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)** enthält Project PM / Pokémon Platin, getrennten GBA-Splitscreen und den aktivierbaren deutschen Feuerrot-Testmodus. Ältere Ergebnisse gelten für die jeweils genannte Version und Umgebung, nicht als vollständige Kampagnen- oder Hardwarefreigabe.
+Aktualisiert am 8. November 2026. **[CouchSplit 0.2.0 Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)** enthält Project PM / Pokémon Platin, getrennten GBA-Splitscreen und den aktivierbaren deutschen Feuerrot-Testmodus. Ältere Ergebnisse gelten für die jeweils genannte Version und Umgebung, nicht als vollständige Kampagnen- oder Hardwarefreigabe.
 
-## Aktueller Quellcode — erzwungene Wechsel und EP-Vergabe
+<a id="aktueller-quellcode--erzwungene-wechsel-und-ep-vergabe"></a>
 
-Der Quellcode nach Alpha 10 beschränkt Brüller/Wirbelwind im Trainerkampf auf die
+## Alpha 11 — erzwungene Wechsel und EP-Vergabe
+
+Alpha 11 beschränkt Brüller/Wirbelwind im Trainerkampf auf die
 eigenen sechs Pokémon, einschließlich ungeladener Reserven. Wunschtraum speichert
 den ursprünglichen Namen getrennt. Der Platz eines besiegten Anwenders darf dadurch
 wiederverwendet werden, ohne den Ersatz oder die spätere Meldung zu beschädigen.
@@ -19,10 +21,12 @@ unterscheidet vorbereitete Platzblockaden von tatsächlich ausgeführten nativen
 Attacken, Niederlagen, Wechseln und EP-Vergaben. Er dokumentiert beide Kampfinitiatoren
 und Ingame-SAVE mit erneutem Continue. Alle elf gezielten nativen Szenarien,
 24 Komponententests und 64 Python-Tests bestanden ohne übersprungene Tests.
-Kampagnen- und echte Controller-/Bazzite-Tests
-bleiben offen; unbekannte oder beschädigte native Verweise führen weiterhin zum
-sicheren Abbruch. Veröffentlichte Alpha-10-Pakete bleiben unverändert. Diese
-Korrekturen liegen zunächst im Quellcode und warten auf ein späteres Release.
+Kampagnen- und echte Controller-/Bazzite-Tests bleiben offen; unbekannte oder
+beschädigte native Verweise führen weiterhin zum sicheren Abbruch. Der Bericht
+entstand vor der Paketierung: Alpha 11 enthält denselben Laufzeitcode aus
+`8eb9ad1`, mit aktualisierten Versionsangaben/Dokumentation und frischen
+Plattform-/Paketprüfungen. Ein neuer ROM-Kampagnen- oder Dauertest wird damit
+nicht behauptet. [Release-Hinweise](../releases/v0.2.0-alpha.11.md#deutsch).
 
 ## Alpha 10 — Wechselmenü und besondere Besitzfälle
 
@@ -255,7 +259,7 @@ Der lokale Quellstand enthält einen ausdrücklich einzuschaltenden Zwei-Kern-Wo
 eine Partneransicht auf derselben Karte und gemeinsame native Kämpfe mit eigenen
 menschlichen Aktionen sowie getrennten Ergebnissen und Saves. Normales GBA und DS
 bleiben der Standard. Das ist **kein vollständiger Welt-Koop-Release**.
-[Einrichtung, Prüfwerkzeuge und offene Anforderungen](firered.md#entwicklungsziel-feuerrot-koop--28-oktober-2026).
+[Einrichtung, Prüfwerkzeuge und offene Anforderungen](firered.md).
 
 Unter Linux mit der exakten deutschen Original-ROM geprüft: normale wilde und
 Trainerkämpfe, eigene Traineridentität/EP, AP, Fang-/Beutel-/PC-/Pokédex-Zuordnung,
