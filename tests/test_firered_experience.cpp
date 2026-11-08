@@ -88,5 +88,37 @@ void retiredReferences() {
     menu=planPartyMenu(t,readParty(&b.c),0,refs);assert(!planPartyMenuSelection(menu,menu.menu,5,true).accepted);
     rejects([&]{xp.opponentReset(4);});
 }
+void shedinjaEvolutionJournal() {
+    Bus b;auto left=roster(0),right=roster(1);
+    for(auto* p:{&left,&right}) {
+        p->count=5;p->mons[5]={};auto x=p->mons[0].secure();monPut16(x.data(),301);monPut32(x.data()+44,0x80000000);p->mons[0].setSecure(x);
+    }
+    auto t=combinePagedParties(left,right);writeParty(&b.c,t.combined);BattleExperience xp(&b.c,t);
+    b.memory[0x03004F24]=3;xp.evolutionGate();xp.evolutionBoundary(false);
+    for(unsigned owner=0;owner<2;++owner) {
+        auto party=readParty(&b.c);auto plain=party.mons[0].secure();monPut16(plain.data(),302);party.mons[0].setSecure(plain);
+        party.mons[5]=party.mons[0];auto& shell=party.mons[5];monPut16(plain.data(),303);monPut16(plain.data()+2,0);shell.setSecure(plain);
+        shell.bytes[85]=255;monPut16(shell.bytes.data()+86,1);monPut16(shell.bytes.data()+88,1);party.count=6;
+        writeParty(&b.c,party);b.memory[0x03004F24]=0;
+        assert(xp.evolutionBoundary(true)==(owner==0));
+    }
+    const auto results=restoreParties(t,readParty(&b.c));
+    for(const auto& p:results)assert(p.count==6 && nativeShedinjaSiblings(p.mons[0],p.mons[5]));
+    // A subsequent shared battle can page the shell, and both records retain
+    // their own progress through menu permutations and save party validation.
+    auto next=combinePagedParties(results[0],results[1]);writeParty(&b.c,next.combined);
+    const auto view=planPartyMenu(next,next.combined,0,readBenchReferences(&b.c,6,6));
+    const auto picked=planPartyMenuSelection(view,view.menu,5,true);
+    assert(picked.accepted && picked.imported && picked.party.mons[picked.nativeSlot].species()==303);
+    auto current=picked.party;current.mons[picked.nativeSlot].setPp(0,1);std::swap(current.mons[0],current.mons[picked.nativeSlot]);
+    const auto restored=restoreParties(picked.transaction,current);
+    assert(restored[0].mons[5].pp(0)==1 && restored[0].mons[0].pp(0)==35 && restored[1]==results[1]);
+    // A second shell with the same origin is still an ambiguous duplicate.
+    auto invalid=results[0];invalid.mons[4]=invalid.mons[5];rejects([&]{invalid.validate();});
+    auto altered=results[0];auto x=altered.mons[5].secure();x[40]^=1;altered.mons[5].setSecure(x);rejects([&]{altered.validate();});
+    Party a{},c{};a.count=c.count=1;a.mons[0]=results[0].mons[0];c.mons[0]=results[0].mons[5];
+    const auto split=combinePagedParties(a,c);assert((restoreParties(split,split.combined)==std::array<Party,2>{{a,c}}));
 }
-int main(){allRecipientsAndEvolutions();retiredReferences();}
+
+}
+int main(){allRecipientsAndEvolutions();retiredReferences();shedinjaEvolutionJournal();}

@@ -108,7 +108,7 @@ def run(arguments):
     initial = [inspect_save(data) for data in originals]
     demand(all(s['map'] == ROUTE and s['position'] == (12, 38) for s in initial), 'Use the authored soak-launcher-border native fixtures')
     demand(all(s['facing'] in (1, 2, 3, 4) for s in initial), 'Fixture has no valid native player object direction')
-    demand(not ({m['identity'] for m in initial[0]['party']} & {m['identity'] for m in initial[1]['party']}), 'Private fixtures must have disjoint owned Pokemon identities')
+    demand(not ({(m['identity'], m['species'] == 303) for m in initial[0]['party']} & {(m['identity'], m['species'] == 303) for m in initial[1]['party']}), 'Private fixtures must have disjoint owned Pokemon identities')
     output.mkdir()
     profile = output / 'private-profiles'
     batteries = [profile / 'players' / str(p + 1) / ROM_HASH / 'saves/game.sav' for p in range(2)]

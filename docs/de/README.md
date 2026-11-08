@@ -2,7 +2,7 @@
 
 [English](../README.md) · **Deutsch** · [Projektübersicht](../../README.md#deutsch)
 
-In Alpha 9 und im aktuellen Quellcode unterstützt: **Project PM / Pokémon Platin**, **GBA-Spiele und ROM-Hacks mit getrennten Sitzungen** und ein **aktivierbarer deutscher Feuerrot-Koop-Testmodus**. Alpha 8 bleibt als ältere reine Platin-Version verfügbar. Die Launcher-Sprache verändert die Spiel-ROM nicht. Befehle werden, soweit nicht anders angegeben, im Projektverzeichnis ausgeführt. Historische Berichte behalten ihr Datum und ihre Prüfgrenzen.
+In Alpha 10 und im aktuellen Quellcode unterstützt: **Project PM / Pokémon Platin**, **GBA-Spiele und ROM-Hacks mit getrennten Sitzungen** und ein **aktivierbarer deutscher Feuerrot-Koop-Testmodus**. Alpha 8 bleibt als ältere reine Platin-Version verfügbar. Die Launcher-Sprache verändert die Spiel-ROM nicht. Befehle werden, soweit nicht anders angegeben, im Projektverzeichnis ausgeführt. Historische Berichte behalten ihr Datum und ihre Prüfgrenzen.
 
 - [Plattformpakete](platforms.md)
 - [GBA-Spiele und experimenteller Feuerrot-Koop mit Original-ROM](firered.md)

@@ -28,7 +28,7 @@ $saveHash = (Get-FileHash $save).Hash
 $settingsHash = (Get-FileHash $settings).Hash
 Install-CheckedSetup (Resolve-Path $SetupPath).Path
 $entry = Get-ItemProperty 'HKCU:/Software/Microsoft/Windows/CurrentVersion/Uninstall/PlatinumLocalCoop_is1'
-if ($entry.DisplayName -ne 'CouchSplit' -or $entry.DisplayVersion -ne '0.2.0-alpha.9') { throw 'Upgrade did not reuse the existing installer identity' }
+if ($entry.DisplayName -ne 'CouchSplit' -or $entry.DisplayVersion -ne '0.2.0-alpha.10') { throw 'Upgrade did not reuse the existing installer identity' }
 $newDesktopLink = Join-Path $desktop 'CouchSplit.lnk'
 $newMenuLink = Join-Path $programs 'CouchSplit/CouchSplit.lnk'
 if (!(Test-Path $newDesktopLink) -or !(Test-Path $newMenuLink)) { throw 'Missing CouchSplit shortcuts' }

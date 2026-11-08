@@ -1,0 +1,222 @@
+{
+  "format": "couchsplit-firered-alpha10-1",
+  "date": "2026-11-08",
+  "release": "v0.2.0-alpha.10",
+  "base_commit": "1b62f1ab60ea03333ba678c8e31579d37710f080",
+  "environment": {
+    "original_rom_gameplay": "Linux x86_64, pinned mGBA 0.10.5",
+    "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+    "private_checkpoint_sha256": "835a1924731dc0951a168de8fd8095526958c99c78bb77e10fb6419c71995391",
+    "authored_prerequisites": true,
+    "physical_controllers": false,
+    "qt_platform": "offscreen",
+    "audio_driver": "dummy",
+    "local_heavy_checks_sequential": true,
+    "cpu_quota_percent_of_one_core": 70,
+    "cpu_affinity": [
+      11
+    ],
+    "nice": 15
+  },
+  "native_component_suites": {
+    "passed": 23,
+    "failed": 0
+  },
+  "python_tests": {
+    "passed": 64,
+    "failed": 0,
+    "skipped": 0
+  },
+  "native_pair_cases": [
+    {
+      "scenario": "shedinja",
+      "status": "pass",
+      "seconds": 58.71,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "shedinja-leader2",
+      "status": "pass",
+      "seconds": 58.88,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "shedinja-full",
+      "status": "pass",
+      "seconds": 59.46,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "shedinja-cancel",
+      "status": "pass",
+      "seconds": 48.55,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "shedinja-multiple",
+      "status": "pass",
+      "seconds": 93.09,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "pokerus",
+      "status": "pass",
+      "seconds": 40.35,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "pokerus-leader2",
+      "status": "pass",
+      "seconds": 39.25,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "party-menu-protected",
+      "status": "pass",
+      "seconds": 42.92,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "party-menu-shedinja",
+      "status": "pass",
+      "seconds": 41.3,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "party-menu-forced",
+      "status": "pass",
+      "seconds": 52.75,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "party-menu-summary",
+      "status": "pass",
+      "seconds": 53.75,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "party-menu-cycle",
+      "status": "pass",
+      "seconds": 81.79,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "exp-share-twelve-evolution",
+      "status": "pass",
+      "seconds": 145.19,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "exp-share-learn-leader2",
+      "status": "pass",
+      "seconds": 43.66,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "exp-share-dex-leader2",
+      "status": "pass",
+      "seconds": 42.3,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "capture-small",
+      "status": "pass",
+      "seconds": 37.45,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "capture-leader2",
+      "status": "pass",
+      "seconds": 36.89,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "trainer",
+      "status": "pass",
+      "seconds": 36.99,
+      "native_save_and_fresh_continue_both_players": true
+    },
+    {
+      "scenario": "escape-leader2",
+      "status": "pass",
+      "seconds": 23.0,
+      "native_save_and_fresh_continue_both_players": true
+    }
+  ],
+  "new_coverage": {
+    "protected_menu": "Both owners select an unloaded reserve with authored saturated Wish references, receive the native in-menu rejection, choose a resident alternative, complete the shared battle and SAVE/fresh Continue; no session restart or rollback for the denied selection.",
+    "shedinja": "Both initiators, full own parties, owner-specific cancellation, two evolutions/additions per owner, native clearing of markings/status/ribbons with retained Pokerus/fateful flag, Japanese-owned records, owned Dex receipts, no ball consumption, native SAVE/fresh Continue.",
+    "sibling_identity": "Ninjask/Shedinja keep PID/OT. Native own-six switch menus bring both owners' authored sibling into battle and preserve native progress/save. ROM-free tests cover physical reordering, paging, cross-owner split siblings and rejection of ambiguous duplicates.",
+    "pokerus": "Both initiators, twelve EXP Share holders: active 0x23, cured 0x20 and never-infected 0x00 keep their own status; actual native Speed EV gain is 4/4/2 over two opponents, with unchanged correct EXP split, native SAVE/fresh Continue."
+  },
+  "native_inspection": {
+    "reference": "pret/pokefirered ce6406d8c2eaf46d543c8a2606de0c3cb1951982",
+    "method": "Pinned source review plus SHA-256-bound original ARM Thumb bytes decoded with Capstone 5.0.7; two-core native execution separately corroborates outcomes.",
+    "switch_pre_mutation_boundary": "0x08127C46",
+    "native_false_epilogue": "0x08127CDA",
+    "rejection_text_buffer": "0x02021D18",
+    "random_pokerus_stub": "0x08043968",
+    "spread_pokerus_stub": "0x08043A40",
+    "pokerus_correction": "Both functions only reserve/release four stack bytes then return. The earlier mixed-party spreading concern was incorrect for original FireRed; no RSE spreading is added."
+  },
+  "production_session_checks": {
+    "crash_lock_backup_boundaries": {
+      "production_session": true,
+      "paired_worker": true,
+      "owned_child_failure_detected": true,
+      "lock_released_after_child_exit": true,
+      "both_prior_saves_preserved": true,
+      "paired_startup_backup_verified": true,
+      "audio_setting_reached_worker": "player1",
+      "rom_unchanged": true,
+      "complete_world_coop": false
+    },
+    "enigma_recovery": {
+      "production_session_playview_and_worker": true,
+      "authored_native_save_inputs": true,
+      "virtual_controllers": true,
+      "battle_initiator": 2,
+      "pause_reason": 4,
+      "unchanged_paused_pictures_and_live_heartbeat": true,
+      "prior_saves_preserved": true,
+      "pause_survives_watchdog": true,
+      "explicit_ui_approval": true,
+      "native_individual_battle_returns_to_coop": true,
+      "clean_shutdown": true,
+      "rom_and_inputs_unchanged": true,
+      "full_campaign": false
+    }
+  },
+  "binary_sha256": {
+    "verify-firered-pair": "f68d020ce69cd1c8f7ed2a5246fcd48a0043d447ee33935238215aaa14c9e176",
+    "gba-worker": "50a84edf0d186f227d32dec7dbcd1590b9f573dc04db278f97677c29dba5ad6d",
+    "verify-gba": "18723804a05e81beceb4ae4ef5b10e003d3f794a700b2d3ee96448d41a6d71f9"
+  },
+  "test_driver_resume": {
+    "sha256": "538280513fd01ead69650d8aaf9a9e844ee7821ab31f50e92ab031d37a1ae6d7",
+    "retained_passed_cases": [
+      "pair/shedinja",
+      "pair/shedinja-leader2",
+      "pair/shedinja-full",
+      "pair/shedinja-cancel",
+      "pair/shedinja-multiple",
+      "pair/pokerus",
+      "pair/pokerus-leader2"
+    ],
+    "failure": "Test-only extra A after native text auto-return reopened the rejected mon submenu; final screenshot confirms the submenu, not a stalled native message."
+  },
+  "private_inputs_unchanged": true,
+  "earlier_development_runs": [
+    "First Shedinja fixture used the wrong growth-curve EXP boundary and did not evolve; corrected to erratic level-20 threshold 12800, then rerun. Not a production regression.",
+    "The final menu driver initially pressed A after the native message had already returned automatically, reopening a submenu. The input sequence was corrected and the affected case rerun; production code was unchanged.",
+    "One earlier protected-menu driver run was stopped during validation while its replacement was prepared; it is not counted as a completed case."
+  ],
+  "prior_sustained_evidence": "firered-alpha9-2026-11-08.json; historical Alpha 9 run, not repeated or claimed as Alpha 10 evidence",
+  "limits": [
+    "Fully pinned forced refills or EXP paging can still require complete battle rollback.",
+    "Enigma Berry effects still require explicit individual-battle recovery.",
+    "Continuous natural campaign/postgame, partner collision/occlusion and remaining special modes/map helpers are not certified.",
+    "User Bazzite practical test with physical controllers remains pending; Windows/Bazzite Pokemon gameplay, audible output and multi-hour play are unverified.",
+    "Native package/build CI is a separate publication gate; this local record does not turn it into target-hardware gameplay evidence."
+  ]
+}

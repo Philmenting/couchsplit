@@ -64,7 +64,14 @@ def pokemon(record):
     level, hp, maximum = record[84], u16(record, 86), u16(record, 88)
     demand(0 < species <= 411 and 0 < level <= 100 and 0 < maximum <= 999 and hp <= maximum, 'Invalid party species, level or HP')
     return dict(identity=identity, species=species, held=held, experience=u32(plain, 4), level=level,
-                hp=hp, maximum_hp=maximum, pp=tuple(plain[20:24]), bytes=record.hex())
+                hp=hp, maximum_hp=maximum, pp=tuple(plain[20:24]), pokerus=plain[36],
+                origin=bytes(plain[37:44]).hex(), bytes=record.hex())
+
+
+def owned_key(mon):
+    # Native Shedinja shares PID/OT with Ninjask; ordinary evolutions keep the
+    # non-shell key. Still reject arbitrary duplicate identities below.
+    return mon['identity'], mon['species'] == 303
 
 
 def inspect_save(data):
@@ -73,7 +80,11 @@ def inspect_save(data):
     count = block1[0x34]
     demand(0 < count <= 6, 'Native party count is outside 1..6')
     party = [pokemon(block1[0x38 + i * 100:0x38 + (i + 1) * 100]) for i in range(count)]
-    demand(len({m['identity'] for m in party}) == count, 'Party contains duplicate identities')
+    for i, mon in enumerate(party):
+        for previous in party[:i]:
+            demand(mon['identity'] != previous['identity'] or
+                   ({mon['species'], previous['species']} == {302, 303} and mon['origin'] == previous['origin']),
+                   'Party contains duplicate identities')
     wallet = u32(block1, 0x290) ^ key
     demand(wallet <= 999999, 'Invalid native wallet')
     statistics = tuple(u32(block1, 0x121C + i * 4) ^ key for i in range(3))
@@ -88,11 +99,12 @@ def inspect_save(data):
 
 def check_owned_progress(initial, current):
     demand(current['trainer'] == initial['trainer'], 'Trainer identity changed')
-    demand([m['identity'] for m in current['party']] == [m['identity'] for m in initial['party']], 'Native save contains missing, borrowed or reordered Pokemon')
+    demand([owned_key(m) for m in current['party']] == [owned_key(m) for m in initial['party']], 'Native save contains missing, borrowed or reordered Pokemon')
     demand(current['storage_sha256'] == initial['storage_sha256'], 'PC storage changed during battle-only acceptance')
     demand(current['wallet'] == initial['wallet'], 'Wild battles changed the authored wallet')
     for before, after in zip(initial['party'], current['party']):
         demand(after['experience'] >= before['experience'], 'Owned Pokemon lost experience')
         demand(after['held'] == before['held'], 'Owned held item changed')
+        demand(after['pokerus'] == before['pokerus'], 'Owned Pokerus status changed')
     for before, after in zip(initial['battles'], current['battles']):
         demand(after >= before, 'Native battle statistic decreased')

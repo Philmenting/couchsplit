@@ -102,7 +102,7 @@ int main(int argc,char** argv) {
     try {
         const QString rom=QString::fromLocal8Bit(argv[1]),state=QString::fromLocal8Bit(argv[2]),out=QString::fromLocal8Bit(argv[3]);
         const auto scenario=argc==5?QString::fromLocal8Bit(argv[4]):QStringLiteral("wild");
-        requirePokemon(scenario=="wild" || scenario=="capture-small" || scenario=="soak-launcher" || scenario.startsWith("single") || scenario.startsWith("exp-share") || scenario=="escape" || scenario=="escape-leader2" || scenario=="escape-player2" || scenario=="grass-rendezvous" || scenario=="deferred-script" || scenario=="marowak" || scenario=="scripted" || scenario=="legendary" || scenario=="rendezvous" || scenario=="capture-scripted" || scenario=="capture-legendary" || scenario=="trainer" || scenario.startsWith("trainer-single") || scenario=="payday" || (scenario=="capture" || scenario=="capture-leader2" || scenario=="capture-full-native" || scenario=="capture-party-space" || scenario=="capture-pc" || scenario=="capture-denied" || scenario.startsWith("capture-both") || scenario=="capture-sequential" || scenario=="capture-unown" || scenario=="capture-spinda" || scenario=="capture-unown-first") || scenario=="owners" || scenario=="leader2" || scenario=="action-stats" || scenario=="evolution" || scenario=="bench" || scenario=="exhaust" || scenario=="defeat" || scenario.startsWith("party-menu"),"Unknown acceptance scenario");
+        requirePokemon(scenario=="wild" || scenario.startsWith("shedinja") || scenario.startsWith("pokerus") || scenario=="capture-small" || scenario=="soak-launcher" || scenario.startsWith("single") || scenario.startsWith("exp-share") || scenario=="escape" || scenario=="escape-leader2" || scenario=="escape-player2" || scenario=="grass-rendezvous" || scenario=="deferred-script" || scenario=="marowak" || scenario=="scripted" || scenario=="legendary" || scenario=="rendezvous" || scenario=="capture-scripted" || scenario=="capture-legendary" || scenario=="trainer" || scenario.startsWith("trainer-single") || scenario=="payday" || (scenario=="capture" || scenario=="capture-leader2" || scenario=="capture-full-native" || scenario=="capture-party-space" || scenario=="capture-pc" || scenario=="capture-denied" || scenario.startsWith("capture-both") || scenario=="capture-sequential" || scenario=="capture-unown" || scenario=="capture-spinda" || scenario=="capture-unown-first") || scenario=="owners" || scenario=="leader2" || scenario=="action-stats" || scenario=="evolution" || scenario=="bench" || scenario=="exhaust" || scenario=="defeat" || scenario.startsWith("party-menu"),"Unknown acceptance scenario");
         requirePokemon(hashFile(rom)==RomHash,"Only the exact German FireRed original is supported");
         QFile checkpoint(state); requirePokemon(checkpoint.open(QIODevice::ReadOnly),"Cannot open private checkpoint");
         const auto bytes=checkpoint.readAll(); const auto stateHash=QCryptographicHash::hash(bytes,QCryptographicHash::Sha256).toHex();
@@ -111,7 +111,7 @@ int main(int argc,char** argv) {
         mLogger logger{};logger.filter=&filter;logger.log=[](mLogger*,int,mLogLevel,const char*,va_list){};mLogSetDefaultLogger(&logger);
         Core first,second;first.open(rom,bytes);second.open(rom,bytes);
         auto* a=first.c;auto* b=second.c;
-        if(scenario.startsWith("capture") || scenario.startsWith("exp-share") || scenario=="party-menu-exp-share" || scenario=="owners" || scenario=="leader2") {
+        if(scenario.startsWith("shedinja") || scenario.startsWith("pokerus") || scenario.startsWith("capture") || scenario.startsWith("exp-share") || scenario=="party-menu-exp-share" || scenario=="owners" || scenario=="leader2") {
             const auto memory=readSaveMemory(b);
             for(unsigned byte=0;byte<4;++byte)b->busWrite8(b,memory.block2+0xA+byte,uint8_t(0xCAFEBABEu>>(byte*8)));
             b->busWrite8(b,memory.block2,0xBC);b->busWrite8(b,memory.block2+1,0xFF);
@@ -134,6 +134,39 @@ int main(int argc,char** argv) {
                 }
                 pokemon.setSecure(plain);pokemon.bytes[84]=100;
                 for(unsigned offset=86;offset<100;offset+=2)monPut16(pokemon.bytes.data()+offset,300);
+            }
+        }
+        if(scenario.startsWith("shedinja") || scenario.startsWith("pokerus")) {
+            for(unsigned owner=0;owner<2;++owner) {
+                auto& party=owner?p1:p0;
+                party.count=scenario.contains("multiple")?4:scenario.startsWith("pokerus") || scenario.contains("full")?6:5;
+                for(unsigned slot=0;slot<party.count;++slot) {
+                    auto& m=party.mons[slot];m=mon(24*(owner*6+slot+1),(owner?trainer1:trainer0).id,25);
+                    auto plain=m.secure();
+                    if(scenario.startsWith("pokerus")) {
+                        monPut16(plain.data()+2,ExpShareItem);
+                        plain[36]=std::array<uint8_t,3>{{0x23,0x20,0}}[(slot+owner)%3];
+                    } else if(scenario.contains("multiple")?slot>=2:slot==4) {
+                        if(scenario.contains("multiple")) {
+                            // Native cloning clears ribbons/markings/status but
+                            // retains Pokerus and the modern fateful bit.
+                            plain[36]=0x23;monPut32(plain.data()+44,0x8FFFFFFF);
+                            m.bytes[27]=7;monPut16(m.bytes.data()+30,0x1234);m.setStatus(8);
+                            if(owner==1)m.bytes[18]=1;
+                        }
+                        // Nincada uses the erratic curve: level 20 is 12800 EXP.
+                        monPut16(plain.data(),301);monPut32(plain.data()+4,12799);m.bytes[84]=19;
+                        monPut16(plain.data()+2,ExpShareItem);
+                        monPut16(m.bytes.data()+86,45);monPut16(m.bytes.data()+88,45);
+                        for(unsigned off=90;off<100;off+=2)monPut16(m.bytes.data()+off,30);
+                    }
+                    m.setSecure(plain);
+                }
+                if(scenario.startsWith("shedinja")) {
+                    auto* c=owner?b:a;const auto memory=readSaveMemory(c);auto progress=readProgress(c);
+                    progress.flag(0x840,true);progress.var(0x404E,0x6258);
+                    writeProgressDelta(c,readProgress(c),progress);c->busWrite8(c,memory.block2+0x1B,0xB9);
+                }
             }
         }
         if(scenario=="action-stats") {
@@ -204,6 +237,14 @@ int main(int argc,char** argv) {
                     auto plain=pokemon.secure();monPut16(plain.data()+2,ExpShareItem);pokemon.setSecure(plain);
                 }
                 if(scenario=="party-menu-forced"&&slot<3)pokemon.setHp(1);
+            }
+        }
+        if(scenario=="party-menu-shedinja") {
+            for(auto* p:{&p0,&p1}) {
+                auto parent=p->mons[0].secure();monPut16(parent.data(),302);p->mons[0].setSecure(parent);
+                auto shell=p->mons[5].secure();monPut16(shell.data(),303);
+                monPut32(p->mons[5].bytes.data(),p->mons[0].identity().personality);
+                p->mons[5].setSecure(shell);monPut16(p->mons[5].bytes.data()+86,1);monPut16(p->mons[5].bytes.data()+88,1);
             }
         }
         if(scenario=="bench") {
@@ -301,12 +342,15 @@ int main(int argc,char** argv) {
         const std::array<uint32_t,2> struggleStatsBefore{{readGameStatistic(a,27),readGameStatistic(b,27)}};
         std::array<std::array<bool,6>,2> benchEntered{};
         unsigned liveFrame=0;
+        std::array<unsigned,2> menuDeferrals{},menuDeferredAt{},menuPins{};
         std::array<unsigned,2> menuOpens{},menuCancels{},menuImports{},menuPicks{},menuAt{},menuActionAt{};
         std::array<bool,2> menuActionStarted{},menuScreens{},summaryScreens{};
         std::array<unsigned,2> summaryStage{},summaryAt{};
         bool menuRollback=false;
         TeamBattle pair({{a,b}});pair.event=[&](const char* text,int detail){
             fprintf(stdout,"%s: %d\n",text,detail);fflush(stdout);
+            if(QString::fromLatin1(text)=="own reserve selection deferred") {++menuDeferrals[unsigned(detail)];menuDeferredAt[unsigned(detail)]=liveFrame;}
+            if(scenario=="party-menu-protected" && QString::fromLatin1(text)=="own resident selected")++menuPicks[unsigned(detail)/6];
             if(QString::fromLatin1(text)=="own party menu opened") {++menuOpens[unsigned(detail)];menuAt[unsigned(detail)]=liveFrame;}
             if(QString::fromLatin1(text)=="own party menu canceled") {++menuCancels[unsigned(detail)/6];menuActionStarted[unsigned(detail)/6]=false;}
             if(QString::fromLatin1(text)=="own reserve selected") {requirePokemon(scenario=="party-menu-cycle" || unsigned(detail)%6==5,"Native menu did not select own sixth original");++menuImports[unsigned(detail)/6];}
@@ -590,7 +634,13 @@ int main(int argc,char** argv) {
                     inputs={{0,0}};
                     if(age>=120&&!menuScreens[owner]){first.capture(out+"/own-six-player"+QString::number(owner+1)+".png");menuScreens[owner]=true;}
                     const unsigned pulse=frames%30<4?1u:0u;
-                    if(scenario=="party-menu-summary"&&menuCancels[owner]==0) {
+                    if(scenario=="party-menu-protected" && menuDeferrals[owner]) {
+                        const auto elapsed=frames-menuDeferredAt[owner];
+                        if(elapsed==220)first.capture(out+"/protected-selection-player"+QString::number(owner+1)+".png");
+                        // The native message returns automatically to selection.
+                        // Extra A here would reopen the rejected mon's submenu.
+                        if(elapsed>300)inputs[owner]=pulse?(a->busRead8(a,0x0203B0A9)==1u?1u:64u):0u;
+                    } else if(scenario=="party-menu-summary"&&menuCancels[owner]==0) {
                         if(summaryStage[owner]==0&&age>120) {
                             if(a->busRead8(a,0x0203B0A9)!=5)inputs[owner]=pulse?128u:0u;
                             else if(pulse){inputs[owner]=1;summaryStage[owner]=1;summaryAt[owner]=frames;}
@@ -608,14 +658,23 @@ int main(int argc,char** argv) {
                 } else if(scenario!="party-menu-forced") {
                     for(unsigned owner=0;owner<2;++owner) {
                         const unsigned battler=owner*2;
-                        if((scenario=="party-menu-cycle"?menuPicks[owner]>=5:bool(menuImports[owner])) || !(pending&(1u<<battler)) || a->busRead8(a,ControllerBufferA+battler*0x200)!=18)continue;
+                        if((scenario=="party-menu-protected"?bool(menuPicks[owner]):scenario=="party-menu-cycle"?menuPicks[owner]>=5:bool(menuImports[owner])) || !(pending&(1u<<battler)) || a->busRead8(a,ControllerBufferA+battler*0x200)!=18)continue;
+                        if(scenario=="party-menu-protected" && !menuPins[owner]) {
+                            // Authored saturation fixture: both own bench slots
+                            // hold live references. No production test API.
+                            const auto& tx=pair.partyTransaction();unsigned wish=0;
+                            for(unsigned slot=0;slot<tx.combined.count;++slot)if(tx.owners[slot]==int(owner) && tx.originalSlots[slot]!=0) {
+                                a->busWrite8(a,0x02023F40+wish,2);a->busWrite8(a,0x02023F44+wish,uint8_t(slot));wish+=2;
+                            }
+                            requirePokemon(wish==4,"Protected menu fixture needs two own bench slots");menuPins[owner]=1;
+                        }
                         if(!menuActionStarted[owner]){menuActionStarted[owner]=true;menuActionAt[owner]=frames;}
                         const unsigned elapsed=frames-menuActionAt[owner];
                         inputs[owner]=elapsed>=20&&elapsed<24?128u:elapsed>=40&&elapsed<44?1u:0u;
                     }
                 }
             }
-            if(scenario=="evolution" && (evolutionStarts[0] || evolutionStarts[1])) {
+            if((scenario=="evolution" || scenario=="shedinja-cancel") && (evolutionStarts[0] || evolutionStarts[1])) {
                 // Player one cancels their own Bulbasaur evolution. Their B
                 // pulses continue through player two's scene and must be ignored.
                 inputs={{frames%30<4?2u:0u,frames%30<4?1u:0u}};
@@ -784,7 +843,8 @@ int main(int argc,char** argv) {
             meaning.write(QJsonDocument(semantic).toJson());
         }
         auto r0=readParty(a),r1=readParty(b);
-        requirePokemon(r0.count==p0.count+(scenario.startsWith("capture-both")?1:0) && r1.count==p1.count+(scenario.startsWith("capture") && scenario!="capture-pc" && scenario!="capture-denied" && !scenario.startsWith("capture-both")?1:0),"Battle changed original party sizes");
+        const auto shedAddition=[&](unsigned owner){return scenario.startsWith("shedinja") && !scenario.contains("full") && !(scenario=="shedinja-cancel" && owner==0)?(scenario.contains("multiple")?2u:1u):0u;};
+        requirePokemon(r0.count==p0.count+shedAddition(0)+(scenario.startsWith("capture-both")?1:0) && r1.count==p1.count+shedAddition(1)+(scenario.startsWith("capture") && scenario!="capture-pc" && scenario!="capture-denied" && !scenario.startsWith("capture-both")?1:0),"Battle changed original party sizes");
         for(unsigned s=0;s<p0.count;++s)requirePokemon(r0.mons[s].identity()==p0.mons[s].identity(),"Battle swapped player-one Pokemon ownership");
         for(unsigned s=0;s<p1.count;++s)requirePokemon(r1.mons[s].identity()==p1.mons[s].identity(),"Battle swapped player-two Pokemon ownership");
         if(scenario.startsWith("exp-share") && !scenario.contains("many") && !scenario.contains("twelve") && !scenario.contains("overflow")) {
@@ -904,7 +964,16 @@ int main(int argc,char** argv) {
         } else if(scenario=="exhaust") {
             requirePokemon(r0.mons[0].hp()==0 && r1.mons[0].hp()>0 && r1.mons[0].pp(1)<p1.mons[0].pp(1),"Partner did not complete the battle after player-one exhaustion");
         }
-        if(scenario=="party-menu-cycle") {
+        if(scenario=="party-menu-protected") {
+            for(unsigned owner=0;owner<2;++owner) {
+                requirePokemon(menuDeferrals[owner]==1 && menuPicks[owner]==1 && menuImports[owner]==0 && menuOpens[owner]==1,
+                               "Protected selection did not stay in the same menu and accept a resident alternative");
+                const auto& before=owner?p1:p0;const auto& after=owner?r1:r0;
+                requirePokemon(after.mons[1].experience()>before.mons[1].experience() && after.mons[1].pp(0)<before.mons[1].pp(0),
+                               "Selected resident did not complete the battle");
+                requirePokemon(after.mons[5]==before.mons[5],"Rejected reserve was mutated");
+            }
+        } else if(scenario=="party-menu-cycle") {
             for(unsigned owner=0;owner<2;++owner) {
                 requirePokemon(menuPicks[owner]==5,"All own originals were not selected natively");
                 for(unsigned slot=0;slot<6;++slot) {
@@ -963,6 +1032,36 @@ int main(int argc,char** argv) {
                            "Native Pay Day announcement did not match the player's share");
         }
         if(scenario=="owners" || scenario=="leader2")requirePokemon(r0.mons[0].experience()-p0.mons[0].experience()==r1.mons[0].experience()-p1.mons[0].experience(),"Guest-owned Pokemon received a false traded experience bonus");
+        if(scenario.startsWith("pokerus")) {
+            for(unsigned owner=0;owner<2;++owner)for(unsigned slot=0;slot<6;++slot) {
+                const auto& before=(owner?p1:p0).mons[slot];const auto& after=(owner?r1:r0).mons[slot];
+                requirePokemon(after.pokerus()==before.pokerus(),"Pokerus status spread or changed across ownership");
+                requirePokemon(after.secure()[27]-before.secure()[27]==(before.pokerus()?4:2),"Native active/cured Pokerus EV bonus lost or transferred");
+                requirePokemon(after.experience()-before.experience()==(slot?6u:45u),"Pokerus changed native EXP split");
+            }
+        }
+        if(scenario.startsWith("shedinja")) {
+            for(unsigned owner=0;owner<2;++owner) {
+                const auto& result=owner?r1:r0;
+                const unsigned firstParent=scenario.contains("multiple")?2:4;
+                const unsigned parentCount=scenario.contains("multiple")?2:1;
+                requirePokemon(evolutionStarts[owner]==parentCount,"Native evolution scene count is incorrect");
+                for(unsigned n=0;n<parentCount;++n) {
+                    requirePokemon(result.mons[firstParent+n].species()==(scenario=="shedinja-cancel" && owner==0?301:302),
+                                   "Native Nincada evolution/cancel ownership failed");
+                    if(shedAddition(owner)) {
+                        const unsigned shell=(owner?p1:p0).count+n;
+                        requirePokemon(nativeShedinjaSiblings(result.mons[firstParent+n],result.mons[shell]) && result.mons[shell].hp()==1 &&
+                                       result.mons[shell].heldItem()==0 && result.mons[firstParent+n].heldItem()==ExpShareItem,
+                                       "Native Shedinja was not appended to its own party");
+                        requirePokemon(readDexEntry(owner?b:a,303).isCaught(),"Shedinja caught receipt missing from owner");
+                    }
+                }
+            }
+            if(scenario=="shedinja-cancel")requirePokemon(!readDexEntry(a,303).isCaught() && readDexEntry(a,303).isSeen(),
+                "Guest Shedinja leaked caught ownership to canceling leader");
+            requirePokemon(readInventory(a)==originalBag0 && readInventory(b)==originalBag1,"FireRed Shedinja consumed an item");
+        }
         (initiator?second:first).capture(out+"/committed.png");
         bool saveReload=false;
         std::array<unsigned,2> savedGenerations{};
@@ -1006,6 +1105,10 @@ int main(int argc,char** argv) {
         }
         QJsonObject report{{"rom_sha256",RomHash},{"checkpoint_sha256",QString::fromLatin1(stateHash)},{"scenario",scenario},{"two_real_mgba_cores",true},{"authored_test_parties",true},{"native_battle_completed",true},{"owned_inputs_both_players",true},{"party_ownership_preserved",true},{"pp_transferred_to_owners",!scenario.startsWith("capture") && scenario!="defeat"},{"experience_transferred_to_owners",!scenario.startsWith("capture") && scenario!="exhaust" && scenario!="defeat"},{"capture_and_bag_and_dex_ownership",scenario.startsWith("capture")},{"exhausted_owner_partner_continues",scenario=="exhaust"},{"blackout_uses_own_level_and_wallet",scenario=="defeat"},{"rollback_preserves_parties_and_wallets",true},{"wallet0",int(readWallet(a))},{"wallet1",int(readWallet(b))},{"frames",int(frames)},{"battery_files_written",false},{"production_launcher",false},{"complete_world_coop",false}};
         report["native_save_and_fresh_battery_reload_both_players"]=saveReload;
+        if(scenario.startsWith("pokerus"))report["all_twelve_owned_pokerus_status_and_native_active_cured_ev_bonus_verified"]=true;
+        if(scenario.startsWith("shedinja"))report["native_shedinja_additions_dex_and_owner_capacity_verified"]=true;
+        if(scenario=="party-menu-shedinja")report["native_switch_and_battle_with_same_identity_ninjask_shedinja_siblings"]=true;
+        if(scenario=="party-menu-protected")report["both_protected_selections_rejected_in_place_and_battle_completed"]=true;
         if(scenario.startsWith("exp-share")) {
             report["both_sixth_party_holders_received_native_exp_and_evs"]=!scenario.contains("many");
             report["four_same_owner_holders_received_native_exp_and_evs"]=scenario.contains("many");
@@ -1053,13 +1156,13 @@ int main(int argc,char** argv) {
         }
         if(scenario.startsWith("party-menu")) {
             report["native_full_six_own_party_menu_both_owners"]=true;
-            report["native_voluntary_import_of_living_sixth_original_both_owners"]=scenario!="party-menu-forced";
+            report["native_voluntary_import_of_living_sixth_original_both_owners"]=scenario!="party-menu-forced" && scenario!="party-menu-protected";
             report["native_forced_replacement_selects_sixth_original_both_owners"]=scenario=="party-menu-forced";
             report["native_cancel_then_reopen_both_owners"]=scenario=="party-menu-cancel"||scenario=="party-menu-summary";
             report["native_owned_summary_then_cancel_reopen_both_owners"]=scenario=="party-menu-summary";
             report["temporary_menu_rollback_preserves_original_parties"]=menuRollback;
             report["living_retired_bench_data_preserved"]=true;
-            report["selected_sixth_original_attacks_and_gains_exp_both_owners"]=true;
+            report["selected_sixth_original_attacks_and_gains_exp_both_owners"]=scenario!="party-menu-protected";
             report["reserve_switch_preserves_resident_exp_share_awards"]=scenario=="party-menu-exp-share";
         }
         if(scenario=="action-stats") {

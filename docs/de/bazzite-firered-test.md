@@ -2,7 +2,7 @@
 
 [English](../bazzite-firered-test.md) · **Deutsch** · [Dokumentation](README.md)
 
-Alpha 9 enthält den experimentellen Feuerrot-Worker. Für die normale Einrichtung
+Alpha 10 enthält den experimentellen Feuerrot-Worker. Für die normale Einrichtung
 [das Bazzite-Paket](one-file-installer.md) installieren, die eigene unveränderte
 deutsche Feuerrot-ROM wählen und **Einstellungen → Feuerrot-Koop (experimentell)**
 aktivieren. [Feuerrot-Anleitung und Grenzen](firered.md). Tatsächliche Bazzite-Spiel-

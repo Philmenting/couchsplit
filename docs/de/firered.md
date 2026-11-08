@@ -2,11 +2,11 @@
 
 [English](../firered.md) · **Deutsch** · [Dokumentation](README.md)
 
-Alpha 9 und der aktuelle Quellcode können GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
+Alpha 10 und der aktuelle Quellcode können GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
 
-## Feuerrot-Koop — Alpha 9
+## Feuerrot-Koop — Alpha 10
 
-Alpha 9 enthält einen **experimentellen Feuerrot-Paarworker**:
+Alpha 10 enthält einen **experimentellen Feuerrot-Paarworker**:
 zwei echte mGBA-Kerne mit getrennten Saves, eine Partneransicht auf derselben
 oder direkt verbundenen Außenkarte und gemeinsame native Kämpfe, in denen jeder Mensch seine eigenen Aktionen wählt.
 Der vollständige Welt-Koop ist weiterhin nicht abgeschlossen. Die älteren
@@ -14,7 +14,7 @@ Alpha-8-Pakete bleiben unverändert. Der Testmodus unterstützt ausschließlich 
 unveränderte deutsche Original-ROM; andere GBA-Spiele, Sprachen und Hacks erhalten
 dadurch keinen Koop.
 
-Alpha 9 installieren und den Modus unter **Einstellungen → Feuerrot-Koop
+Alpha 10 installieren und den Modus unter **Einstellungen → Feuerrot-Koop
 (experimentell)** einschalten. Für einen Quellcode-Build Launcher und beide
 Worker gemeinsam bauen; das Skript legt sie in `build/bin` ab:
 
@@ -200,8 +200,11 @@ ungeladene Reserve darf einen ungebundenen eigenen Bankplatz ersetzen, auch wenn
 dessen Pokémon noch lebt. Das Journal erhält Besitz, Fortschritt und Teilnahme.
 Kampfteam/Indizes/Reihenfolge werden vor dem nativen Wiederaufbau wiederhergestellt,
 auch bei Abbruch und Rücksetzung. Aktive Pokémon, vorgemerkte Wechsel und
-Wunschtraum-Ziele bleiben geschützt; vollständig gebundene Arbeitsplätze können
-eine Rücksetzung verlangen.
+Wunschtraum-Ziele bleiben geschützt. Alpha 10 weist eine vorerst gesperrte Auswahl
+vor dem Wechsel ab, zeigt einen deutschen Hinweis im Spiel und lässt die Person
+im Menü eine geladene Alternative wählen oder, soweit nativ erlaubt, abbrechen.
+Bei beschädigten Zuständen sowie vollständig gebundenen Zwangsersatz-/EP-Plätzen
+kann weiterhin eine vollständige Kampfrücksetzung nötig sein.
 
 Alpha 9 verteilt native EP/EV über alle zwölf ursprünglichen Teamplätze.
 Vorbereitete Zwei-Kern-Tests decken zwölf EP-Teiler-Träger, zwölf ausstehende
@@ -238,13 +241,22 @@ der Pokémon-Center sowie natives Speichern und frisches Weiter.
 durch Hauptspiel und Nachspiel, verbleibende Trainerturm-/e-Reader-Kartenoperationen,
 Partnerkollision/Geländeverdeckung, Spezialmodi, mehrstündige Sitzungen, echte
 Controller, hörbarer Ton und Pokémon-Spielabnahme unter Windows/Bazzite.
-Ninjatoms zusätzliches Teammitglied bei Entwicklung wird nicht unterstützt.
-Pokérus-Verbreitung nach Kämpfen arbeitet weiterhin mit dem gemischten nativen
-Team statt mit vollständigen getrennten Teams. Das Arbeitsteam lädt meist bis
+Nincadas native Entwicklung ergänzt Ninjatom jetzt nur im freien Teamplatz des
+Besitzers, mit dessen Pokédex-Eintrag. Bei vollem Team oder abgebrochener Entwicklung
+entsteht keines. Ninjask und Ninjatom behalten ihre originale gemeinsame PID-/OT-
+Kennung und bleiben in Folgekämpfen und Wechselmenüs getrennt zugeordnet.
+
+Korrektur zur früheren Alpha-9-Einschränkung: Zufällige Pokérus-Ansteckung,
+Verbreitung und Tagesablauf sind im originalen Feuerrot **deaktiviert**. Der Worker
+erhält den aktiven/abgeklungenen Status jedes Pokémon. Der originale Spielcode
+berechnet dessen EV-Bonus auch bei ausgelagerten EP-Teiler-Trägern. Die Mechanik
+aus Rubin/Saphir/Smaragd wird nicht hinzugefügt. Siehe den festgelegten
+[Originalcode](https://github.com/pret/pokefirered/blob/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/src/pokemon.c#L5607)
+und die [Alpha-10-Prüfungen](../verification/firered-alpha10-2026-11-08.json). Das Arbeitsteam lädt meist bis
 zu drei einsatzfähige Pokémon je Person; das Journal ist keine unbegrenzte
 Virtualisierung aller nativen Kampfmechaniken. Geschützte Referenzen können
-Rücksetzung verlangen. Identische PID-/OT-Identitäten beider Profile werden
-abgewiesen. Der Modus bleibt experimentell.
+Rücksetzung verlangen. Mehrdeutige Duplikate beider Profile bleiben abgewiesen; nur das native
+Ninjask-/Ninjatom-Geschwisterpaar bildet eine gezielte Ausnahme. Der Modus bleibt experimentell.
 
 ROM-abhängige Werkzeuge sind von normalem Build, Installation und CTest ausgeschlossen.
 ROM, Saves und rohe Zustände werden nicht verteilt. Benötigt werden die eigene
@@ -383,7 +395,7 @@ Im Spiel speichern und das Ende der Speicheranzeige abwarten. Start + Select fü
 
 Der Launcher wählt den mitgelieferten `gba-worker` automatisch. Das vorhandene DS-Emulatorfeld und die BIOS-Einstellungen bleiben unverändert und betreffen GBA nicht. mGBA nutzt seine Software-BIOS-Implementierung; ein externes GBA-BIOS ist nicht erforderlich. Select + R wird als normale GBA-Eingabe weitergegeben, weil GBA keinen zweiten Bildschirm hat. Controller-Zuordnung, Trennungsverhalten und Beenden-Tastenkombination bleiben erhalten.
 
-Build: `scripts/build.sh`; mGBA 0.10.5 ist in `config/mgba.lock.json` festgelegt. Quellpakete enthalten die festgelegte mGBA-Quelle und MPL-2.0-Lizenzen unter `gba-corresponding-source` sowie die nachvollziehbare Erweiterung `patches/mgba-xrom.patch`. CMake wendet diese auf eine separate Buildkopie an; die festgelegte Originalquelle bleibt unverändert. Offline ist `-DCOUCHSPLIT_MGBA_SOURCE=/pfad/zu/gba-corresponding-source` möglich. IPC-ABI bleibt 2. Alpha 9 enthält diese GBA-Erweiterung. Native Paketprüfungen sind von tatsächlicher Pokémon-Spielabnahme unter Windows/Bazzite zu unterscheiden; Letztere bleibt offen.
+Build: `scripts/build.sh`; mGBA 0.10.5 ist in `config/mgba.lock.json` festgelegt. Quellpakete enthalten die festgelegte mGBA-Quelle und MPL-2.0-Lizenzen unter `gba-corresponding-source` sowie die nachvollziehbare Erweiterung `patches/mgba-xrom.patch`. CMake wendet diese auf eine separate Buildkopie an; die festgelegte Originalquelle bleibt unverändert. Offline ist `-DCOUCHSPLIT_MGBA_SOURCE=/pfad/zu/gba-corresponding-source` möglich. IPC-ABI bleibt 2. Alpha 10 enthält diese GBA-Erweiterung. Native Paketprüfungen sind von tatsächlicher Pokémon-Spielabnahme unter Windows/Bazzite zu unterscheiden; Letztere bleibt offen.
 
 Produktions-Worker ohne kommerzielle Spielinhalte prüfen:
 

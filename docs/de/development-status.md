@@ -2,7 +2,26 @@
 
 [English](../development-status.md) · **Deutsch** · [Anleitungen](README.md)
 
-Aktualisiert am 8. November 2026. **[CouchSplit 0.2.0 Alpha 9](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.9)** enthält Project PM / Pokémon Platin, getrennten GBA-Splitscreen und den aktivierbaren deutschen Feuerrot-Testmodus. Ältere Ergebnisse gelten für die jeweils genannte Version und Umgebung, nicht als vollständige Kampagnen- oder Hardwarefreigabe.
+Aktualisiert am 8. November 2026. **[CouchSplit 0.2.0 Alpha 10](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)** enthält Project PM / Pokémon Platin, getrennten GBA-Splitscreen und den aktivierbaren deutschen Feuerrot-Testmodus. Ältere Ergebnisse gelten für die jeweils genannte Version und Umgebung, nicht als vollständige Kampagnen- oder Hardwarefreigabe.
+
+## Alpha 10 — Wechselmenü und besondere Besitzfälle
+
+Eine gesperrte Reserveauswahl bleibt mit Erklärung im Spielmenü; ein geladenes
+Teammitglied kann stattdessen gewählt werden. Nincadas native Entwicklung ergänzt
+Ninjatom im eigenen freien Teamplatz, mit korrektem Abbruch und Pokédex-Eintrag.
+Die gemeinsame originale Kennung von Ninjask/Ninjatom wird sauber unterschieden,
+ohne ROM, PID oder Trainerdaten zu verändern. Das originale Feuerrot hat keine
+zufällige Pokérus-Ansteckung/Verbreitung; eigener Status und nativer EV-Bonus
+bleiben auch bei zwölf Teammitgliedern erhalten.
+
+[Alpha-10-Prüfbericht](../verification/firered-alpha10-2026-11-08.json): gezielte
+**19 Original-ROM-Szenarien, 23 native Prüfgruppen und alle 64 Python-Tests ohne
+Überspringen**, ergänzt um Sitzungs- und Wiederaufnahmeprüfungen im Launcher. Der Alpha-9-Dauertest unten bleibt
+historischer Nachweis und wurde nicht als Alpha 10 wiederholt. Der Praxistest des
+Nutzers unter Bazzite mit zwei echten Controllern steht aus. Vollständig gebundene
+Zwangsersatz-/EP-Plätze können weiter eine Rücksetzung erfordern; die übrigen
+Experiment-/Kampagnengrenzen gelten weiterhin.
+[Release-Hinweise](../releases/v0.2.0-alpha.10.md).
 
 ## Alpha 9 — eigene EP, Kartenaktualisierung und Dauertest
 
@@ -36,8 +55,9 @@ Starke Teams und Ausgangspositionen sind
 vorbereitet; dies belegt keinen natürlich durchgespielten Kampagnendurchlauf.
 
 Feuerrot bleibt experimentell. Enigmabeeren verwenden die bestätigte Fortsetzung
-mit Einzelkämpfen; Ninjatom-Teamergänzungen und eigene Pokérus-Verbreitung bleiben
-unvollständig. Partnerkollision/Geländeverdeckung, Spezialmodi, mehrstündiges Spielen,
+mit Einzelkämpfen. Ninjatom-Teamergänzungen ergänzt Alpha 10. Die frühere
+Pokérus-Verbreitungsgrenze war falsch: Feuerrot deaktiviert diese Routinen.
+Partnerkollision/Geländeverdeckung, Spezialmodi, mehrstündiges Spielen,
 echte Controller, hörbarer Ton und tatsächliches Pokémon-Spiel unter Windows/Bazzite
 bleiben offen. Native Plattform-CI prüft Builds, Tests und Installation getrennt.
 [Release-Hinweise](../releases/v0.2.0-alpha.9.md) · [Einrichtung und Wiederholung](firered.md).

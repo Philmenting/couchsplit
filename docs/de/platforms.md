@@ -58,6 +58,14 @@ Unter **Einstellungen → Sprache / Settings → Language** lässt sich die Ober
 Das Projekt heißt jetzt CouchSplit. Die neuen Downloads verwenden `CouchSplit-…`; ältere Release-Dateien behalten ihre bisherigen Namen. Bestehende Installationen lassen sich darüber aktualisieren. Zur Kompatibilität bleiben die bisherigen technischen Kennungen (`platinum-coop`, `pokemon-platinum-local-coop`, Windows-AppId/Installationsordner und Bazzite-Laufzeit) erhalten. Vorhandene Einstellungen, ROMs und Spielstände werden weiter am bisherigen Ort verwendet; keine automatische Migration oder Zusammenführung. Die sichtbaren Launcher- und Startmenünamen sind CouchSplit. Bestehende Steam-Verknüpfungen können noch den alten Namen zeigen; ihre Konfiguration wird nicht direkt bearbeitet.
 
 
+## Alpha 10
+
+Alpha 10 enthält die GBA-Erweiterung aus Alpha 9 und verbessert geschützte
+Teamwechsel sowie Ninjatom-Besitz. Pokérus-Status und nativer EV-Bonus wurden mit
+der Original-ROM geprüft. [Release-Hinweise](../releases/v0.2.0-alpha.10.md) und
+[Prüfumfang](../verification/firered-alpha10-2026-11-08.json). Der Bazzite-Praxistest
+mit zwei echten Controllern steht weiterhin aus.
+
 ## GBA und experimenteller Feuerrot-Koop — Alpha 9
 
 Alpha 9 ergänzt den mitgelieferten mGBA-Worker, getrennten GBA-Splitscreen und

@@ -56,7 +56,7 @@ inline bool wouldAbandonLivingReserve(const BattleParty& transaction,const Party
         const auto& mon=journal[owner].mons[original];
         anyAlive |= mon.viable();
         for(unsigned slot=0;slot<current.count;++slot)
-            loadedAlive |= current.mons[slot].identity()==mon.identity() && current.mons[slot].viable();
+            loadedAlive |= sameOwnedMon(current.mons[slot],mon) && current.mons[slot].viable();
     }
     return anyAlive && !loadedAlive;
 }
@@ -69,7 +69,7 @@ inline std::optional<BenchRefill> planBenchRefill(const BattleParty& transaction
     if (!replacement) return std::nullopt;
     unsigned changed = 0, destination = 0;
     for (unsigned slot = 0; slot < current.count; ++slot)
-        if (current.mons[slot].identity() != replacement->mons[slot].identity()) { ++changed; destination = slot; }
+        if (!sameOwnedMon(current.mons[slot],replacement->mons[slot])) { ++changed; destination = slot; }
     requirePokemon(changed == 1 && current.mons[destination].hp() == 0,
                    "FireRed refill must replace exactly one fainted bench Pokemon");
     requirePokemon(std::find(excluded.begin(), excluded.end(), destination) == excluded.end(),
@@ -124,7 +124,7 @@ inline void applyBenchRefill(mCore* core, const BenchRefill& plan) {
                    "Invalid FireRed native bench refill plan");
     restoreParties(plan.transaction, plan.party);
     requirePokemon(plan.before.mons[plan.retiredNativeSlot].hp() == 0 &&
-                   plan.before.mons[plan.retiredNativeSlot].identity() != plan.party.mons[plan.retiredNativeSlot].identity(),
+                   !sameOwnedMon(plan.before.mons[plan.retiredNativeSlot],plan.party.mons[plan.retiredNativeSlot]),
                    "FireRed native refill did not retire a fainted Pokemon");
     for (unsigned slot = 0; slot < plan.before.count; ++slot)
         requirePokemon(slot == plan.retiredNativeSlot || plan.before.mons[slot] == plan.party.mons[slot],

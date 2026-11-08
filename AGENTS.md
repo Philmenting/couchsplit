@@ -1,5 +1,19 @@
 # Project: CouchSplit
 
+## Alpha 10 native ownership corrections (8 November 2026)
+Protected switch selections must be rejected at the exact native pre-mutation
+boundary; retain the menu and its existing native FALSE dialog/return path.
+Do not turn a denied selection into a full battle rollback. Forced refill/EXP
+working-set exhaustion still fails closed. Native Nincada evolution can append
+Shedinja only in an own free slot; validate its native parent and copied progress,
+reset fields, capacity and owned Dex receipt. Preserve authentic PID/OT bytes.
+Ninjask/Shedinja siblings need a shell discriminator; all other duplicate PID/OT
+collisions remain rejected. FireRed random Pokerus infection, spreading and day
+countdown are stubbed, contrary to the Alpha 9 limitation below. Preserve each
+owned status and execute native active/cured EV doubling. Never invent RSE spread.
+Keep ROM-dependent fixtures private; run heavy local checks sequentially under
+the user-requested CPU quota. Real Bazzite/controller acceptance remains open.
+
 ## Alpha 9 native ownership and sustained verification (8 November 2026)
 Alpha 9 packages the existing GBA worker and opt-in German FireRed experiment.
 Original ROM bytes stay unchanged. BattleExperience journals participation,
@@ -179,7 +193,7 @@ User-selected `de`/`en` is independent of ROM/firmware language. Keep both in th
 
 
 ## CouchSplit identity
-The visible project is CouchSplit and the repository is Philmenting/couchsplit. Alpha 9 supports Project PM / Pokemon Platinum, independent GBA sessions and an explicitly opt-in German FireRed co-op experiment. Alpha 8 remains the older Platinum-only release. Do not infer complete shared-world support for other games from the broader name. Retain the legacy executable/app/organization/profile/desktop/installer/runtime IDs for compatible upgrades. New distribution filenames use CouchSplit. Native CI must upgrade the exact published Alpha 7 Windows/Debian packages and preserve owned test profile/save bytes; Windows replaces only known old application shortcuts. Keep historical release assets immutable.
+The visible project is CouchSplit and the repository is Philmenting/couchsplit. Alpha 10 supports Project PM / Pokemon Platinum, independent GBA sessions and an explicitly opt-in German FireRed co-op experiment. Alpha 8 remains the older Platinum-only release. Do not infer complete shared-world support for other games from the broader name. Retain the legacy executable/app/organization/profile/desktop/installer/runtime IDs for compatible upgrades. New distribution filenames use CouchSplit. Native CI must upgrade the exact published Alpha 7 Windows/Debian packages and preserve owned test profile/save bytes; Windows replaces only known old application shortcuts. Keep historical release assets immutable.
 
 ## Documentation languages
 English is the default for public documentation at the existing `docs/*.md` URLs. Keep German counterparts under `docs/de/` and reciprocal language links on every guide. English README sections and English guides must lead to English local documentation; the German README summary uses German guide links. Keep commands, fingerprints, technical requirements, dated evidence and limitations consistent across languages. Historical reports must not be presented as current certification. Released assets remain immutable; documentation-only updates do not require a binary release.

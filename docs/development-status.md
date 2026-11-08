@@ -2,7 +2,24 @@
 
 **English** · [Deutsch](de/development-status.md) · [Documentation](README.md)
 
-Updated 8 November 2026. **[CouchSplit 0.2.0 Alpha 9](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.9)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
+Updated 8 November 2026. **[CouchSplit 0.2.0 Alpha 10](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
+
+## Alpha 10 — switch rejection and native ownership edge cases
+
+Unavailable reserve selections stay in the native menu with an explanation;
+the owner can choose a resident alternative. Native Nincada evolution can append
+Shedinja to its own party, with correct capacity, cancel and Pokédex handling.
+Authentic Ninjask/Shedinja shared identities remain distinct without changing ROM,
+PID or trainer bytes. Original FireRed has no random Pokérus infection/spreading;
+active/cured status and native EV doubling remain owned across all twelve slots.
+
+[Alpha 10 verification](verification/firered-alpha10-2026-11-08.json) records the
+**19 focused original-ROM scenarios, 23 native component suites and all 64 Python
+tests without skips**, plus production session/recovery checks. Alpha 9's sustained run below
+is historical evidence, not a new Alpha 10 run. The user's Bazzite/two-controller
+practical test remains pending. Fully pinned forced refills/EXP paging can still
+roll back, and the experimental/campaign limitations below remain.
+[Release notes](releases/v0.2.0-alpha.10.md).
 
 ## Alpha 9 — owned EXP, map refresh and sustained acceptance
 
@@ -34,8 +51,9 @@ the session plus one after fresh Continue. Strong parties and starting positions
 no continuous natural campaign is claimed.
 
 FireRed remains experimental. Held Enigma Berries use explicit individual-battle
-recovery; Shedinja party additions and per-owner Pokérus spreading remain
-unsupported. Partner collision/occlusion, special modes, multi-hour play, physical
+recovery. Shedinja additions were not supported in Alpha 9; Alpha 10 adds them.
+The earlier Pokérus-spreading limitation was incorrect: FireRed stubs those routines.
+Partner collision/occlusion, special modes, multi-hour play, physical
 controllers, audible output and actual Windows/Bazzite Pokémon gameplay remain
 unverified. Native platform CI verifies builds, tests and installation separately.
 [Release notes](releases/v0.2.0-alpha.9.md) · [Setup and reproduction](firered.md).

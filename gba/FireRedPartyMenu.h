@@ -56,7 +56,7 @@ inline PartyMenuSession planPartyMenu(const BattleParty& transaction,const Party
     // Ownership remains the original PID+OT association, never slot parity.
     for (unsigned slot=0;slot<current.count;++slot) {
         unsigned old=0;
-        while (old<transaction.combined.count && current.mons[slot].identity()!=transaction.combined.mons[old].identity()) ++old;
+        while (old<transaction.combined.count && !sameOwnedMon(current.mons[slot],transaction.combined.mons[old])) ++old;
         requirePokemon(old<transaction.combined.count,"Foreign Pokemon in FireRed party-menu working set");
         result.transaction.owners[slot]=transaction.owners[old];
         result.transaction.originalSlots[slot]=transaction.originalSlots[old];
@@ -94,7 +94,7 @@ inline void validatePartyMenuSnapshot(const PartyMenuSession& session,const Part
     requirePokemon(menuAfter.count==session.menu.count,"FireRed switch menu changed the own party size");
     for (unsigned slot=0;slot<menuAfter.count;++slot) {
         unsigned original=0;
-        while(original<session.menu.count && menuAfter.mons[slot].identity()!=session.menu.mons[original].identity())++original;
+        while(original<session.menu.count && !sameOwnedMon(menuAfter.mons[slot],session.menu.mons[original]))++original;
         requirePokemon(original<session.menu.count && menuAfter.mons[slot]==session.menu.mons[original],
                        "FireRed switch menu modified or substituted an owned Pokemon");
     }
@@ -152,7 +152,7 @@ inline PartyMenuSelection planPartyMenuSelection(const PartyMenuSession& session
             destination=slot;break;
         }
     if(destination==6) {
-        result.reason="The native battle reserves every working slot for this trainer, including pending experience";
+        result.reason="The native battle reserves every working slot for this trainer, including active, queued or Wish references";
         return result;
     }
     result.transaction.originalSlots[destination]=int(selectedOriginal);

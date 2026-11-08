@@ -148,7 +148,7 @@ void transactions() {
     check(transaction.owners[2] == 0 && transaction.owners[3] == 0, "Unequal ownership must not assume parity");
     auto result = transaction.combined;
     result.mons[0].setHp(12); result.mons[1].setStatus(8); result.mons[2].setPp(0, 5);
-    auto growth = result.mons[3].secure(); monPut32(growth.data() + 4, 1800); growth[24] = 5; growth[36] = 0x21; growth[44] = 0x80;
+    auto growth = result.mons[3].secure(); monPut32(growth.data() + 4, 1800); growth[24] = 5; growth[44] = 0x80;
     result.mons[3].setSecure(growth);
     std::swap(result.mons[0], result.mons[3]);
     const auto restored = restoreParties(transaction, result);
@@ -164,6 +164,8 @@ void transactions() {
     rejects([&] { restoreParties(transaction, invalid); }, "Corrupt result accepted");
     invalid = result; auto modified = invalid.mons[0].secure(); modified[40] ^= 1; invalid.mons[0].setSecure(modified);
     rejects([&] { restoreParties(transaction, invalid); }, "Changed IV identity accepted");
+    invalid = result; auto infection=invalid.mons[0].secure();infection[36]=0x21;invalid.mons[0].setSecure(infection);
+    rejects([&] { restoreParties(transaction,invalid); }, "FireRed unexpectedly changed owned Pokerus");
     invalid = result; auto lower = invalid.mons[0].secure(); monPut32(lower.data() + 4, 500); invalid.mons[0].setSecure(lower);
     rejects([&] { restoreParties(transaction, invalid); }, "Experience decrease accepted");
     invalid = result; invalid.mons[4] = mon(720); invalid.count = 5;

@@ -123,6 +123,24 @@ class TeamBattle {
         c->busWrite8(c,NativePartyMenuExitChosenAddress,0);
         if(event)event("own party menu opened",int(battler/2));
     }
+    bool allowOwnPartyMenuSelection(unsigned original) {
+        if(!ownPartyMenu)return true; // Ordinary native item/field menus.
+        auto* c=cores[leader];const auto& view=*ownPartyMenu;
+        const auto picked=planPartyMenuSelection(view.session,readParty(c),original,true);
+        if(picked.accepted)return true;
+        // Leave every party, selection flag and native reference untouched.
+        // The native FALSE path shows this text and returns to the same menu,
+        // for voluntary and forced switches alike. Game language stays German.
+        constexpr char message[]="Platz vorerst reserviert.\nAnderes Teammitglied waehlen.";
+        uint32_t address=0x02021D18; // gStringVar4, native rejection dialog buffer.
+        for(const char ch:message) {
+            const uint8_t encoded=ch==0?0xFF:ch=='\n'?0xFE:ch==' '?0:ch=='.'?0xAD:
+                ch>='A'&&ch<='Z'?uint8_t(0xBB+ch-'A'):uint8_t(0xD5+ch-'a');
+            c->busWrite8(c,address++,encoded);
+        }
+        if(event)event("own reserve selection deferred",int(view.session.owner));
+        return false;
+    }
     void finishOwnPartyMenu() {
         if(!ownPartyMenu)return; // Bag/item menus also use the native reshow callback.
         auto* c=cores[leader];const auto view=*ownPartyMenu;
@@ -131,7 +149,8 @@ class TeamBattle {
         const unsigned original=chosen?c->busRead8(c,NativePartyMenuSelectedAddress):6u;
         const auto picked=planPartyMenuSelection(view.session,readParty(c),original,true);
         // Restore physical battle ownership BEFORE the native reshow callback,
-        // including when a protected reference forces a full battle rollback.
+        // A rejected selection stays in the menu before native order mutation;
+        // a mismatch here is corruption, not a recoverable player selection.
         writeParty(c,picked.party);
         c->busWrite32(c,BattleFlagsAddress,view.flags);
         for(unsigned owner=0;owner<2;++owner)
@@ -187,9 +206,11 @@ class TeamBattle {
         requirePokemon(slot < transaction.combined.count, "Invalid FireRed battle party selection");
         auto* c = cores[leader];
         const auto address = PlayerPartyAddress + slot * PartyMonSize;
-        const MonIdentity identity{inventoryRead32(c, address), inventoryRead32(c, address + 4)};
+        PartyMon selected;
+        for(unsigned byte=0;byte<PartyMonSize;++byte)selected.bytes[byte]=uint8_t(c->busRead8(c,address+byte));
+        selected.validate();
         for (unsigned original = 0; original < transaction.combined.count; ++original)
-            if (transaction.combined.mons[original].identity() == identity) return transaction.owners[original];
+            if (sameOwnedMon(transaction.combined.mons[original],selected)) return transaction.owners[original];
         throw std::runtime_error("Foreign FireRed Pokemon appeared in the combined party");
     }
     void refillOwnerBench(unsigned owner, unsigned excludedOne = 6, unsigned excludedTwo = 6) {
@@ -324,10 +345,11 @@ class TeamBattle {
             // Evolution executes on the leader's native engine. Its personal
             // dex writes were reset above; grant ownership to the actual holder.
             for (unsigned owner = 0; owner < 2; ++owner)
-                for (unsigned slot = 0; slot < initialParties[owner].count; ++slot) {
-                    const auto& before = initialParties[owner].mons[slot];
+                for (unsigned slot = 0; slot < results[owner].count; ++slot) {
                     const auto& after = results[owner].mons[slot];
-                    if (before.species() == after.species()) continue;
+                    if (slot<initialParties[owner].count && initialParties[owner].mons[slot].species()==after.species())continue;
+                    // A captured addition has its separate caught/seen rules.
+                    if(captured && int(owner)==catcher && slot==initialParties[owner].count)continue;
                     if (player == owner) markCaught(cores[player], after.species(), after.identity().personality);
                     else markSeen(cores[player], after.species(), after.identity().personality);
                 }
@@ -656,7 +678,7 @@ public:
                    auto* c=cores[unsigned(ownerOfSlot(slot))];const auto memory=readSaveMemory(c);
                    const auto progress=readProgress(c);
                    return c->busRead8(c,memory.block2+0x1B)==0xB9 && progress.var(0x404E)==0x6258 && progress.flag(0x840);
-               });
+               }, [this](unsigned selected){return allowOwnPartyMenuSelection(selected);});
         } catch (...) { rollback(); throw; }
         if (event) event("team battle joined", int(initiator));
         return true;

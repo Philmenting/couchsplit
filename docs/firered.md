@@ -2,18 +2,18 @@
 
 **English** · [Deutsch](de/firered.md) · [Documentation](README.md)
 
-Alpha 9 and the current source can run GBA games and ROM hacks in the existing CouchSplit interface. Select a `.gba` file or ZIP containing exactly one game. The launcher checks the GBA fixed header byte, header checksum and a size between 512 bytes and 32 MiB for standard cartridges. Explicitly marked CouchSplit XROM v1 files can be up to 512 MiB. A valid header identifies the file format; it does not certify that every game or hack works. Oversized and malformed files are rejected. Existing Project PM / Platinum support and the DS worker are retained; other DS games are not enabled by this change.
+Alpha 10 and the current source can run GBA games and ROM hacks in the existing CouchSplit interface. Select a `.gba` file or ZIP containing exactly one game. The launcher checks the GBA fixed header byte, header checksum and a size between 512 bytes and 32 MiB for standard cartridges. Explicitly marked CouchSplit XROM v1 files can be up to 512 MiB. A valid header identifies the file format; it does not certify that every game or hack works. Oversized and malformed files are rejected. Existing Project PM / Platinum support and the DS worker are retained; other DS games are not enabled by this change.
 
-## FireRed co-op — Alpha 9
+## FireRed co-op — Alpha 10
 
-Alpha 9 includes an **experimental paired FireRed worker**: two real
+Alpha 10 includes an **experimental paired FireRed worker**: two real
 mGBA cores with separate saves, a partner overlay on the same or directly connected outdoor maps, and shared native
 battles with each human choosing their own actions. This remains an unfinished
 implementation of the requested shared-world co-op. Older Alpha 8 assets are unchanged.
 It is restricted to the exact unmodified German original; generic GBA games,
 other languages and ROM hacks do not acquire co-op through this option.
 
-Install Alpha 9, then explicitly opt in through **Settings → FireRed co-op (experimental)**. For a source build, build the launcher and both workers together; the
+Install Alpha 10, then explicitly opt in through **Settings → FireRed co-op (experimental)**. For a source build, build the launcher and both workers together; the
 script places matching executables in `build/bin`:
 
 ```sh
@@ -188,7 +188,10 @@ may replace an unreferenced own bench slot, including a living one. A journal
 retains its owned progress and participation. Physical party/index/order data
 are restored before native battle reshow, including cancel and rollback paths.
 Active Pokémon, queued switches and Wish targets still protect physical slots;
-a fully pinned working set can require rollback.
+Alpha 10 rejects an unavailable reserve before changing party order, shows a
+German in-game explanation and lets the owner pick a resident alternative or
+cancel when the native request permits cancellation. Unexpected corruption still
+fails closed; fully pinned forced refills or EXP paging can still require rollback.
 
 Alpha 9 distributes native EXP/EV awards across all twelve original party slots.
 Prepared two-core tests cover twelve EXP Share holders, twelve pending evolutions,
@@ -222,12 +225,22 @@ nineteen Pokémon Center upper floors, native SAVE and fresh Continue.
 through campaign and postgame, remaining Trainer Tower/e-Reader setup operations,
 partner collision/terrain occlusion, special battle modes, multi-hour sessions,
 physical controllers, audible output and native Windows/Bazzite gameplay.
-Shedinja's extra-party-member evolution is not supported; Pokérus post-battle
-spreading still uses the physical mixed party rather than complete separate
-rosters. The working party usually contains up to three viable Pokémon per
+Native Nincada evolution now appends Shedinja only to its owner's free party
+slot, with owned Pokédex receipts; a full party or canceled evolution does not
+create one. Ninjask/Shedinja siblings keep their authentic shared PID/OT and are
+distinguished in subsequent battles and menu paging. Other ambiguous duplicates
+remain rejected.
+
+Correction to the Alpha 9 limitation: original FireRed's random Pokérus infection,
+spreading and day-countdown functions are **stubs**, not mixed-party operations.
+The worker preserves each Pokémon's existing active/cured status; the original
+engine applies its EV bonus, including unloaded EXP Share recipients. It does
+not add Ruby/Sapphire/Emerald infection mechanics. See the pinned
+[original source](https://github.com/pret/pokefirered/blob/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/src/pokemon.c#L5607)
+and the [Alpha 10 checks](verification/firered-alpha10-2026-11-08.json). The working party usually contains up to three viable Pokémon per
 player; the journal is not unlimited native battle virtualization. Protected
-references can require rollback. Identical PID/OT identities across profiles
-are rejected. The mode remains experimental.
+references can require rollback. Ambiguous duplicate identities across profiles are rejected, with the narrow
+native Ninjask/Shedinja sibling exception. The mode remains experimental.
 
 ROM-dependent acceptance tools are excluded from normal builds, installation and
 CTest. No ROM, save or raw checkpoint is distributed. Supply your own exact ROM,
@@ -363,7 +376,7 @@ Save through the game's own menu and wait until its save indicator finishes. Sta
 
 The launcher chooses the bundled `gba-worker` automatically. The existing DS emulator and BIOS settings remain unchanged and do not affect GBA games. No external GBA BIOS is needed; mGBA uses its software implementation. Select + R is ordinary GBA input, because there is no second GBA screen to toggle. Native controller assignment/disconnect behaviour and the exit chord are retained.
 
-Build with `scripts/build.sh`; mGBA 0.10.5 is pinned in `config/mgba.lock.json`. Source packages include pinned mGBA source and MPL-2.0 licenses under `gba-corresponding-source`, plus the reproducible XROM overlay in `patches/mgba-xrom.patch`. CMake applies the overlay to a separate owned build copy; the pinned checkout stays pristine. An offline build can set `-DCOUCHSPLIT_MGBA_SOURCE=/path/to/gba-corresponding-source`. The IPC ABI remains 2. Alpha 9 packages include this GBA extension. Native package tests and real Pokémon gameplay on Windows/Bazzite are separate checks; the latter remain unverified.
+Build with `scripts/build.sh`; mGBA 0.10.5 is pinned in `config/mgba.lock.json`. Source packages include pinned mGBA source and MPL-2.0 licenses under `gba-corresponding-source`, plus the reproducible XROM overlay in `patches/mgba-xrom.patch`. CMake applies the overlay to a separate owned build copy; the pinned checkout stays pristine. An offline build can set `-DCOUCHSPLIT_MGBA_SOURCE=/path/to/gba-corresponding-source`. The IPC ABI remains 2. Alpha 10 packages include this GBA extension. Native package tests and real Pokémon gameplay on Windows/Bazzite are separate checks; the latter remain unverified.
 
 Production-worker acceptance without commercial game assets:
 

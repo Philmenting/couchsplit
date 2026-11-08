@@ -38,8 +38,9 @@ FULL = {
              'capture-denied', 'capture-both', 'capture-both-leader2',
              'capture-sequential', 'capture-unown', 'capture-spinda',
              'party-menu-single', 'party-menu-forced', 'party-menu-cancel',
-             'party-menu-summary', 'party-menu-exp-share', 'party-menu-cycle', 'party-menu-rollback', 'bench', 'exhaust',
-             'defeat', 'evolution', 'exp-share', 'exp-share-leader2',
+             'party-menu-summary', 'party-menu-protected', 'party-menu-shedinja', 'party-menu-exp-share', 'party-menu-cycle', 'party-menu-rollback', 'bench', 'exhaust',
+             'defeat', 'evolution', 'shedinja', 'shedinja-leader2', 'shedinja-full', 'shedinja-cancel', 'shedinja-multiple',
+             'pokerus', 'pokerus-leader2', 'exp-share', 'exp-share-leader2',
              'exp-share-trainer', 'exp-share-trainer-leader2',
              'exp-share-evolution', 'exp-share-evolution-leader2',
              'exp-share-learn', 'exp-share-learn-leader2', 'exp-share-many',
@@ -165,7 +166,8 @@ def main():
                   'scenarios_use_authored_prerequisites': True,
                   'known_limitations': ['Active, queued and Wish references still constrain the physical working party.',
                                         'A held Enigma Berry requires explicit individual-battle recovery.',
-                                        'Shedinja party addition and per-owner Pokerus spreading are not supported.']}
+                                        'Fully pinned forced refills/EXP paging can still require whole-transaction rollback.',
+                                        'Original FireRed has no random Pokerus infection, spreading or day countdown.']}
         if args.report:
             try:
                 with args.report.open('x', encoding='utf-8') as file:

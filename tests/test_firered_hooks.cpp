@@ -34,7 +34,8 @@ struct Fixture {
         core.rawRead16=rawRead16;core.rawWrite16=rawWrite16;
         cpu.executionMode=MODE_THUMB;cpu.cpsr.t=1;cpu.irqh.bkpt16=previousBreakpoint;
         put(0x02022B4C,5);
-        const std::array<std::pair<uint32_t,std::array<uint16_t,4>>,33> prologues{{
+        const std::array<std::pair<uint32_t,std::array<uint16_t,4>>,34> prologues{{
+            {BattleHooks::PartyMenuSelectionAddress,{{0x490E,0x7008,0x490E,0x2001}}},
             {BattleHooks::EvolutionDexAddress,{{0xB500,0x480A,0x6800,0x7EC0}}},
             {BattleHooks::ExperienceCommandAddress,{{0xB5F0,0x464F,0x4646,0xB4C0}}},
             {BattleHooks::EvolutionGateAddress,{{0x4806,0x7800,0x2800,0xD003}}},
@@ -84,6 +85,16 @@ struct Fixture {
 int main() {
     try {
         auto empty=[](unsigned,unsigned,unsigned){return true;};
+        { Fixture f;unsigned calls=0;bool allow=false;
+          BattleHooks hook(&f.core,empty,{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+            [&](unsigned slot){check(slot==5,"selection guard lost own original index");++calls;return allow;});
+          f.put(0x02022B4C,0); // Own-party menus temporarily use single layout.
+          f.cpu.gprs[0]=5;f.cpu.gprs[ARM_SP]=0x03007F00;
+          f.invoke(BattleHooks::PartyMenuSelectionAddress,0xD9);
+          check(calls==1&&f.cpu.prefetch[0]==0xE048&&f.cpu.gprs[ARM_SP]==0x03007F00,"rejection did not use existing native epilogue");
+          allow=true;f.invoke(BattleHooks::PartyMenuSelectionAddress,0xD9);
+          check(calls==2&&f.cpu.prefetch[0]==0x490E,"accepted selection did not execute original store path");
+          hook.check();hook.detach();check(Fixture::read16(&f.core,BattleHooks::PartyMenuSelectionAddress)==0x490E,"selection instruction not restored"); }
         { Fixture f;unsigned calls=0;
           BattleHooks hook(&f.core,empty,{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
             [&](unsigned slot)->std::optional<bool>{check(slot==5,"evolution dex checked a wrong party slot");++calls;return true;});

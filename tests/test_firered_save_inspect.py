@@ -10,10 +10,10 @@ save = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(save)
 
 
-def authored_battery(generation=7):
+def authored_battery(generation=7, species=(25,)):
     block2, block1, storage = bytearray(0xF24), bytearray(0x3D68), bytearray(0x83D0)
     block1[4:6] = bytes((3, 19))
-    block1[0x34] = 1
+    block1[0x34] = len(species)
     struct.pack_into('<I', block1, 0x290, 1234)
     record, secure = bytearray(100), bytearray(48)
     struct.pack_into('<II', record, 0, 24, 123)
@@ -24,7 +24,12 @@ def authored_battery(generation=7):
     struct.pack_into('<H', record, 28, sum(struct.unpack('<24H', secure)) & 0xFFFF)
     for i in range(12):
         struct.pack_into('<I', record, 32 + 4 * i, save.u32(secure, i * 4) ^ 24 ^ 123)
-    block1[0x38:0x9C] = record
+    for slot, kind in enumerate(species):
+        struct.pack_into('<H', secure, 0, kind)
+        struct.pack_into('<H', record, 28, sum(struct.unpack('<24H', secure)) & 0xFFFF)
+        for i in range(12):
+            struct.pack_into('<I', record, 32 + 4 * i, save.u32(secure, i * 4) ^ 24 ^ 123)
+        block1[0x38 + slot * 100:0x38 + (slot + 1) * 100] = record
     chunks = [block2] + [block1[i:i + 0xF80] for i in range(0, len(block1), 0xF80)] + [storage[i:i + 0xF80] for i in range(0, len(storage), 0xF80)]
     result = bytearray(0x20000)
     for slot in range(2):
@@ -63,6 +68,17 @@ class FireRedSaveInspectionTests(unittest.TestCase):
             save.inspect_save(data)
         with self.assertRaisesRegex(ValueError, '128 KiB'):
             save.inspect_save(data[:-1])
+
+    def test_native_shedinja_sibling_and_duplicate_rejection(self):
+        initial = save.inspect_save(authored_battery(species=(302, 303)))
+        current = save.inspect_save(authored_battery(8, species=(302, 303)))
+        save.check_owned_progress(initial, current)
+        current['party'].reverse()
+        with self.assertRaisesRegex(ValueError, 'reordered'):
+            save.check_owned_progress(initial, current)
+        for kinds in ((25, 26), (302, 302), (303, 303), (302, 303, 303)):
+            with self.assertRaisesRegex(ValueError, 'duplicate identities'):
+                save.inspect_save(authored_battery(species=kinds))
 
     def test_owned_party_and_secure_checksum(self):
         initial = save.inspect_save(authored_battery())

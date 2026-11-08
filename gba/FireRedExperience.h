@@ -36,7 +36,7 @@ class BattleExperience {
         const auto current=readParty(core);
         const auto journal=restoreParties(transaction,current);
         for(unsigned slot=0;slot<current.count;++slot)
-            requirePokemon(current.mons[slot].identity()==transaction.combined.mons[slot].identity(),
+            requirePokemon(sameOwnedMon(current.mons[slot],transaction.combined.mons[slot]),
                            "FireRed experience working order changed unexpectedly");
         transaction.originals=journal;transaction.combined=current;
     }
@@ -194,15 +194,35 @@ public:
         requirePokemon(evolutionWorking && evolving && !core->busRead8(core,Levels),"Invalid FireRed evolution completion");
         const auto owner=*evolving;const auto result=readParty(core);
         const auto& before=evolutionParties[owner];
-        requirePokemon(result.count==before.count,"Unsupported FireRed native evolution party addition");
+        requirePokemon(result.count>=before.count,"FireRed evolution removed an owned Pokemon");
         for(unsigned slot=0;slot<before.count;++slot) {
             const auto& a=before.mons[slot];const auto& b=result.mons[slot];
-            requirePokemon(a.identity()==b.identity() && b.experience()>=a.experience() && b.level()>=a.level(),
+            requirePokemon(sameOwnedMon(a,b) && b.experience()>=a.experience() && b.level()>=a.level(),
                            "FireRed evolution changed owned identity or progress");
             const auto x=a.secure(),y=b.secure();
-            requirePokemon(std::equal(x.begin()+37,x.begin()+44,y.begin()+37),"FireRed evolution changed origin or IV identity");
+            requirePokemon(std::equal(x.begin()+36,x.begin()+44,y.begin()+36),"FireRed evolution changed origin or IV identity");
             for(unsigned stat=24;stat<30;++stat)requirePokemon(y[stat]>=x[stat],"FireRed evolution decreased EVs");
         }
+        // Only the native Nincada -> Ninjask scene can append a party member.
+        // Each completed scene copies its evolved record to one free own slot;
+        // FireRed does not consume a Poke Ball for this (unlike later games).
+        unsigned additions=0;
+        for(unsigned source=0;source<before.count;++source) {
+            const auto& parent=result.mons[source];
+            if(before.mons[source].species()!=301 || parent.species()!=302)continue;
+            if(before.count+additions==PartyCapacity)continue;
+            requirePokemon(before.count+additions<result.count,"Missing native Shedinja addition");
+            const auto& shell=result.mons[before.count+additions++];
+            const auto x=parent.secure(),y=shell.secure();
+            requirePokemon(nativeShedinjaSiblings(parent,shell) &&
+                std::equal(x.begin()+4,x.begin()+44,y.begin()+4) &&
+                std::equal(parent.bytes.begin()+18,parent.bytes.begin()+27,shell.bytes.begin()+18) &&
+                shell.heldItem()==0 && shell.status()==0 && shell.hp()==1 && shell.maxHp()==1 &&
+                shell.level()==parent.level() && shell.bytes[27]==0 && shell.bytes[85]==255 &&
+                monU16(shell.bytes.data()+30)==0 && monU32(y.data()+44)==(monU32(x.data()+44)&0x80000000u),
+                "Invalid native Shedinja addition or owner");
+        }
+        requirePokemon(result.count==before.count+additions,"Unexpected FireRed evolution party addition");
         evolutionParties[owner]=result;leveled&=uint16_t(~(63u<<(owner*6)));evolving.reset();
         if(loadEvolutionOwner())return true;
         transaction.originals=evolutionParties;restoreWorking(*evolutionWorking);evolutionWorking.reset();

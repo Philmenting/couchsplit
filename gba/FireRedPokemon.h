@@ -105,6 +105,7 @@ struct PartyMon {
     uint16_t species() const { const auto p = secure(); return monU16(p.data()); }
     uint16_t heldItem() const { const auto p = secure(); return monU16(p.data() + 2); }
     uint32_t experience() const { const auto p = secure(); return monU32(p.data() + 4); }
+    uint8_t pokerus() const { return secure()[36]; }
     bool egg() const { const auto p = secure(); return (monU32(p.data() + 40) & 0x40000000u) != 0; }
     uint32_t status() const { return monU32(bytes.data() + 80); }
     uint8_t level() const { return bytes[84]; }
@@ -163,6 +164,19 @@ struct PartyMon {
 };
 static_assert(sizeof(PartyMon) == PartyMonSize, "Party Pokemon must preserve all 100 bytes");
 
+// Native Nincada evolution copies PID/OT to Shedinja. The shell is a distinct
+// owned record; ordinary evolution keeps the non-shell identity. Do not accept
+// arbitrary same-PID clones or rewrite personality/OT to make them unique.
+inline bool sameOwnedMon(const PartyMon& a,const PartyMon& b) {
+    return a.identity()==b.identity() && (a.species()==303)==(b.species()==303);
+}
+inline bool nativeShedinjaSiblings(const PartyMon& a,const PartyMon& b) {
+    if(a.identity()!=b.identity() || !((a.species()==302 && b.species()==303) ||
+                                     (a.species()==303 && b.species()==302)))return false;
+    const auto x=a.secure(),y=b.secure();
+    return !a.egg() && !b.egg() && std::equal(x.begin()+37,x.begin()+44,y.begin()+37);
+}
+
 struct Party {
     std::array<PartyMon, PartyCapacity> mons{};
     uint8_t count = 0;
@@ -173,7 +187,7 @@ struct Party {
             requirePokemon(mons[slot].empty() == (slot >= count), "FireRed party has gaps or a stale count");
             if (slot < count)
                 for (unsigned prior = 0; prior < slot; ++prior)
-                    requirePokemon(mons[prior].identity() != mons[slot].identity(),
+                    requirePokemon(mons[prior].identity() != mons[slot].identity() || nativeShedinjaSiblings(mons[prior],mons[slot]),
                                    "Ambiguous duplicate FireRed Pokemon identity");
         }
     }
@@ -225,10 +239,11 @@ inline BattleParty combineParties(const Party& first, const Party& second,
                    selected[0].size() <= 5 && selected[1].size() <= 5 &&
                    selected[0].size() + selected[1].size() <= PartyCapacity,
                    "FireRed team battle exceeds its six native Pokemon slots");
-    // Cloned PID/OT pairs cannot be assigned safely after party-menu reordering.
+    // Arbitrary cloned PID/OT pairs cannot be assigned safely after reordering.
+    // Native Ninjask/Shedinja siblings have a stable shell discriminator.
     for (unsigned a = 0; a < first.count; ++a)
         for (unsigned b = 0; b < second.count; ++b)
-            requirePokemon(first.mons[a].identity() != second.mons[b].identity(),
+            requirePokemon(first.mons[a].identity() != second.mons[b].identity() || nativeShedinjaSiblings(first.mons[a],second.mons[b]),
                            "Players have ambiguous duplicate FireRed Pokemon identities");
     BattleParty result;
     result.originals = {{first, second}};
@@ -319,16 +334,18 @@ inline std::array<Party, 2> restoreParties(const BattleParty& transaction, const
                            "Duplicate FireRed battle ownership mapping");
         int match = -1;
         for (unsigned current = 0; current < battleResult.count; ++current)
-            if (battleResult.mons[current].identity() == before.identity()) match = int(current);
+            if (sameOwnedMon(battleResult.mons[current],before)) match = int(current);
         requirePokemon(match >= 0 && !found[unsigned(match)], "Missing or foreign FireRed Pokemon in battle result");
         found[unsigned(match)] = true;
-        // PID/OT establishes ownership; a battle may change species, names,
+        // PID/OT plus the native shell discriminator establishes ownership;
+        // a battle may change species, names,
         // moves, experience, EVs, friendship, held item, status, HP and stats.
         // Origin/IVs/egg/ability bits cannot change as an ordinary battle result.
-        // Pokerus and ribbons can change at battle completion and are retained.
+        // Original FireRed's random infection/spreading/time functions are
+        // stubs. Preserve each owner's existing active/cured Pokerus byte.
         const auto oldSecure = before.secure();
         const auto newSecure = battleResult.mons[unsigned(match)].secure();
-        requirePokemon(std::equal(oldSecure.begin() + 37, oldSecure.begin() + 44, newSecure.begin() + 37),
+        requirePokemon(std::equal(oldSecure.begin() + 36, oldSecure.begin() + 44, newSecure.begin() + 36),
                        "FireRed battle result changed Pokemon origin or IV identity");
         const auto& after = battleResult.mons[unsigned(match)];
         requirePokemon(after.experience() >= before.experience() && after.level() >= before.level(),
@@ -377,7 +394,7 @@ inline std::optional<Party> refillBattleBench(BattleParty& transaction, const Pa
     for (unsigned slot = 0; slot < current.count; ++slot) {
         int previous = -1;
         for (unsigned original = 0; original < transaction.combined.count; ++original)
-            if (current.mons[slot].identity() == transaction.combined.mons[original].identity()) previous = int(original);
+            if (sameOwnedMon(current.mons[slot],transaction.combined.mons[original])) previous = int(original);
         requirePokemon(previous >= 0, "Foreign FireRed Pokemon appeared during bench refill");
         planned.owners[slot] = transaction.owners[unsigned(previous)];
         planned.originalSlots[slot] = transaction.originalSlots[unsigned(previous)];

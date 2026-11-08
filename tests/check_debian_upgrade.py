@@ -45,7 +45,7 @@ def main(package):
         before = {p: p.read_bytes() for p in (save, settings)}
         run('sudo', 'apt-get', 'install', '-y', str(Path(package).resolve()))
         version = subprocess.check_output(['dpkg-query', '-W', '-f=${Version}', 'pokemon-platinum-local-coop'], text=True)
-        assert version == '0.2.0~alpha.9', version
+        assert version == '0.2.0~alpha.10', version
         desktop = Path('/usr/share/applications/pokemon-platinum-local-coop.desktop').read_text()
         assert '\nName=CouchSplit\n' in desktop
         binary = '/opt/pokemon-platinum-local-coop/project/build/bin/platinum-coop'

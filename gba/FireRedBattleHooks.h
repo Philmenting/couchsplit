@@ -37,6 +37,7 @@ public:
     using PartyMenuOpen = std::function<void(unsigned battler)>;
     using PartyMenuReturn = std::function<void()>;
     using PartyMenuReply = std::function<std::optional<unsigned>(unsigned selected)>;
+    using PartyMenuSelection = std::function<bool(unsigned selected)>;
     using MoneyAnnouncement = std::function<uint32_t(bool payDay, uint32_t nativeAmount)>;
     using BallTextName = std::function<std::optional<std::array<uint8_t,7>>(unsigned battler)>;
     using SingleWild = std::function<bool()>;
@@ -70,6 +71,9 @@ public:
     static constexpr uint32_t PartyMenuReturnAddress = NativePartyMenuReshowAddress;
     static constexpr uint32_t PartyMenuReturn2Address = 0x080309EC;
     static constexpr uint32_t PartyMenuReplyAddress = NativeChosenMonReturnAddress;
+    // TrySwitchInPokemon, after native eligibility checks and original-slot
+    // translation, before selected ID, exit flag or party order are mutated.
+    static constexpr uint32_t PartyMenuSelectionAddress = 0x08127C46;
     // TryRunFromBattle: the native double-battle check is evaluated after
     // trapping/guaranteed-escape checks and immediately before the speed roll.
     static constexpr uint32_t WildEscapeDoubleCheckAddress = 0x080167A8;
@@ -112,6 +116,7 @@ private:
     PartyMenuOpen partyMenuOpen;
     PartyMenuReturn partyMenuReturn;
     PartyMenuReply partyMenuReply;
+    PartyMenuSelection partyMenuSelection;
     BallTextName ballTextName;
     SingleWild singleWild;
     SingleTrainer singleTrainer;
@@ -120,7 +125,7 @@ private:
     EvolutionQueue evolutionQueue;
     OpponentReset opponentReset;
     EvolutionDex evolutionDex;
-    std::array<Site,33> sites;
+    std::array<Site,34> sites;
     std::exception_ptr error;
     bool attached = false;
     inline static std::mutex registryMutex;
@@ -222,10 +227,15 @@ private:
         // return hook MUST run before ordinary double-battle flag filtering,
         // restoring both physical parties before the native reshow reads them.
         if(site->address==PartyMenuOpenAddress || site->address==PartyMenuReturnAddress ||
-           site->address==PartyMenuReturn2Address || site->address==PartyMenuReplyAddress) {
+           site->address==PartyMenuReturn2Address || site->address==PartyMenuReplyAddress ||
+           site->address==PartyMenuSelectionAddress) {
+            uint16_t instruction=site->preimage[0];
             try {
                 if(!self->error) {
-                    if(site->address==PartyMenuOpenAddress)
+                    if(site->address==PartyMenuSelectionAddress) {
+                        if(!self->partyMenuSelection(unsigned(active->gprs[0])&255u))
+                            instruction=0xE048; // B 0x08127CDA: existing FALSE epilogue, same stack.
+                    } else if(site->address==PartyMenuOpenAddress)
                         self->partyMenuOpen(self->core->busRead8(self->core,0x02023BC4));
                     else if(site->address==PartyMenuReplyAddress) {
                         if(const auto selected=self->partyMenuReply(unsigned(active->gprs[1])&255u)) {
@@ -235,7 +245,7 @@ private:
                     } else self->partyMenuReturn();
                 }
             } catch(...) {self->error=std::current_exception();}
-            ARMRunFake(active,site->preimage[0]);return;
+            ARMRunFake(active,instruction);return;
         }
         const auto flags = self->core->busRead32(self->core, 0x02022B4C);
         if (!(flags & 1u) || !sharedEncounterFlags(flags)) { ARMRunFake(active, site->preimage[0]); return; }
@@ -494,17 +504,19 @@ public:
                 BallTextName ownerBallTextName = {}, SingleWild isSingleWild = {}, SingleTrainer isSingleTrainer = {},
                 ExperienceCommand nativeExperience = {}, EvolutionGate beforeEvolution = {},
                 EvolutionQueue nativeEvolutionQueue = {}, OpponentReset resetParticipation = {},
-                EvolutionDex ownedEvolutionDex = {})
+                EvolutionDex ownedEvolutionDex = {}, PartyMenuSelection allowPartyMenuSelection = {})
         : core(target), predicate(std::move(ownerHasNoMons)), otherTrainer(std::move(ownerIsOtherTrainer)),
           badge(std::move(ownerHasBadge)), captureFull(std::move(ownerCaptureFull)),
           ballThrow(std::move(executedBallThrow)), teamHealth(std::move(beforeTeamHealthCheck)),
           capturedMon(std::move(beforeCapturedMonGift)), evolution(std::move(ownerEvolution)), gameStatistic(std::move(ownedGameStatistic)),
           moneyAnnouncement(std::move(announcedMoney)), partyMenuOpen(std::move(beforePartyMenu)),
           partyMenuReturn(std::move(beforePartyMenuReshow)), partyMenuReply(std::move(normalizePartyMenuReply)),
+          partyMenuSelection(std::move(allowPartyMenuSelection)),
           ballTextName(std::move(ownerBallTextName)), singleWild(std::move(isSingleWild)), singleTrainer(std::move(isSingleTrainer)),
           experienceCommand(std::move(nativeExperience)), evolutionGate(std::move(beforeEvolution)),
           evolutionQueue(std::move(nativeEvolutionQueue)), opponentReset(std::move(resetParticipation)),
           evolutionDex(std::move(ownedEvolutionDex)), sites{{
+              {PartyMenuSelectionAddress,0xBED9,{{0x490E,0x7008,0x490E,0x2001}},bool(partyMenuSelection)},
               {EvolutionDexAddress,0xBEDA,{{0xB500,0x480A,0x6800,0x7EC0}},bool(evolutionDex)},
               {ExperienceCommandAddress,0xBEDF,{{0xB5F0,0x464F,0x4646,0xB4C0}},bool(experienceCommand)},
               {EvolutionGateAddress,0xBEDE,{{0x4806,0x7800,0x2800,0xD003}},bool(evolutionGate)},
