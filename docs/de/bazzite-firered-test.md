@@ -20,11 +20,12 @@ distrobox enter couchsplit-firered-dev -- sudo dnf install -y gcc-c++ cmake ninj
 distrobox enter couchsplit-firered-dev -- git clone --branch main https://github.com/Philmenting/couchsplit.git "$HOME/CouchSplit-FireRed"
 cd "$HOME/CouchSplit-FireRed"
 distrobox enter couchsplit-firered-dev -- bash "$PWD/scripts/build.sh"
-distrobox enter couchsplit-firered-dev -- env COUCHSPLIT_FIRERED_EXPERIMENT=1 "$PWD/build/bin/platinum-coop" --data-dir "$HOME/.local/share/couchsplit-firered-dev"
+distrobox enter couchsplit-firered-dev -- "$PWD/build/bin/platinum-coop" --data-dir "$HOME/.local/share/couchsplit-firered-dev"
 ```
 
 Danach startet der letzte Befehl den Launcher; für spätere Starts genügt dieser
-Befehl erneut im Projektordner. Wähle die ROM aus und weise, falls verfügbar,
+Befehl erneut im Projektordner. Wähle die ROM aus, aktiviere **Einstellungen →
+Feuerrot-Koop (experimentell)** und weise, falls verfügbar,
 zwei Controller zu. Prüfe Start, beide Ansichten, Eingaben, Speichern und
 Neustart im Desktopmodus. Das Repository enthält weder ROM noch Spielstände. Bei
 Problemen helfen Programm- und Spiellogs; ROMs oder Spielstände musst du dafür

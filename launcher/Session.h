@@ -20,10 +20,14 @@
 #include "SaveStore.h"
 #include "Rom.h"
 #include "../gba/FireRedErrors.h"
+#include "../gba/FireRedRecovery.h"
 namespace coop {
 struct Settings {
     QString emulator, rom, bios9, bios7, firmware, gbaEmulator;
     QString fireRedAudio="player1";
+    // Preserve the former developer opt-in as a default only. A saved false
+    // value and the visible settings control always take precedence.
+    bool fireRedCoop=qEnvironmentVariable("COUCHSPLIT_FIRERED_EXPERIMENT")=="1";
     int layout=0; bool horizontal=false; bool patchedConfirmed=false;
 };
 inline QString executableSuffix() {
@@ -117,13 +121,7 @@ public:
             }
             if(gba) {
                 if(fireRedPair) {
-                    const auto owner=maps[0]->data->role.load();
-                    const auto state=maps[0]->data->bridgeActive.load();
-                    if(status)status(state==2
-                        ?i18n::text("Feuerrot-Testmodus · Warte auf Spieler %1").arg(owner)
-                        :state
-                        ?(owner?i18n::text("Feuerrot-Testmodus · Teamkampf · Spieler %1 am Zug").arg(owner):i18n::text("Feuerrot-Testmodus · Gemeinsamer Kampf"))
-                        :i18n::text("Feuerrot-Testmodus · Partneransicht · Welt-Ereignisse noch unvollständig"));
+                    if(status)status(fireRedStatusText());
                     return;
                 }
                 if(status)status(i18n::text("GBA läuft · Zwei getrennte Spiele · Keine Link-Verbindung"));
@@ -138,6 +136,22 @@ public:
     bool running() const { return active; }
     bool isGba() const {return gba;}
     bool isFireRedPair() const {return fireRedPair;}
+    uint32_t fireRedStatusCode() const {return active && fireRedPair && maps[0] ? maps[0]->data->bridgeActive.load() : 0;}
+    QString fireRedStatusText() const {
+        const auto owner=active && maps[0] ? maps[0]->data->role.load() : 0;
+        switch(firered::pairState(fireRedStatusCode())) {
+        case firered::PairState::ExpShare:return i18n::text("Feuerrot-Koop · Kampf pausiert: zu viele EP-Teiler");
+        case firered::PairState::Enigma:return i18n::text("Feuerrot-Koop · Kampf pausiert: Enigmabeere");
+        case firered::PairState::Individual:return i18n::text("Feuerrot-Koop · Einzelkämpfe · Koop wird danach fortgesetzt");
+        case firered::PairState::Waiting:return i18n::text("Feuerrot-Testmodus · Warte auf Spieler %1").arg(owner);
+        case firered::PairState::Battle:return owner?i18n::text("Feuerrot-Testmodus · Teamkampf · Spieler %1 am Zug").arg(owner):i18n::text("Feuerrot-Testmodus · Gemeinsamer Kampf");
+        default:return i18n::text("Feuerrot-Testmodus · Partneransicht · Welt-Ereignisse noch unvollständig");
+        }
+    }
+    bool continueFireRedIndividually(uint32_t pause) {
+        if(!running() || !fireRedPair || !firered::battlePaused(pause) || fireRedStatusCode()!=pause) return false;
+        maps[0]->data->touch.store(pause);return true;
+    }
     Shared* shared(int p) const { return maps.at(p)?maps.at(p)->data:nullptr; }
     bool copyFrame(int p, QImage& top, QImage& bottom) {
         if(!maps[p] || !maps[p]->acquire()) return false;
@@ -150,10 +164,8 @@ public:
     void start(const Settings& s) {
         if(active) fail(i18n::text("Sitzung läuft bereits."));
         const auto info=inspectRom(s.rom);gba=info.system==GameSystem::GameBoyAdvance;game=info.sha256;
-        // Explicit developer opt-in while story events and edge cases remain
-        // incomplete. Ordinary GBA/DS sessions retain their existing behavior.
-        fireRedPair=gba && qEnvironmentVariable("COUCHSPLIT_FIRERED_EXPERIMENT")=="1";
-        if(fireRedPair && game!=QLatin1String(GermanFireRedSha256))fail(i18n::text("Der Feuerrot-Testmodus benötigt die exakt unterstützte deutsche Original-ROM."));
+        // The saved opt-in applies only to the exact supported FireRed ROM.
+        fireRedPair=gba && s.fireRedCoop && game==QLatin1String(GermanFireRedSha256);
         if(!gba) {
             if(!s.patchedConfirmed) fail(i18n::text("Die vorbereitete Project-PM-ROM muss bestätigt werden. Eine normale Platin-ROM bietet keine gemeinsame Spielwelt."));
             requireMultiplayerPatch(game); validateFirmware(s);
@@ -165,7 +177,7 @@ public:
         QProcess capability; capability.start(executable,{"--coop-capabilities"});
         const bool ready=capability.waitForFinished(5000) && capability.exitCode()==0;
         const auto features=capability.readAllStandardOutput();
-        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1") || (gba&&!features.contains("GBA=1")) || (info.extendedGba&&!features.contains("GBA_XROM=1")) || (fireRedPair&&!features.contains("FIRERED_PAIR_EXPERIMENT=1"))) {
+        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1") || (gba&&!features.contains("GBA=1")) || (info.extendedGba&&!features.contains("GBA_XROM=1")) || (fireRedPair&&(!features.contains("FIRERED_PAIR_EXPERIMENT=1") || !features.contains("FIRERED_RECOVERY=1")))) {
             capability.kill(); capability.waitForFinished(1000); fail(i18n::text("Emulator unterstützt die benötigte Co-op-Spielstandschnittstelle nicht. Launcher und Emulator gemeinsam aktualisieren."));
         }
         saves.acquire();
@@ -220,6 +232,7 @@ public:
                 env.insert("PMCOOP_IPC",ipc); env.insert("PMCOOP_PROFILE",profile);
                 if(fireRedPair) {
                     env.insert("PMCOOP_FIRERED_PAIR","1");
+                    env.insert("PMCOOP_FIRERED_RECOVERY","1");
                     env.insert("PMCOOP_IPC2",runtime->path()+"/player2.ipc");
                     env.insert("PMCOOP_PROFILE2",saves.profile(1,game));
                     env.insert("PMCOOP_FIRERED_AUDIO",s.fireRedAudio);

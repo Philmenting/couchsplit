@@ -2,7 +2,39 @@
 
 **English** · [Deutsch](de/development-status.md) · [Documentation](README.md)
 
-Updated 29 October 2026. Current public release: **[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, supporting Project PM / Pokémon Platinum. The local development build additionally supports GBA games and ROM hacks as independent split-screen sessions. Historical results below apply to the versions and environments named; they are not full-playthrough or target-hardware certification.
+Updated 8 November 2026. Current public release: **[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, supporting Project PM / Pokémon Platinum. The development source additionally supports independent GBA sessions and opt-in German FireRed co-op. Historical results below apply to the versions and environments named; they are not full-playthrough or target-hardware certification.
+
+## FireRed mode selection and recoverable battle admission — 8 November 2026
+
+**Settings → FireRed co-op (experimental)** now saves the mode selection and
+shows whether the selected ROM matches the supported German original. English
+and German UI explain the remaining campaign limits. Changes apply to the next
+session; other GBA games and the DS path keep their existing behavior. Waiting
+for a partner and battle ownership are now visible inside the play view.
+
+Too many required EXP Share holders or a held Enigma Berry now pause both games
+before party conversion, preserving their live session progress. The visible
+**Continue individual battles** action explicitly resumes the original native
+encounters with separate teams and rewards. Shared co-op returns once both
+players reach an idle field. Remove the relevant held items afterwards to allow
+shared battles again. This supersedes the worker-exit behavior in the historical
+29 October entries below. It neither adds unsupported shared item effects nor
+automatically saves the game; unexpected errors still stop the session.
+
+Verification on Linux: **22 native tests and all 60 Python tests pass**. Six
+prepared two-core original-ROM scenarios cover both reasons, both initiators,
+and simultaneous encounters, including unchanged paused states, explicit native
+continuation, each player's in-game save/fresh Continue, and later shared
+admission after item removal. Two ordinary shared battles also pass. The real
+Session/PlayView and worker cover both rejection reasons through walking into
+grass from authored saves, a 16-second pause beyond the frame watchdog, UI
+approval, native individual combat and return to co-op. Separate UI/IPC fixtures
+verify German/English, persistence failures, old-worker rejection and stale or
+held confirmation input. Worker crash, lock/save retention and generic GBA
+storage/input/restart checks pass. These are targeted fixtures with virtual
+controllers, not a full campaign or physical Windows/Bazzite/controller test.
+[Evidence and limits](verification/firered-recovery-ui-2026-11-08.json) ·
+[Setup and reproduction](firered.md#recovery-acceptance).
 
 ## FireRed paired recovery and audio — 29 October 2026
 
@@ -131,7 +163,7 @@ The local source now has an explicitly enabled two-core worker, same-map partner
 overlay and shared native human-controlled battles with separate save/result
 ownership. The ordinary GBA and DS paths remain the default. This is **not a
 complete shared-world co-op release**. [Setup, acceptance tools and remaining
-requirements](firered.md#firered-co-op-development-target--28-october-2026).
+requirements](firered.md#firered-co-op--current-source).
 
 Verified with the exact German original on Linux: normal wild/trainer battles,
 distinct trainer ownership/EXP, PP, capture/bag/PC/dex attribution, wallet caps and

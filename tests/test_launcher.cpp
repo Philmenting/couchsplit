@@ -106,7 +106,7 @@ static void gbaSelection() {
     QByteArray header(1024,0);header.replace(0xAC,4,"TEST");header[0xB2]=char(0x96);
     unsigned sum=0x19;for(int i=0xA0;i<0xBD;i++)sum+=static_cast<unsigned char>(header[i]);header[0xBD]=char(-sum);
     atomicWrite(rom,header);
-    atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"language","de"}}).toJson());
+    atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"language","de"},{"fireRedCoop",true}}).toJson());
     Launcher launcher(data.path());launcher.show();
     bool picked=false;QTimer picker;picker.setInterval(10);
     QObject::connect(&picker,&QTimer::timeout,[&]{
@@ -152,6 +152,54 @@ static void fireRedAudioPreferences() {
     if(present)qputenv("COUCHSPLIT_FIRERED_EXPERIMENT",previous);else qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
     i18n::setLanguage("de");
 }
+static void fireRedCoopPreferences() {
+    const bool present=qEnvironmentVariableIsSet("COUCHSPLIT_FIRERED_EXPERIMENT");
+    const auto previous=qgetenv("COUCHSPLIT_FIRERED_EXPERIMENT");qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
+    QTemporaryDir data;const QJsonObject original{{"language","en"},{"futureSetting",42}};
+    atomicWrite(data.path()+"/settings.json",QJsonDocument(original).toJson());
+    auto choose=[&](Launcher& launcher,bool expected,bool selected,bool accept) {
+        bool visited=false;QTimer timer;timer.setInterval(10);
+        QObject::connect(&timer,&QTimer::timeout,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());if(!dialog)return;
+            if(auto* warning=qobject_cast<QMessageBox*>(dialog)){warning->accept();return;}
+            auto* check=dialog->findChild<QCheckBox*>("fireRedCoopCheck");if(!check)return;
+            assert(check->isChecked()==expected && check->text()=="FireRed co-op (experimental)");
+            assert(dialog->findChild<QLabel*>("fireRedCompatibility")->text().contains("not compatible"));
+            check->setChecked(selected);assert(dialog->findChild<QComboBox*>("fireRedAudioCombo")->isEnabled()==selected);
+            visited=true;if(accept)dialog->accept();else dialog->reject();
+        });timer.start();launcher.findChild<QPushButton*>("settingsAction")->click();timer.stop();assert(visited);
+    };
+    {Launcher launcher(data.path());launcher.show();choose(launcher,false,true,false);assert(preferences(data.path())==original);
+        choose(launcher,false,true,true);assert(preferences(data.path())["fireRedCoop"].toBool() && preferences(data.path())["futureSetting"].toInt()==42);}
+    {Launcher launcher(data.path());launcher.show();choose(launcher,true,false,true);assert(!preferences(data.path())["fireRedCoop"].toBool());}
+    qputenv("COUCHSPLIT_FIRERED_EXPERIMENT","1");
+    {Launcher launcher(data.path());launcher.show();choose(launcher,false,true,false); // Saved false overrides old environment opt-in.
+        const auto saved=preferences(data.path());assert(QFile::remove(data.path()+"/settings.json"));assert(QDir().mkdir(data.path()+"/settings.json"));
+        choose(launcher,false,true,true); // Failed persistence must not enable the mode in memory.
+        assert(QDir().rmdir(data.path()+"/settings.json"));atomicWrite(data.path()+"/settings.json",QJsonDocument(saved).toJson());
+        choose(launcher,false,true,false);assert(preferences(data.path())==saved);}
+    if(present)qputenv("COUCHSPLIT_FIRERED_EXPERIMENT",previous);else qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
+}
+static void fireRedNoticeFits() {
+    for(auto language:{"de","en"})for(int width:{360,616,1256}) {
+        i18n::setLanguage(language);QWidget window;theme::apply(&window,false,width<760);
+        auto* notice=new FireRedNotice(&window);int choices=0;
+        notice->continueIndividually=[&](uint32_t value){assert(value==259);++choices;return true;};
+        notice->showState(259,i18n::text("Feuerrot-Koop · Kampf pausiert: zu viele EP-Teiler"));
+        notice->resize(width,notice->heightForWidth(width));window.resize(notice->size());window.show();spin(30);
+        for(auto* label:notice->findChildren<QLabel*>()) {
+            assert(label->isVisible() && label->height()>=label->heightForWidth(label->width()));
+            assert(notice->rect().contains(label->geometry()));
+        }
+        auto* action=notice->findChild<QPushButton*>("fireRedContinueIndividual");assert(action&&action->isVisible());
+        assert(action->fontMetrics().horizontalAdvance(action->text())+28<=action->width());
+        capture(window,QString("firered-pause-%1-%2").arg(language).arg(width));
+        action->click();action->click();assert(choices==1 && !action->isEnabled());
+        notice->showState(259,"same pause");assert(!action->isEnabled());
+        notice->showState(0,"field");assert(!action->isVisible());
+        notice->showState(515,"next pause");assert(action->isVisible() && action->isEnabled());
+    }
+}
 // Optional private integration: no ROM or real save is copied into the repo.
 // The fixture only simulates a paired worker's exit, it does not emulate a battle.
 static void fireRedRealRomUi(const QString& fixture) {
@@ -159,7 +207,7 @@ static void fireRedRealRomUi(const QString& fixture) {
     assert(hashFile(rom)==QLatin1String(GermanFireRedSha256));
     const bool present=qEnvironmentVariableIsSet("COUCHSPLIT_FIRERED_EXPERIMENT");
     const auto previous=qgetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
-    qputenv("COUCHSPLIT_FIRERED_EXPERIMENT","1");
+    qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
     for(const auto& language:{QString("de"),QString("en")}) {
         QTemporaryDir data;SaveStore store(data.path());store.acquire();
         const auto game=validateRom(rom);
@@ -169,8 +217,9 @@ static void fireRedRealRomUi(const QString& fixture) {
         for(int p=0;p<2;p++) {saves[p]=store.profile(p,game)+"/saves/game.sav";assert(QDir().mkpath(QFileInfo(saves[p]).path()));atomicWrite(saves[p],original[p]);}
         const auto backup=store.backupPair(game);assert(!backup.isEmpty());
         for(int p=0;p<2;p++)atomicWrite(saves[p],later[p]);store.release();
-        atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"language",language},{"rom",rom},{"gbaEmulator",fixture}}).toJson());
+        atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"language",language},{"rom",rom},{"gbaEmulator",fixture},{"fireRedCoop",true}}).toJson());
         Launcher launcher(data.path());launcher.resize(640,360);launcher.show();spin(40);
+        assert(launcher.findChild<QPushButton*>("startGame")->text()==i18n::text("Feuerrot-Testmodus starten"));
         int stage=0;QTimer drive;drive.setInterval(10);
         QObject::connect(&drive,&QTimer::timeout,[&]{
             auto* modal=QApplication::activeModalWidget();if(!modal)return;
@@ -220,6 +269,51 @@ static void fireRedRealRomUi(const QString& fixture) {
     if(present)qputenv("COUCHSPLIT_FIRERED_EXPERIMENT",previous);else qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
     assert(hashFile(rom)==QLatin1String(GermanFireRedSha256));i18n::setLanguage("de");
 }
+// Exercise the actual Session -> child IPC -> PlayView acknowledgement path.
+// This child is a named TEST ONLY fixture, not a gameplay test.
+static void fireRedRecoveryUi(const QString& fixture) {
+    const auto rom=qEnvironmentVariable("COOP_VERIFY_FIRERED_ROM");if(rom.isEmpty())return;
+    for(auto language:{"de","en"}) {
+        i18n::setLanguage(language);QTemporaryDir data;SaveStore saves(data.path());Session session(saves);Controllers controls;
+        Settings settings;settings.rom=rom;settings.gbaEmulator=fixture;settings.fireRedCoop=true;
+        int index=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);
+        int other=SDL_JoystickAttachVirtual(SDL_JOYSTICK_TYPE_GAMECONTROLLER,6,SDL_CONTROLLER_BUTTON_MAX,0);assert(index>=0 && other>=0);
+        auto* pad=SDL_JoystickOpen(index);auto* partner=SDL_JoystickOpen(other);assert(pad&&partner);
+        controls.assign(SDL_JoystickInstanceID(pad),SDL_JoystickInstanceID(partner));
+        QString failure;session.error=[&](QString text){failure=text;};
+        qputenv("COOP_FIXTURE_OLD_RECOVERY","1");bool oldRejected=false;
+        try {session.start(settings);}catch(const std::exception&){oldRejected=true;}
+        qunsetenv("COOP_FIXTURE_OLD_RECOVERY");assert(oldRejected && !session.running() && !saves.locked());
+        session.start(settings);
+        PlayView view(session,controls,settings);view.resize(640,360);view.show();view.reset();spin(60);
+        auto* action=view.findChild<QPushButton*>("fireRedContinueIndividual");assert(action);
+        auto* notice=view.findChild<QFrame*>("fireRedNotice");assert(notice);
+        session.shared(0)->bridgeActive.store(2);session.shared(0)->role.store(2);spin(40);
+        assert(view.findChild<QLabel*>("fireRedPlayStatus")->text().contains(language==QString("de")?"Warte auf Spieler 2":"Waiting for Player 2"));
+        for(uint32_t pause:{259u,516u}) {
+            SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,1);spin(40);
+            session.shared(0)->bridgeActive.store(pause);session.shared(1)->bridgeActive.store(pause);spin(80);
+            assert(session.fireRedStatusCode()==pause && session.running() && saves.locked());
+            assert(session.shared(0)->keys.load()==0xFFF && action->isVisible());
+            const auto frame=session.shared(0)->frame.load();spin(100);assert(session.shared(0)->frame.load()>frame);
+            assert(view.rect().contains(notice->geometry()));
+            capture(view,QString("firered-live-pause-%1-%2").arg(language).arg(pause));
+            assert(!session.continueFireRedIndividually(pause+256));
+            view.hide();spin(30);view.show();spin(40);assert(session.fireRedStatusCode()==pause); // Held A cannot approve on restore.
+            SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,0);spin(40);
+            if(pause==259)SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,1);
+            else {
+                QKeyEvent down(QEvent::KeyPress,Qt::Key_Space,Qt::NoModifier),up(QEvent::KeyRelease,Qt::Key_Space,Qt::NoModifier);
+                QApplication::sendEvent(action,&down);QApplication::sendEvent(action,&up);
+            }
+            spin(100);assert(session.fireRedStatusCode()==5 && session.running() && saves.locked());
+            assert(!session.continueFireRedIndividually(pause));
+            SDL_JoystickSetVirtualButton(pad,SDL_CONTROLLER_BUTTON_A,0);spin(40);
+        }
+        assert(failure.isEmpty());session.stop();assert(!saves.locked());
+        SDL_JoystickClose(pad);SDL_JoystickClose(partner);SDL_JoystickDetachVirtual(other);SDL_JoystickDetachVirtual(index);
+    }
+}
 static void menuFits() {
     QTemporaryDir data;
     atomicWrite(data.path()+"/settings.json",QJsonDocument(QJsonObject{{"rom",QString(250,'r')+".nds"}}).toJson());
@@ -231,6 +325,7 @@ static void menuFits() {
         capture(launcher,"menu-"+i18n::language()+"-"+QString::number(size.width())+"x"+QString::number(size.height()));
         assert(scroll->horizontalScrollBar()->maximum()==0);
         for(auto* button:launcher.findChildren<QPushButton*>()) {
+            if(!scroll->isAncestorOf(button))continue;
             const int textWidth=button->fontMetrics().horizontalAdvance(button->text());
             assert(textWidth+button->iconSize().width()+28<=button->width());
             button->setFocus();spin(20);
@@ -324,7 +419,7 @@ int main(int argc,char** argv) {
     QTemporaryDir mouseData,controllerData,sessionData;
     languagePreferences();
     for(auto language:{"en","de"}) {i18n::setLanguage(language);menuFits();playHelpFits();}
-    gbaSelection();fireRedAudioPreferences();fireRedRealRomUi(QFileInfo(argv[1]).absoluteFilePath());i18n::setLanguage("de");backgroundMenu();assignedMenu();
+    gbaSelection();fireRedAudioPreferences();fireRedCoopPreferences();fireRedNoticeFits();fireRedRealRomUi(QFileInfo(argv[1]).absoluteFilePath());fireRedRecoveryUi(QFileInfo(argv[1]).absoluteFilePath());i18n::setLanguage("de");backgroundMenu();assignedMenu();
     {
         QTemporaryDir keyboardData;Launcher launcher(keyboardData.path());launcher.show();spin(40);
         auto* exit=launcher.findChild<QPushButton*>("exitLauncher");assert(exit);exit->setFocus();

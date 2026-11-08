@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // ROM-dependent acceptance, excluded from normal builds and installation.
 #include "../gba/FireRedBattle.h"
+#include "../gba/FireRedRecovery.h"
 #include "FireRedSaveAcceptance.h"
 #include <mgba/core/config.h>
 #include <mgba/core/log.h>
@@ -316,6 +317,27 @@ int main(int argc,char** argv) {
         // wallet values and the second core's independent program counter.
         const unsigned initiator=(scenario=="leader2" || scenario.endsWith("-leader2") || scenario=="escape-leader2" || scenario=="single-leader2" || scenario=="single-multiturn-leader2" || scenario=="capture-leader2" || scenario=="capture-both-leader2" || scenario=="trainer-single-leader2")?1u:0u;
         auto* leading=initiator?b:a;
+        if(scenario.endsWith("-launcher")) {
+            // Private fixture export for the real process/UI acceptance path.
+            // Only this opt-in test authors teams/items/map coordinates. The
+            // production worker receives ordinary, natively written batteries.
+            for(unsigned owner=0;owner<2;++owner) {
+                auto* c=owner?b:a;const auto memory=readSaveMemory(c);
+                inventoryWrite16(c,memory.block1,14);inventoryWrite16(c,memory.block1+2,26);
+                c->busWrite8(c,memory.block1+4,3);c->busWrite8(c,memory.block1+5,19);
+                c->busWrite8(c,0x03003478,0);c->busWrite32(c,MainCallbackAddress,0x0805673D);
+                for(unsigned f=0;f<240;++f){c->setKeys(c,0);c->runFrame(c);}
+                requirePokemon(campaignFieldQuiescent(c),"Recovery fixture did not enter Route 1");
+                const auto proof=acceptance::verifyNativeSaveReload(c,rom.toStdString());
+                QFile file(out+QString("/player%1.sav").arg(owner+1));
+                requirePokemon(file.open(QIODevice::WriteOnly|QIODevice::NewOnly) &&
+                    file.write(reinterpret_cast<const char*>(proof.battery.data()),qint64(proof.battery.size()))==qint64(proof.battery.size()),"Cannot export private recovery fixture");
+            }
+            requirePokemon(hashFile(rom)==RomHash && hashFile(state)==stateHash,"Private inputs changed");
+            const QJsonObject report{{"scenario",scenario},{"authored_parties_and_map_entry",true},{"private_native_battery_fixtures",true},{"rom_unchanged",true}};
+            QFile result(out+"/result.json");requirePokemon(result.open(QIODevice::WriteOnly|QIODevice::NewOnly),"Cannot write fixture report");
+            result.write(QJsonDocument(report).toJson());return 0;
+        }
         if(scenario=="rendezvous" || scenario=="grass-rendezvous" || scenario=="deferred-script") trigger(b,scenario);
         if(scenario=="grass-rendezvous")enemies(b,1,16);
         if(scenario=="deferred-script")for(unsigned owner=0;owner<2;++owner) {
@@ -326,22 +348,61 @@ int main(int argc,char** argv) {
         }
         trigger(leading,scenario);
         if(scenario.contains("exp-share-overflow") || scenario.contains("exp-share-enigma")) {
+            // Authored native single encounters, with actual unmodified game
+            // execution after the user explicitly chooses individual battles.
+            trigger(leading,"single");
+            if(scenario.contains("both"))trigger(initiator?a:b,"single");
             auto snapshot=[](mCore* c){std::vector<uint8_t> data(c->stateSize(c));
                 requirePokemon(c->saveState(c,data.data()),"Cannot snapshot pre-battle state");return data;};
             const auto beforeA=snapshot(a),beforeB=snapshot(b);
-            bool rejected=false;
-            try {pair.tryBegin(initiator);}catch(const std::runtime_error& error) {
-                rejected=std::string(error.what()).find(scenario.contains("enigma") ?
-                    "FireRed Enigma Berry effects" : "Too many FireRed EXP Share holders")!=std::string::npos;
-            }
-            requirePokemon(rejected && !pair.active() && snapshot(a)==beforeA && snapshot(b)==beforeB &&
+            const auto flashA=acceptance::save_detail::flash(a),flashB=acceptance::save_detail::flash(b);
+            BattleRecovery recovery;
+            requirePokemon(!recovery.tryBegin(pair,initiator) && recovery.paused(),"Expected a recoverable preflight pause");
+            const auto pause=recovery.status();
+            requirePokemon(pairState(pause)==(scenario.contains("enigma")?PairState::Enigma:PairState::ExpShare),"Wrong recovery explanation");
+            for(unsigned f=0;f<120;++f)requirePokemon(!recovery.tryBegin(pair,initiator),"Paused battle advanced");
+            requirePokemon(!pair.active() && snapshot(a)==beforeA && snapshot(b)==beforeB &&
+                           acceptance::save_detail::flash(a)==flashA && acceptance::save_detail::flash(b)==flashB &&
                            readParty(a)==p0 && readParty(b)==p1 && readWallet(a)==initialMoney0 && readWallet(b)==9876,
-                           "Oversubscribed EXP Share battle did not stop before changing either machine");
+                           "Recovery pause changed a machine, Flash, original party or unsaved wallet");
+            requirePokemon(!recovery.accept(pause+256) && recovery.accept(pause) && !recovery.accept(pause),"Recovery consent was not scoped to this pause");
+            std::array<bool,2> sawNative{};
+            unsigned nativeFrames=0;
+            for(;nativeFrames<12000 && recovery.individual();++nativeFrames) {
+                for(unsigned owner=0;owner<2;++owner) {
+                    auto* c=owner?b:a;
+                    sawNative[owner]|=(c->busRead8(c,0x03003479)&2u)!=0;
+                    c->setKeys(c,campaignFieldQuiescent(c)?0u:(nativeFrames%12<4?1u:0u));
+                    c->runFrame(c);
+                }
+                recovery.returnToCoop(campaignFieldQuiescent(a) && campaignFieldQuiescent(b));
+            }
+            requirePokemon(recovery.status()==0 && sawNative[initiator] && (!scenario.contains("both") || sawNative[1-initiator]),"Native individual battles did not return to both fields");
+            requirePokemon(readWallet(a)==initialMoney0 && readWallet(b)==9876,"Recovery lost pre-battle unsaved wallets");
+            for(unsigned owner=0;owner<2;++owner) {
+                const auto after=readParty(owner?b:a);const auto& before=owner?p1:p0;
+                requirePokemon(after.count==before.count,"Recovery changed party capacity");
+                for(unsigned slot=0;slot<after.count;++slot)
+                    requirePokemon(after.mons[slot].identity()==before.mons[slot].identity() &&
+                        after.mons[slot].heldItem()==before.mons[slot].heldItem(),"Recovery lost a Pokemon or held item");
+                if(owner!=initiator && !scenario.contains("both"))requirePokemon(after==before,"Idle partner received the other player's battle changes");
+            }
+            const auto saved0=acceptance::verifyNativeSaveReload(a,rom.toStdString());
+            const auto saved1=acceptance::verifyNativeSaveReload(b,rom.toStdString());
+            // Model both trainers removing the held items after returning to
+            // the field, then prove the next ordinary shared admission works.
+            for(auto* c:{a,b}) {auto party=readParty(c);for(unsigned s=0;s<party.count;++s){auto plain=party.mons[s].secure();monPut16(plain.data()+2,0);party.mons[s].setSecure(plain);}writeParty(c,party);}
+            pair.sampleWorld();trigger(leading,"single");
+            requirePokemon(recovery.tryBegin(pair,initiator) && pair.active(),"Shared battles did not resume after resolving held items");pair.rollback();
             requirePokemon(hashFile(rom)==RomHash && hashFile(state)==stateHash,"Private inputs changed");
             const QJsonObject report{{"scenario",scenario},{"rom_sha256",RomHash},
                 {"authored_test_parties",true},{"two_real_mgba_cores",true},
                 {"unsupported_battle_configuration_rejected_before_conversion",true},
                 {"both_machine_states_parties_and_wallets_unchanged",true},
+                {"recoverable_pause_preserves_unsaved_progress_and_flash",true},
+                {"explicit_individual_battles_return_to_coop",true},{"shared_admission_after_removing_items",true},
+                {"both_players_native_save_and_fresh_continue",true},{"native_frames",int(nativeFrames)},
+                {"save_generations",QJsonArray{int(saved0.generation),int(saved1.generation)}},
                 {"battery_files_written",false},{"production_launcher",false},{"complete_world_coop",false}};
             QFile result(out+"/result.json");requirePokemon(result.open(QIODevice::WriteOnly|QIODevice::NewOnly),"Cannot write overflow report");
             const auto json=QJsonDocument(report).toJson();requirePokemon(result.write(json)==json.size(),"Cannot save overflow report");

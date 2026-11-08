@@ -1,0 +1,155 @@
+{
+  "format": "couchsplit-firered-recovery-ui-1",
+  "date": "2026-11-08",
+  "base_commit": "ad87d95334ec7cbbf9713941a3ec883d85a9c383",
+  "environment": "Linux x86_64 / Zorin OS; Qt offscreen and dummy SDL audio; virtual SDL controllers",
+  "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "rom_bytes_unchanged": true,
+  "automated": {
+    "native_suites_passed": 22,
+    "python_tests_passed": 60,
+    "python_tests_skipped": 0,
+    "core_follow_up_passed": true
+  },
+  "launcher_ui": {
+    "languages": [
+      "de",
+      "en"
+    ],
+    "saved_mode_and_legacy_default_precedence": true,
+    "cancel_and_failed_persistence_leave_mode_unchanged": true,
+    "exact_rom_selection_with_saved_mode_and_environment_unset": true,
+    "generic_gba_and_ds_remain_independent_of_preference": true,
+    "visible_waiting_reason_and_pause_action": true,
+    "button_keyboard_virtual_controller_confirmation": true,
+    "held_a_on_initial_pause_or_restored_view_does_not_accept": true,
+    "stale_and_duplicate_acknowledgements_rejected": true,
+    "old_worker_rejected_before_profile_lock": true,
+    "fixture_ipc_tests_are_separate_from_gameplay": true,
+    "compact_pause_screenshot_inspected": true
+  },
+  "native_recovery_cases": [
+    {
+      "scenario": "exp-share-overflow",
+      "result": "pass",
+      "native_frames": 1174,
+      "result_sha256": "1cfd4649721b61ad5eda5d26d01a13c20bd639d961025249500c025e1fcd058d"
+    },
+    {
+      "scenario": "exp-share-overflow-leader2",
+      "result": "pass",
+      "native_frames": 994,
+      "result_sha256": "5560a180f023d0d55b2b9d1d125e809fcd07842629222c6924c728ee04ff1c92"
+    },
+    {
+      "scenario": "exp-share-overflow-both",
+      "result": "pass",
+      "native_frames": 1174,
+      "result_sha256": "fda4f4192b707b4568eb310146b108a8527aea6475919209acf72e319e83acc2"
+    },
+    {
+      "scenario": "exp-share-enigma",
+      "result": "pass",
+      "native_frames": 994,
+      "result_sha256": "fa6cb5deccc6d4ee55f9d8ba9811513099bc639f566348734900ec7edde5f3ab"
+    },
+    {
+      "scenario": "exp-share-enigma-leader2",
+      "result": "pass",
+      "native_frames": 994,
+      "result_sha256": "a18124849755cf560461b1b41b006352566383fcf1f1cdb663a32952687c436d"
+    },
+    {
+      "scenario": "exp-share-enigma-both",
+      "result": "pass",
+      "native_frames": 994,
+      "result_sha256": "2081f6d9cc927b0d7db3069e628a90149ccf196ed20940487fd0e05269dffb7f"
+    }
+  ],
+  "native_recovery_checks": [
+    "Both whole-machine snapshots, Flash, parties and unsaved wallets remain unchanged while paused.",
+    "Explicit approval continues the original native encounter separately with owned parties.",
+    "Simultaneous pending encounters must both reach their fields before shared co-op resumes.",
+    "Both players save via the native game and freshly Continue from their own battery buffers.",
+    "Removing held items in the test fixture allows another shared admission."
+  ],
+  "ordinary_shared_regressions": [
+    {
+      "scenario": "single",
+      "result": "pass",
+      "result_sha256": "383e927eaa2cf36e88a68d7f70a5ac4b3e1048809e7f5672faf69e80e9a32c01"
+    },
+    {
+      "scenario": "single-leader2",
+      "result": "pass",
+      "result_sha256": "f788cb227cb9d95f6622b9d28280440a05d5e2e548c28bea66f41aad69e26bba"
+    }
+  ],
+  "production_recovery_cases": [
+    {
+      "production_session_playview_and_worker": true,
+      "authored_native_save_inputs": true,
+      "virtual_controllers": true,
+      "battle_initiator": 1,
+      "pause_reason": 3,
+      "unchanged_paused_pictures_and_live_heartbeat": true,
+      "prior_saves_preserved": true,
+      "pause_survives_watchdog": true,
+      "explicit_ui_approval": true,
+      "native_individual_battle_returns_to_coop": true,
+      "clean_shutdown": true,
+      "rom_and_inputs_unchanged": true,
+      "full_campaign": false,
+      "result_sha256": "b488779b692fcaf50094610ca3d37aaaab2453b8bdbe95152e5c5fc7484fabb5"
+    },
+    {
+      "production_session_playview_and_worker": true,
+      "authored_native_save_inputs": true,
+      "virtual_controllers": true,
+      "battle_initiator": 2,
+      "pause_reason": 4,
+      "unchanged_paused_pictures_and_live_heartbeat": true,
+      "prior_saves_preserved": true,
+      "pause_survives_watchdog": true,
+      "explicit_ui_approval": true,
+      "native_individual_battle_returns_to_coop": true,
+      "clean_shutdown": true,
+      "rom_and_inputs_unchanged": true,
+      "full_campaign": false,
+      "result_sha256": "7d3939b0f9fd268edbf86f58929b64fd469cef0cd1dcfee6005fa8c0c493dfef"
+    }
+  ],
+  "production_boundary_checks": {
+    "paired_worker_boot_restart_shutdown_and_save_isolation": true,
+    "old_launcher_rejected_before_core_creation": true,
+    "session_child_failure_lock_cleanup_and_both_prior_saves_preserved": true,
+    "generic_gba_authored_storage_input_and_restart": true
+  },
+  "test_harness_follow_up": "A wall-time walking sequence once timed out before an encounter. The acceptance driver now completes alternating tile steps using worker frame counts. Both production cases passed with this final driver.",
+  "limitations": [
+    "Shared EXP Share working capacity and per-owner Enigma effects remain unsupported; this change preserves progress and offers explicit individual encounters.",
+    "Pause preservation is for the running session, not an automatic in-game save or crash-recovery checkpoint.",
+    "Native recovery scenarios author teams/items and encounter prerequisites. Production cases use private authored native Route 1 saves and natural grass encounters.",
+    "No complete natural campaign, physical controllers, audible output, actual Bazzite or native Windows gameplay tested.",
+    "Platform CI results are separate from this local gameplay report.",
+    "No ROM, save, checkpoint, private path or game screenshot is included. Released Alpha 8 assets are unchanged."
+  ],
+  "source_sha256": {
+    "gba/FireRedRecovery.h": "a2fcdbffb7cd37d932794cd62158a271f6530e55f5fca39fede644f7e0f7892c",
+    "gba/FireRedPairWorker.cpp": "9bfc2d25857607afdae8f72b0d730b5077ccd12d3e41458d7bf0fd5368b3e4b1",
+    "gba/Worker.cpp": "c45f3156049bcb65c4eccc63a9483c77dd5450b145952ccef7027054c058754e",
+    "launcher/FireRedNotice.h": "4f84f44993ba076f03a8a2145aaac48da2212eb34a84ea46d56db5cd7cb6d673",
+    "launcher/main.cpp": "672591f84e6a065e65f82961be0b8c8fbb91fbb80c62f3751b804b1b5dd4b970",
+    "launcher/Session.h": "05a6b957f41bd101c9a8d5f2f602aeef40b41ed7c200b4e73f2b4af3030ecd7a",
+    "launcher/Translations.h": "65d7f70ab68023405c3f901c784d79ce667a08c5d4524f076bec74a0d4b26133",
+    "tests/test_firered_recovery.cpp": "dec98b8f00926725bc238817fa9369f34004d49c9ef3650b649921d41a39712c",
+    "tests/test_launcher.cpp": "ea4efb6114e406bd5089f55b8ab4ee7a74637c900970e64a60716553a3289a6a",
+    "tests/test_core.cpp": "8817fa5f6e7d18bf8a033ad4d788fa7b2553d73a8053a262e3f265a6d2e27880",
+    "tests/worker_fixture.cpp": "68740bc0772b58f44bfc16e86c1f1bd18c259117e69336919c861d69815c4015",
+    "tests/verify_firered_pair.cpp": "4901496d7b1e3b000d8663f66353d9542f409d1c136e05599ecdea0bb3980fa9",
+    "tests/verify_gba.cpp": "51caaafb56da4c6fec58d18627e6f71a65f68089aedf5caf4f7dd951e9ba0c31",
+    "tests/smoke_firered_recovery.py": "296c8c7a5d5af1a5f789e37be910457ae10f873918f601ae64d72f17e7dc8934",
+    "tests/smoke_firered_pair_worker.py": "ec8ccc3d7c96239e9a0198e2b6b2137f440120bf010fdacf52e80a5ce64e4777",
+    "scripts/test-firered-matrix.py": "877b7ef24440573e4e487d9382b63fb417079c4b21bdbb12d2a79aa7f4a49704"
+  }
+}

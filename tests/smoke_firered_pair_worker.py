@@ -27,7 +27,7 @@ def smoke(binary, rom, report_path=None):
     assert original_hash == EXPECTED_ROM, 'Requires exact verified German original'
     assert b'FIRERED_PAIR_EXPERIMENT=1' in subprocess.check_output([str(binary), '--coop-capabilities'], timeout=5)
     base_env = {k: v for k, v in os.environ.items() if not k.startswith(('PMCOOP_', 'MELONDS_AP'))}
-    base_env.update(PMCOOP_FIRERED_PAIR='1', SDL_AUDIODRIVER='dummy')
+    base_env.update(PMCOOP_FIRERED_PAIR='1', PMCOOP_FIRERED_RECOVERY='1', SDL_AUDIODRIVER='dummy')
     report = {'real_german_rom': True, 'experimental_pair_worker': True, 'team_gameplay_verified': False}
     with tempfile.TemporaryDirectory(prefix='couch-firered-pair-ä-') as temp:
         root = Path(temp)
@@ -43,6 +43,7 @@ def smoke(binary, rom, report_path=None):
             assert result.returncode != 0, result.stdout.decode(errors='replace')
             return result.stderr.decode(errors='replace')
 
+        assert 'matching launcher' in rejected(dict(env, PMCOOP_FIRERED_RECOVERY='0'))
         assert 'distinct save profiles' in rejected(dict(env, PMCOOP_PROFILE2=str(profiles[0])))
         assert 'distinct IPC' in rejected(dict(env, PMCOOP_IPC2=str(ipcs[0])))
         assert all(not (p / 'saves/game.sav').exists() for p in profiles)
@@ -58,7 +59,7 @@ def smoke(binary, rom, report_path=None):
         from smoke_gba import homebrew
         wrong = root / 'authored.gba'; wrong.write_bytes(homebrew())
         assert 'exact verified German' in rejected(env, wrong)
-        report['boundary_rejections'] = ['same_profile', 'same_ipc', 'corrupt_save', 'wrong_flash_size', 'wrong_rom']
+        report['boundary_rejections'] = ['old_launcher_protocol', 'same_profile', 'same_ipc', 'corrupt_save', 'wrong_flash_size', 'wrong_rom']
 
         # Authored invalid/blank Flash images, never user saves. Distinct tail
         # markers exercise separately loaded VFileMemChunk buffers and ensure

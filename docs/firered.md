@@ -4,7 +4,7 @@
 
 The current development source can run GBA games and ROM hacks in the existing CouchSplit interface. Select a `.gba` file or ZIP containing exactly one game. The launcher checks the GBA fixed header byte, header checksum and a size between 512 bytes and 32 MiB for standard cartridges. Explicitly marked CouchSplit XROM v1 files can be up to 512 MiB. A valid header identifies the file format; it does not certify that every game or hack works. Oversized and malformed files are rejected. Existing Project PM / Platinum support and the DS worker are retained; other DS games are not enabled by this change.
 
-## FireRed co-op development target — 28 October 2026
+## FireRed co-op — current source
 
 The development source includes an **experimental paired FireRed worker**: two real
 mGBA cores with separate saves, a partner overlay on the same or directly connected outdoor maps, and shared native
@@ -13,15 +13,20 @@ implementation of the requested shared-world co-op. Public Alpha 8 is unchanged.
 It is restricted to the exact unmodified German original; generic GBA games,
 other languages and ROM hacks do not acquire co-op through this option.
 
-Build the launcher and both workers together, then explicitly opt in. The
+Build the launcher and both workers together, then explicitly opt in through **Settings → FireRed co-op (experimental)**. The
 build script places the matching executables together in `build/bin`:
 
 ```sh
 scripts/build.sh
-COUCHSPLIT_FIRERED_EXPERIMENT=1 build/bin/platinum-coop
+build/bin/platinum-coop
 ```
 
-The selected worker must advertise `FIRERED_PAIR_EXPERIMENT=1`. One process owns
+The choice is saved and applies on the next session start. Settings shows whether
+the selected ROM is the supported German original. Other GBA games keep their
+independent sessions. The old `COUCHSPLIT_FIRERED_EXPERIMENT=1` environment opt-in
+is only a default when no mode preference has been saved; an explicit saved choice wins.
+
+The selected worker must advertise `FIRERED_PAIR_EXPERIMENT=1` and `FIRERED_RECOVERY=1`. One process owns
 both emulator cores and both existing IPC mappings; controller polling remains
 in the launcher. Normal GBA sessions still use two independent workers. In the
 experiment the two views show the same native battle while the partner's own
@@ -46,17 +51,22 @@ attempts to roll it back from a journal. Unreadable recovery data block the
 session; a corrupt selected backup is rejected before either file is replaced.
 Power-loss and hardware-failure recovery have not been tested.
 
-If too many active leads and living EXP Share holders must fit in the native
-six-slot battle party, the session stops before party conversion and explains
-how to retry with fewer held EXP Shares. Progress since the last in-game save
-may be lost. Other worker failures retain generic diagnostics and logs.
+If active leads and living EXP Share holders exceed the native six-slot battle
+party, or either party holds an Enigma Berry, **both games pause before party
+conversion**. Their live progress, original parties and Flash buffers remain
+in the running session. A visible message explains the reason. Choose **Continue
+individual battles** with the mouse, keyboard, or player 1's controller A button.
+This explicit choice lets the pending original encounters and their scripts run
+individually, with each player's own team and native rewards. Shared co-op resumes
+when both players return to an idle field. Remove the relevant held items after
+the battle to allow future shared battles. No automatic fallback occurs.
 
-A held Enigma Berry is also rejected before the team is combined: its effect
-comes from the holder's save, so using only the battle leader's data could give
-the other player an incorrect effect or EXP award. The launcher explains this
-separately. Until per-owner berry effects are implemented, reload the last saves
-and remove held Enigma Berries before a shared battle. Unsaved progress may be
-lost when the session stops.
+The native party capacity and per-owner Enigma effects remain unsupported in a
+shared battle. This recovery does not create an in-game save: save normally
+before later closing the session. Unexpected worker errors still stop the session
+with diagnostics. A status strip in the play view also shows whose turn it is,
+which partner is being awaited, and when individual battles are in progress.
+[Recovery verification and limits](verification/firered-recovery-ui-2026-11-08.json).
 
 The battle transaction snapshots both machines and their Flash buffers. It
 routes actions, replacements and move-learning requests to the owning human,
@@ -183,7 +193,7 @@ shared battle, the worker now prioritizes living EXP Share holders from the
 complete original parties, including late party slots. Native EXP/EV awards,
 level-up learning and evolution were exercised with prepared two-core cases for
 both initiators. If the two leads and eligible holders cannot fit in six native
-slots, the experimental session stops before converting either party; the last
+slots, the current worker pauses before converting either party (see recovery above); the last
 validated disk saves are retained. A fully pinned working set can still require
 a rollback, and not every 12-Pokémon learning/evolution path is covered.
 [Exact test scope](verification/firered-exp-share-2026-10-29.json).
@@ -299,9 +309,34 @@ build/launcher/verify-firered-public-pair ORIGINAL_DE.gba SAVE_0_BADGES.sav SAVE
 The earlier single-core [team-input experiment](verification/firered-team-input-2026-10-28.json)
 records only its historical scope. It is not the paired implementation's test report.
 
-## Current split-screen mode
+## Recovery acceptance
 
-Use **Start split screen** after assigning two controllers. Each player has one 240×160 screen, independent input/audio and their own battery save. The menu layout is retained, with game-specific labels/help. There is no additional journey menu or emulator settings field. Shared-world co-op, GBA link trading/battles, a shared Pokémon bank and travel between editions are not implemented by this worker.
+The `exp-share-overflow` and `exp-share-enigma` native scenarios now check
+recovery, not only rejection. Each also has `-leader2` and `-both` variants
+for the other initiator and simultaneous pending encounters. The full matrix
+includes all six. They verify live state/Flash preservation, explicit individual
+combat, both native saves/fresh Continue, and shared admission after item removal.
+
+For a separate production Session/PlayView/worker check, create private authored
+Route 1 saves and then trigger an encounter through virtual-controller walking:
+
+```sh
+cmake --build build/launcher --target verify-firered-pair verify-gba gba-worker
+build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATE_STARTER_STATE NEW_PRIVATE_EXP_FIXTURE exp-share-overflow-launcher
+python3 tests/smoke_firered_recovery.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEW_PRIVATE_EXP_FIXTURE NEW_PRIVATE_EXP_RESULT 0
+build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATE_STARTER_STATE NEW_PRIVATE_ENIGMA_FIXTURE exp-share-enigma-launcher
+python3 tests/smoke_firered_recovery.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEW_PRIVATE_ENIGMA_FIXTURE NEW_PRIVATE_ENIGMA_RESULT 1
+```
+
+The final argument selects player 1 (`0`) or player 2 (`1`). Keep all generated
+saves, screenshots and game logs outside the repository. The check holds the
+pause for 16 seconds, tests its heartbeat and retained saves/lock, clicks the real
+UI action, and finishes native combat until co-op resumes. The starting parties,
+items and location are authored fixtures; this is not a continuous campaign.
+
+## Independent GBA split-screen mode
+
+Outside the FireRed experiment, use **Start split screen** after assigning two controllers. Each player has one 240×160 screen, independent input/audio and their own battery save. The menu layout is retained, with game-specific labels/help. There is no additional journey menu or emulator settings field. This independent mode does not add shared-world co-op, GBA link trading/battles, a shared Pokémon bank or travel between editions.
 
 Save through the game's own menu and wait until its save indicator finishes. Start + Select held for two seconds stops the session. The worker snapshots changed battery data atomically every 60 frames and at orderly shutdown. Supported save sizes are EEPROM 512 bytes / 8 KiB, SRAM 32 KiB and Flash/SRAM 64 KiB / Flash 128 KiB. Games without battery storage do not create an empty save. Invalid sizes and detected size mismatches fail without overwriting the existing file; a snapshot is not a substitute for an in-game save. Saves and verified backups remain separate per player and exact ROM SHA-256. Different builds/languages never silently share or migrate a save.
 

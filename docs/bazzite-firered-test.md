@@ -19,11 +19,11 @@ distrobox enter couchsplit-firered-dev -- sudo dnf install -y gcc-c++ cmake ninj
 distrobox enter couchsplit-firered-dev -- git clone --branch main https://github.com/Philmenting/couchsplit.git "$HOME/CouchSplit-FireRed"
 cd "$HOME/CouchSplit-FireRed"
 distrobox enter couchsplit-firered-dev -- bash "$PWD/scripts/build.sh"
-distrobox enter couchsplit-firered-dev -- env COUCHSPLIT_FIRERED_EXPERIMENT=1 "$PWD/build/bin/platinum-coop" --data-dir "$HOME/.local/share/couchsplit-firered-dev"
+distrobox enter couchsplit-firered-dev -- "$PWD/build/bin/platinum-coop" --data-dir "$HOME/.local/share/couchsplit-firered-dev"
 ```
 
 On later launches, use the final command from the same source directory. Select
-the ROM and assign two controllers if available. Check startup, both views,
+the ROM, enable **Settings → FireRed co-op (experimental)**, and assign two controllers if available. Check startup, both views,
 controller input, saving and restarting in desktop mode. The program and game
 logs can help diagnose a failure, but do not share ROMs or save files. The source
 repository contains neither. The normal installed launcher and its saves use a

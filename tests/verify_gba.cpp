@@ -72,6 +72,56 @@ int main(int argc,char**argv) {
             } else if(kind=="restart") {
                 session.stop();if(saves.locked())fail("Profile lock leaked");
                 session.start(settings);view.reset();spin(1500);
+            } else if(kind=="boot-pair-to-field") {
+                QElapsedTimer elapsed;elapsed.start();
+                while(elapsed.elapsed()<30000 && !(session.shared(0)->peers.load() && session.shared(1)->peers.load())) {
+                    const auto t=elapsed.elapsed();
+                    for(auto* pad:pads) {
+                        SDL_JoystickSetVirtualButton(pad,controllers.buttons[3],t<3500 && t%500<80);
+                        SDL_JoystickSetVirtualButton(pad,controllers.buttons[0],t>=3500 && t<16000 && t%350<90);
+                        SDL_JoystickSetVirtualButton(pad,controllers.buttons[1],t>=16000 && t%350<90);
+                    }
+                    spin(30);if(!session.running())fail("Worker stopped during native Continue");
+                }
+                for(auto* pad:pads)for(int key:{0,1,3})SDL_JoystickSetVirtualButton(pad,controllers.buttons[key],0);
+                spin(200);
+                if(!session.shared(0)->peers.load() || !session.shared(1)->peers.load())fail("Both native saves did not Continue to their common field");
+            } else if(kind=="walk-until-pause") {
+                const int p=a["player"].toInt();if(p<0 || p>1)fail("Invalid walker");
+                QElapsedTimer elapsed;elapsed.start();
+                auto advance=[&](unsigned count) {
+                    const auto start=session.shared(p)->frame.load();
+                    while(session.shared(p)->frame.load()-start<count && elapsed.elapsed()<45000 &&
+                          !firered::battlePaused(session.fireRedStatusCode())) {
+                        spin(10);if(!session.running())fail("Worker stopped while seeking recovery pause");
+                    }
+                };
+                // One completed tile in each direction keeps this authored
+                // fixture inside its grass patch. Wall-time holds can drift
+                // outside it when two acceptance workers compete for CPU.
+                for(unsigned step=0;elapsed.elapsed()<45000 && !firered::battlePaused(session.fireRedStatusCode());++step) {
+                    const int button=controllers.buttons[step%2 ? 7 : 6];
+                    SDL_JoystickSetVirtualButton(pads[p],button,1);advance(8);
+                    SDL_JoystickSetVirtualButton(pads[p],button,0);advance(24);
+                }
+                SDL_JoystickSetVirtualButton(pads[p],controllers.buttons[6],0);
+                SDL_JoystickSetVirtualButton(pads[p],controllers.buttons[7],0);spin(50);
+                if(!firered::battlePaused(session.fireRedStatusCode())) {
+                    capture("encounter-timeout");fail("Native encounter did not pause");
+                }
+            } else if(kind=="continue-individually") {
+                auto* button=view.findChild<QPushButton*>("fireRedContinueIndividual");
+                if(!button || !button->isVisible() || !firered::battlePaused(session.fireRedStatusCode()))fail("Recovery action is unavailable");
+                button->click();spin(100);
+                if(firered::pairState(session.fireRedStatusCode())!=firered::PairState::Individual)fail("Recovery command did not reach worker");
+            } else if(kind=="finish-individual-battles") {
+                QElapsedTimer elapsed;elapsed.start();
+                while(elapsed.elapsed()<45000 && firered::pairState(session.fireRedStatusCode())==firered::PairState::Individual) {
+                    for(auto* pad:pads)SDL_JoystickSetVirtualButton(pad,controllers.buttons[0],elapsed.elapsed()%300<90);spin(30);
+                    if(!session.running())fail("Worker stopped during native individual battle");
+                }
+                for(auto* pad:pads)SDL_JoystickSetVirtualButton(pad,controllers.buttons[0],0);spin(50);
+                if(session.fireRedStatusCode()!=0)fail("Individual battles did not return to co-op");
             } else fail("Unknown test action");
             if(!error.isEmpty())fail(error);
             if(!session.running())fail("GBA worker stopped unexpectedly");

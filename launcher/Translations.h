@@ -8,6 +8,17 @@ namespace coop::i18n {
 // This built-in catalog needs no external Qt Linguist tools or runtime files.
 inline const QHash<QString,QString>& englishCatalog() {
     static const QHash<QString,QString> messages{
+        {"Feuerrot-Koop (experimentell)","FireRed co-op (experimental)"},
+        {"Gemeinsame Welt und Teamkämpfe mit der unterstützten deutschen Original-ROM. Die Kampagne ist noch nicht vollständig abgesichert. Andere GBA-Spiele bleiben getrennte Abenteuer. Änderungen gelten ab der nächsten Sitzung.","Shared world and team battles with the supported German original ROM. The full campaign is not yet verified. Other GBA games remain independent adventures. Changes apply to the next session."},
+        {"Ausgewählte ROM: deutsche Feuerrot-Original-ROM erkannt.","Selected ROM: German FireRed original detected."},
+        {"Ausgewählte ROM: für Feuerrot-Koop nicht geeignet. Bitte die unterstützte deutsche Original-ROM auswählen.","Selected ROM: not compatible with FireRed co-op. Select the supported German original ROM."},
+        {"Feuerrot-Koop · Kampf pausiert: zu viele EP-Teiler","FireRed co-op · Battle paused: too many Exp. Shares"},
+        {"Feuerrot-Koop · Kampf pausiert: Enigmabeere","FireRed co-op · Battle paused: Enigma Berry"},
+        {"Feuerrot-Koop · Einzelkämpfe · Koop wird danach fortgesetzt","FireRed co-op · Individual battles · Co-op resumes afterwards"},
+        {"Beide Spiele sind pausiert. Euer bisheriger Fortschritt bleibt in dieser Sitzung erhalten. Ihr könnt die ausstehenden Kämpfe einzeln spielen; sobald beide wieder in der Spielwelt sind, geht Koop weiter.","Both games are paused. Your progress is kept in this running session. You can play the pending battles individually; co-op resumes once both players are back in the field."},
+        {"Einzelkämpfe fortsetzen","Continue individual battles"},
+        {"Legt danach die Enigmabeere ab, um wieder gemeinsam zu kämpfen.","Afterwards, remove the Enigma Berry to battle together again."},
+        {"Legt danach EP-Teiler ab, um wieder gemeinsam zu kämpfen.","Afterwards, remove Exp. Shares to battle together again."},
         {"Pokémon Feuerrot · Koop-Testmodus","Pokémon FireRed · Co-op experiment"},
         {"Feuerrot-Testmodus starten","Start FireRed experiment"},
         {"Gemeinsame Kämpfe. Welt-Koop noch in Entwicklung.","Shared battles. World co-op is still in development."},

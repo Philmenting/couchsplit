@@ -210,6 +210,7 @@ void validationTest() {
 }
 void processTest(const QString& fixture) {
     QTemporaryDir temp;SaveStore store(temp.path());Session session(store);Settings s;s.emulator=fixture;
+    s.fireRedCoop=true; // A saved FireRed preference must never change the DS path.
     s.rom=temp.path()+"/legal-test-header.nds";QByteArray header(1024,0);header.replace(12,4,"CPUE");atomicWrite(s.rom,header);s.patchedConfirmed=true;
     int errors=0;QString lastSignal;
     session.error=[&](QString){errors++;lastSignal="error";};
@@ -229,13 +230,20 @@ void processTest(const QString& fixture) {
     atomicWrite(directory+"/legal-test-header.sav","player one progress");
     for(int i=0;i<3;i++) {
         session.start(s);for(int wait=0;wait<40&&(!session.shared(0)->frame.load()||!session.shared(1)->frame.load());wait++)spin(50);
-        assert(session.running());assert(session.shared(0)->frame.load()>0&&session.shared(1)->frame.load()>0);
+        assert(session.running() && !session.isFireRedPair());assert(session.shared(0)->frame.load()>0&&session.shared(1)->frame.load()>0);
         assert(readBytes(directory+"/game.sav")=="player one progress");
         session.stop();assert(!session.running()&&!store.locked());
         const auto renamed=temp.path()+"/renamed-"+QString::number(i)+".nds";atomicWrite(renamed,header);s.rom=renamed;
     }
     qputenv("COOP_FIXTURE_CRASH_PLAYER","1");session.start(s);spin(700);assert(!session.running()&&!store.locked()&&errors>0&&lastSignal=="error");qunsetenv("COOP_FIXTURE_CRASH_PLAYER");
     s.emulator=temp.path()+"/missing";rejects([&]{session.start(s);});assert(!store.locked());
+    s.rom=temp.path()+"/authored.gba";s.gbaEmulator=fixture;s.patchedConfirmed=false;
+    QByteArray gba(1024,0);gba.replace(0xAC,4,"TEST");gba[0xB2]=char(0x96);
+    unsigned sum=0x19;for(int n=0xA0;n<0xBD;++n)sum+=static_cast<unsigned char>(gba[n]);gba[0xBD]=char(-sum);atomicWrite(s.rom,gba);
+    qputenv("COOP_FIXTURE_OLD_RECOVERY","1");session.start(s);spin(120);
+    assert(session.running() && session.isGba() && !session.isFireRedPair());
+    assert(session.shared(0)->frame.load()>0 && session.shared(1)->frame.load()>0);
+    session.stop();qunsetenv("COOP_FIXTURE_OLD_RECOVERY");assert(!store.locked());
 }
 int main(int argc,char**argv) {
     QApplication app(argc,argv);assert(argc==2);auto fixture=QFileInfo(argv[1]).absoluteFilePath();

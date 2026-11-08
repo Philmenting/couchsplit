@@ -7,6 +7,7 @@
 #include "FireRedLeague.h"
 #include "FireRedConnections.h"
 #include "FireRedAudio.h"
+#include "FireRedRecovery.h"
 #include "CoopIPC.h"
 #include "Rom.h"
 #include <mgba/core/config.h>
@@ -127,6 +128,8 @@ struct Audio {
 }
 
 int runFireRedPairWorker(const QString& rom, volatile std::sig_atomic_t& quitRequested) {
+    if(qEnvironmentVariable("PMCOOP_FIRERED_RECOVERY")!="1")
+        coop::fail("FireRed recovery requires a matching launcher; update launcher and worker together");
     // Fingerprint before creating cores or allowing any game-memory writes.
     const auto info = coop::inspectRom(rom);
     if (info.system != coop::GameSystem::GameBoyAdvance || info.sha256 != coop::GermanFireRedSha256)
@@ -141,6 +144,7 @@ int runFireRedPairWorker(const QString& rom, volatile std::sig_atomic_t& quitReq
     if (players[0].profile == players[1].profile) coop::fail("FireRed pair requires two distinct save profiles");
     for (auto& player : players) player.initialize(rom);
     coop::firered::TeamBattle battle({{players[0].core, players[1].core}});
+    coop::firered::BattleRecovery recovery;
     std::array<bool,2> hallOfFamePending{};
     std::array<unsigned,2> leagueVictoryPending{};
     battle.completed = [&](unsigned leader,unsigned trainer,unsigned outcome,bool peerHasNativeScene) {
@@ -201,9 +205,15 @@ int runFireRedPairWorker(const QString& rom, volatile std::sig_atomic_t& quitReq
     const auto* timing = players[0].core;
     const qint64 frameNs = qRound64(1e9 * double(timing->frameCycles(players[0].core)) / timing->frequency(players[0].core));
     unsigned frames = 0;
+    uint32_t previousRecovery=0;
     fprintf(stdout, "FireRed pair: EXPERIMENTAL; two cores, separate saves; team transaction coordinator enabled\n"); fflush(stdout);
     try {
         while (!quitRequested && !players[0].mapping.data->shutdown.load() && !players[1].mapping.data->shutdown.load()) {
+            const auto command=players[0].mapping.data->touch.exchange(0);
+            players[1].mapping.data->touch.exchange(0);
+            if(recovery.accept(command)) {
+                fprintf(stdout,"FireRed pair: players explicitly chose native individual battles; co-op resumes at both fields\n");fflush(stdout);
+            }
             std::array<uint32_t, 2> keys{};
             for (unsigned i = 0; i < 2; ++i) {
                 keys[i] = (~players[i].mapping.data->keys.load()) & 0x3FFu;
@@ -211,16 +221,28 @@ int runFireRedPairWorker(const QString& rom, volatile std::sig_atomic_t& quitReq
             }
             // Deliver a pending initial-rival heal before exhaustion recovery.
             // Native scripts and menus retain ownership until they finish.
-            if (!battle.active()) { finishChampion(); progress.sample(); campaign.sample(); }
+            if (!battle.active() && !recovery.status()) { finishChampion(); progress.sample(); campaign.sample(); }
             battle.sampleWorld();
-            if (!battle.active()) {
+            if(recovery.individual()) {
+                // Both original native encounters and their return scripts stay
+                // intact. No borrowed party, shared rewards or story delivery
+                // may run while either trainer is finishing an individual fight.
+                for(unsigned i=0;i<2;++i) {
+                    players[i].core->setKeys(players[i].core,keys[i]);
+                    players[i].core->runFrame(players[i].core);
+                }
+                if(recovery.returnToCoop(coop::firered::campaignFieldQuiescent(players[0].core) &&
+                                         coop::firered::campaignFieldQuiescent(players[1].core))) {
+                    fprintf(stdout,"FireRed pair: both native fields ready; shared co-op resumed\n");fflush(stdout);
+                }
+            } else if (!battle.active() && !recovery.paused()) {
                 for (unsigned i = 0; i < 2; ++i) {
                     if (!hallOfFamePending[i] && !leagueVictoryPending[i] && coop::firered::recoverExhaustedTrainer(players[i].core)) {
                         fprintf(stdout, "FireRed pair: player %u returns to their native heal location\n", i + 1); fflush(stdout);
                     }
                     // Observe the native InitBattle callback before that core
                     // runs it. A newly joined partner must remain frozen.
-                    if (battle.tryBegin(i)) break;
+                    if (recovery.tryBegin(battle,i) || recovery.paused()) break;
                     // Keep the encounter at its original native entry while
                     // the same-map partner closes a menu/finishes a scene.
                     // The other core continues; no timeout forces solo play.
@@ -237,15 +259,20 @@ int runFireRedPairWorker(const QString& rom, volatile std::sig_atomic_t& quitReq
                     }
                     players[i].core->setKeys(players[i].core, keys[i]);
                     players[i].core->runFrame(players[i].core);
-                    if (battle.tryBegin(i)) break;
+                    if (recovery.tryBegin(battle,i) || recovery.paused()) break;
                 }
             }
             const bool sharedBattleFrame = battle.active();
             const unsigned leader = battle.battleLeader();
             if (sharedBattleFrame) battle.runBattleFrame(keys);
-            if (!battle.active()) { finishChampion(); progress.sample(); campaign.sample(); }
+            if (!battle.active() && !recovery.status()) { finishChampion(); progress.sample(); campaign.sample(); }
+            if(recovery.paused() && recovery.status()!=previousRecovery) {
+                fprintf(stdout,"FireRed pair: recoverable preflight pause (%s); both machines retained\n",
+                    coop::firered::pairState(recovery.status())==coop::firered::PairState::Enigma?"Enigma Berry":"EXP Share capacity");fflush(stdout);
+            }
+            previousRecovery=recovery.status();
             int waitingFor=-1;
-            if(!battle.active()) for(unsigned i=0;i<2;++i)
+            if(!battle.active() && !recovery.status()) for(unsigned i=0;i<2;++i)
                 if(battle.waitingForPartner(i)) { waitingFor=int(1-i);break; }
             battle.sampleWorld();
             const auto& actors = battle.worldActors();
@@ -259,17 +286,17 @@ int runFireRedPairWorker(const QString& rom, volatile std::sig_atomic_t& quitReq
                     const auto partner=coop::firered::projectConnectedPartner(actors[i],actors[1-i],topology[i],topology[1-i]);
                     if(partner) coop::firered::compositePartner(player.top.data(),coop::Width,actors[i],*partner);
                 }
-                // Paired FireRed only: 0 field, 1 shared battle, 2 waiting.
-                player.mapping.data->bridgeActive.store(battle.active() ? 1u : waitingFor>=0 ? 2u : 0u);
+                player.mapping.data->bridgeActive.store(recovery.status() ? recovery.status() : battle.active() ? 1u : waitingFor>=0 ? 2u : 0u);
                 player.mapping.data->peers.store(actors[0].valid && actors[1].valid && actors[0].mapGroup == actors[1].mapGroup && actors[0].mapNum == actors[1].mapNum ? 1u : 0u);
-                player.mapping.data->role.store(waitingFor>=0 ? unsigned(waitingFor)+1 : battle.inputOwner() < 0 ? 0u : unsigned(battle.inputOwner()) + 1);
+                player.mapping.data->role.store(recovery.paused() ? recovery.owner()+1 : waitingFor>=0 ? unsigned(waitingFor)+1 : battle.inputOwner() < 0 ? 0u : unsigned(battle.inputOwner()) + 1);
                 player.mapping.publish(player.top.data(), player.bottom.data());
             }
             // Drain both cores, including a muted/frozen one, so no stale
             // overworld audio plays after a shared battle or a mode change.
             const auto firstAudio=audio.drain(players[0].core);
             const auto secondAudio=audio.drain(players[1].core);
-            audio.play(firstAudio,secondAudio,sharedBattleFrame,leader);
+            if(recovery.paused()) { if(audio.device) SDL_ClearQueuedAudio(audio.device); }
+            else audio.play(firstAudio,secondAudio,sharedBattleFrame,leader);
             // A synthetic combined party must never reach either battery file.
             if (++frames % 60 == 0 && !battle.active()) for (auto& player : players) player.flushSave();
             target += frameNs;

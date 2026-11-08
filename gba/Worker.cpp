@@ -51,7 +51,7 @@ struct CoreOwner {
 int main(int argc,char** argv) {
     QCoreApplication app(argc,argv);
     if(app.arguments().contains("--coop-capabilities")) {
-        puts("PMCOOP_ABI=2 STABLE_SAVE=1 GBA=1 MGBA=0.10.5 GBA_XROM=1 GBA_MAX_ROM_MIB=512 FIRERED_PAIR_EXPERIMENT=1");return 0;
+        puts("PMCOOP_ABI=2 STABLE_SAVE=1 GBA=1 MGBA=0.10.5 GBA_XROM=1 GBA_MAX_ROM_MIB=512 FIRERED_PAIR_EXPERIMENT=1 FIRERED_RECOVERY=1");return 0;
     }
     std::signal(SIGTERM,requestQuit);std::signal(SIGINT,requestQuit);
     SDL_AudioDeviceID audio=0;

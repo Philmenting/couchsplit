@@ -34,8 +34,9 @@ test evidence and limitations](docs/firered.md).
 
 FireRed's partner display covers the same map and directly connected outdoor
 maps; a shared battle requires both players to be ready on the same map.
-Partner collision and full campaign coverage are not established. Some battle
-configurations stop the session; [read the known limits](docs/firered.md) and
+Partner collision and full campaign coverage are not established. EXP Share capacity
+and Enigma Berry limits pause both games with an explicit option to continue
+individual battles; [read the known limits](docs/firered.md) and
 save both games regularly. GBA link multiplayer is not implemented.
 
 ## Download
@@ -94,7 +95,7 @@ Two separate Project PM/melonDS processes share one window. Each player controls
 
 If Steam produces duplicate inputs, disable Steam Input **for this game entry**. Bazzite requests its Steam entry through the host helper; the application-menu action can retry if it is missing. [Bazzite setup](docs/one-file-installer.md) · [Troubleshooting](docs/troubleshooting.md). Detailed guides are available in [English](docs/README.md) and [German](docs/de/README.md).
 
-To try FireRed, build the current source and enable its opt-in experiment as
+To try FireRed, build the current source and enable **Settings → FireRed co-op (experimental)** as
 described in the [FireRed guide](docs/firered.md) or [Bazzite source-test guide](docs/bazzite-firered-test.md).
 
 ### ROM corrections and existing saves

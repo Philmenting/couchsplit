@@ -35,6 +35,7 @@ static void requestQuit(int) {quitRequested=1;}
 #include "Layout.h"
 #include "Theme.h"
 #include "LanguageDialog.h"
+#include "FireRedNotice.h"
 using namespace coop;
 
 class PlayView : public QWidget {
@@ -44,10 +45,33 @@ class PlayView : public QWidget {
     std::array<uint32_t,2> lastFrames{{0,0}};
     QTimer timer; QElapsedTimer delta;
     std::array<QLabel*,2> helpLabels;
+    FireRedNotice* fireRedNotice;
+    uint32_t lastNotice=0;
+    bool recoveryAcceptHeld=true;
+    void placeNotice() {
+        if(!fireRedNotice->isVisible())return;
+        const int width=qMax(1,this->width()-24);
+        const int height=qMax(fireRedNotice->minimumSizeHint().height(),fireRedNotice->heightForWidth(width));
+        const int top=firered::battlePaused(session.fireRedStatusCode())?qMax(8,(this->height()-height)/2):8;
+        fireRedNotice->setGeometry(12,top,width,height);fireRedNotice->raise();
+    }
+    void refreshNotice() {
+        fireRedNotice->setVisible(session.running() && session.isFireRedPair());
+        if(!fireRedNotice->isVisible()) {lastNotice=0;return;}
+        const auto state=session.fireRedStatusCode();
+        fireRedNotice->showState(state,session.fireRedStatusText());placeNotice();
+        if(state!=lastNotice) {
+            recoveryAcceptHeld=true;
+            if(firered::battlePaused(state) && isVisible())fireRedNotice->focusAction();
+        }
+        lastNotice=state;
+    }
 public:
     Settings& settings;
     std::function<void()> leave, endSession;
     PlayView(Session& s,Controllers& c,Settings& cfg):session(s),controllers(c),settings(cfg) {
+        fireRedNotice=new FireRedNotice(this);fireRedNotice->hide();
+        fireRedNotice->continueIndividually=[this](uint32_t pause){return session.continueFireRedIndividually(pause);};
         for(int p=0;p<2;p++) {
             auto* help=i18n::bindText(new QLabel(this),"Touch: rechter Stick + Klick · Ansicht: Select + R · Ende: Start + Select (2 s)");
             help->setObjectName(QString("playHelp%1").arg(p+1));
@@ -58,40 +82,50 @@ public:
         setFocusPolicy(Qt::StrongFocus); timer.setInterval(16); delta.start();
         connect(&timer,&QTimer::timeout,this,[this]{
             if(!session.running()) return;
-            if(!isVisible() || window()->isMinimized()) { neutralInput(); return; }
+            refreshNotice();
+            if(!isVisible() || window()->isMinimized() || QApplication::activeModalWidget()) { neutralInput(); return; }
             float dt=qMin(qint64(50),delta.restart())/1000.0f;
             controllers.update();
+            const bool paused=firered::battlePaused(session.fireRedStatusCode());
             for(int p=0;p<2;p++) {
                 auto input=controllers.read(p,dt,!session.isGba());
                 if(input.toggle && !session.isGba()) bottomOnly[p]=!bottomOnly[p];
                 if(auto* shared=session.shared(p)) {
-                    shared->keys.store(input.keys); shared->touch.store(session.isGba()?0:input.touch);
+                    shared->keys.store(paused?0xFFF:input.keys);
+                    if(!session.isFireRedPair())shared->touch.store(session.isGba()?0:input.touch);
                     auto frame=shared->frame.load();
                     if(frame!=lastFrames[p] && session.copyFrame(p,tops[p],bottoms[p])) lastFrames[p]=frame;
                 }
                 if(input.exit) { if(endSession) endSession(); return; }
             }
+            const bool accept=controllers.menuState().accept;
+            if(paused && accept && !recoveryAcceptHeld)fireRedNotice->activateAction();
+            recoveryAcceptHeld=accept;
             update();
         }); timer.start();
     }
     void neutralInput() {
-        for(int p=0;p<2;p++) if(auto* s=session.shared(p)) {s->keys.store(0xFFF);s->touch.store(0);}
-        controllers.resetGestures(); delta.restart();
+        for(int p=0;p<2;p++) if(auto* s=session.shared(p)) {s->keys.store(0xFFF);if(!session.isFireRedPair())s->touch.store(0);}
+        recoveryAcceptHeld=true;controllers.resetGestures(); delta.restart();
     }
     void refreshHelp() {
         for(auto* help:helpLabels) {
             const QString key=session.isGba()?"GBA: Steuerkreuz + A/B + L/R · Ende: Start + Select (2 s)":"Touch: rechter Stick + Klick · Ansicht: Select + R · Ende: Start + Select (2 s)";
             help->setProperty("translationKey",key);help->setText(i18n::text(key));
         }
+        refreshNotice();
     }
     void reset() { lastFrames={{0,0}}; tops={}; bottoms={}; bottomOnly={{false,false}}; delta.restart();refreshHelp(); }
 protected:
+    void resizeEvent(QResizeEvent* event) override {QWidget::resizeEvent(event);placeNotice();}
     void keyPressEvent(QKeyEvent* e) override { if(e->key()==Qt::Key_Escape) { if(leave) leave(); } else QWidget::keyPressEvent(e); }
     void paintEvent(QPaintEvent*) override {
         QPainter painter(this); painter.fillRect(rect(),QColor("#0e2330"));
         painter.setRenderHint(QPainter::SmoothPixmapTransform,false);
+        const bool paused=firered::battlePaused(session.fireRedStatusCode());
+        const QRect gameArea=rect().adjusted(0,fireRedNotice->isVisible() && !paused?fireRedNotice->geometry().bottom()+8:0,0,0);
         for(int p=0;p<2;p++) {
-            auto area=playerArea(rect(),p,settings.horizontal).adjusted(12,12,-12,-12);
+            auto area=playerArea(gameArea,p,settings.horizontal).adjusted(12,12,-12,-12);
             QRectF label(area.x(),area.y(),area.width(),60);
             painter.setPen(QColor(p==0?"#f59c89":"#91dce0"));
             QFont heading(theme::pixelFamily());heading.setPixelSize(18);painter.setFont(heading);
@@ -100,6 +134,7 @@ protected:
             painter.setPen(QColor(controllers.connected(p)?"#c0d2d7":"#ffb0a3"));
             painter.drawText(label.adjusted(0,30,0,0),Qt::AlignCenter,controllers.connected(p)?i18n::text("Controller verbunden"):i18n::text("Controller getrennt"));
             auto* help=helpLabels[p];
+            help->setVisible(!paused);
             const int helpWidth=qMax(1,qFloor(area.width()));
             const int helpHeight=qMax(help->fontMetrics().height(),help->heightForWidth(helpWidth));
             help->setGeometry(qCeil(area.left()),qFloor(area.bottom())-helpHeight,helpWidth,helpHeight);
@@ -113,7 +148,8 @@ protected:
             }
         }
         painter.setPen(QPen(QColor("#3b5966"),2));
-        if(settings.horizontal) painter.drawLine(0,height()/2,width(),height()/2); else painter.drawLine(width()/2,0,width()/2,height());
+        if(settings.horizontal) painter.drawLine(0,gameArea.center().y(),width(),gameArea.center().y()); else painter.drawLine(width()/2,gameArea.top(),width()/2,height());
+        if(paused)painter.fillRect(rect(),QColor(0,0,0,150));
     }
 };
 class Launcher : public QWidget {
@@ -178,7 +214,7 @@ class Launcher : public QWidget {
     QString romFingerprint;
     bool selectedGba=false;
     bool gbaSelected() const {return selectedGba;}
-    bool fireRedExperimentSelected() const {return selectedGba && romFingerprint==QLatin1String(GermanFireRedSha256) && qEnvironmentVariable("COUCHSPLIT_FIRERED_EXPERIMENT")=="1";}
+    bool fireRedExperimentSelected() const {return session.running()?session.isFireRedPair():selectedGba && romFingerprint==QLatin1String(GermanFireRedSha256) && settings.fireRedCoop;}
     void rememberLanguage(const QString& value,bool fullSettings=false) {
         if(!i18n::supported(value))fail(i18n::text("Nicht unterstützte Sprache."));
         const auto before=stored;
@@ -199,6 +235,7 @@ class Launcher : public QWidget {
         stored["bios9"]=settings.bios9; stored["bios7"]=settings.bios7; stored["firmware"]=settings.firmware;
         stored["layout"]=settings.layout; stored["horizontal"]=settings.horizontal;
         stored["fireRedAudio"]=settings.fireRedAudio;
+        stored["fireRedCoop"]=settings.fireRedCoop;
         stored["patchedConfirmed"]=settings.patchedConfirmed;
         QJsonArray mapping; for(auto n:controllers.buttons) mapping.append(n); stored["buttons"]=mapping;
         atomicWrite(root+"/settings.json",QJsonDocument(stored).toJson());
@@ -244,14 +281,18 @@ class Launcher : public QWidget {
         language.setCurrentIndex(language.findData(i18n::language()));
         form.addRow(i18n::text("Sprache"),&language);
         QLabel languageHelp(i18n::text("Die Sprache gilt für den Launcher, nicht für die Spiel-ROM."));languageHelp.setWordWrap(true);form.addRow(&languageHelp);
+        QCheckBox fireRedCoop(i18n::text("Feuerrot-Koop (experimentell)"));fireRedCoop.setObjectName("fireRedCoopCheck");fireRedCoop.setChecked(settings.fireRedCoop);
+        form.addRow(&fireRedCoop);
+        QLabel coopHelp(i18n::text("Gemeinsame Welt und Teamkämpfe mit der unterstützten deutschen Original-ROM. Die Kampagne ist noch nicht vollständig abgesichert. Andere GBA-Spiele bleiben getrennte Abenteuer. Änderungen gelten ab der nächsten Sitzung."));coopHelp.setWordWrap(true);form.addRow(&coopHelp);
+        QLabel compatibility(i18n::text(romFingerprint==QLatin1String(GermanFireRedSha256)?"Ausgewählte ROM: deutsche Feuerrot-Original-ROM erkannt.":"Ausgewählte ROM: für Feuerrot-Koop nicht geeignet. Bitte die unterstützte deutsche Original-ROM auswählen."));compatibility.setObjectName("fireRedCompatibility");compatibility.setWordWrap(true);form.addRow(&compatibility);
         QComboBox fireRedAudio;fireRedAudio.setObjectName("fireRedAudioCombo");
         fireRedAudio.addItem(i18n::text("Spieler 1"),"player1");fireRedAudio.addItem(i18n::text("Spieler 2"),"player2");
         fireRedAudio.addItem(i18n::text("Beide Spieler"),"both");fireRedAudio.addItem(i18n::text("Stumm"),"mute");
         fireRedAudio.setCurrentIndex(qMax(0,fireRedAudio.findData(settings.fireRedAudio)));
         QLabel audioHelp(i18n::text("Gilt ab dem nächsten Start des Feuerrot-Testmodus."));audioHelp.setWordWrap(true);
-        if(qEnvironmentVariable("COUCHSPLIT_FIRERED_EXPERIMENT")=="1") {
-            form.addRow(i18n::text("Feuerrot-Koop: Ton"),&fireRedAudio);form.addRow(&audioHelp);
-        }
+        form.addRow(i18n::text("Feuerrot-Koop: Ton"),&fireRedAudio);form.addRow(&audioHelp);
+        fireRedAudio.setEnabled(fireRedCoop.isChecked());
+        connect(&fireRedCoop,&QCheckBox::toggled,&fireRedAudio,&QWidget::setEnabled);
         QLineEdit emu(settings.emulator), b9(settings.bios9), b7(settings.bios7),fw(settings.firmware);
         auto row=[&](QString title,QLineEdit& line){ auto* box=new QWidget(&dialog);auto* layout=new QHBoxLayout(box); layout->addWidget(&line); auto* browse=new QPushButton(i18n::text("Auswählen"),box);layout->addWidget(browse);connect(browse,&QPushButton::clicked,&dialog,[&,title]{auto file=QFileDialog::getOpenFileName(&dialog,title);if(!file.isEmpty())line.setText(file);});form.addRow(title,box); };
         row("Emulator",emu);row("ARM9 BIOS (optional)",b9);row("ARM7 BIOS (optional)",b7);row(i18n::text("DS-Firmware (optional)"),fw);
@@ -259,7 +300,12 @@ class Launcher : public QWidget {
         QDialogButtonBox ok(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);theme::labelButtons(ok);outer.addWidget(&ok);
         connect(&ok,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(&ok,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
         dialog.resize(QSize(qMin(760,qMax(360,width()-48)),qMin(650,qMax(280,height()-48))));
-        if(dialog.exec()==QDialog::Accepted) {settings.emulator=emu.text();settings.bios9=b9.text();settings.bios7=b7.text();settings.firmware=fw.text();settings.fireRedAudio=fireRedAudio.currentData().toString();rememberLanguage(language.currentData().toString(),true);}
+        if(dialog.exec()==QDialog::Accepted) {
+            const auto before=settings;
+            settings.emulator=emu.text();settings.bios9=b9.text();settings.bios7=b7.text();settings.firmware=fw.text();settings.fireRedAudio=fireRedAudio.currentData().toString();settings.fireRedCoop=fireRedCoop.isChecked();
+            try {rememberLanguage(language.currentData().toString(),true);}
+            catch(...) {settings=before;for(auto* line:{&emu,&b9,&b7,&fw})line->setParent(nullptr);throw;}
+        }
         // These line edits have automatic storage; remove them before parent teardown.
         for(auto* line:{&emu,&b9,&b7,&fw}) line->setParent(nullptr);
     }
@@ -384,6 +430,7 @@ public:
         settings.emulator=stored.value("emulator").toString(bundledEmulator());settings.rom=stored.value("rom").toString();
         settings.gbaEmulator=stored.value("gbaEmulator").toString(bundledGbaEmulator());
         settings.fireRedAudio=stored.value("fireRedAudio").toString("player1");
+        settings.fireRedCoop=stored.value("fireRedCoop").toBool(settings.fireRedCoop);
         if(!QStringList{"player1","player2","both","mute"}.contains(settings.fireRedAudio))settings.fireRedAudio="player1";
         if(!settings.rom.isEmpty()) {try{const auto info=inspectRom(settings.rom);romFingerprint=info.sha256;selectedGba=info.system==GameSystem::GameBoyAdvance;}catch(const std::exception&){}}
         if(!QFileInfo(settings.emulator).isExecutable()) settings.emulator=bundledEmulator();
@@ -449,6 +496,7 @@ public:
         session.error=[this](QString text){statusSource=text==i18n::text(expShareCapacityMessageSource())?expShareCapacityMessageSource():text;statusLabel->setProperty("tone","error");statusLabel->setText(i18n::text(statusSource));statusLabel->style()->unpolish(statusLabel);statusLabel->style()->polish(statusLabel);};
         session.ended=[this,menuScroll]{
             pages->setCurrentIndex(0);
+            retranslate();
             if(statusLabel->property("tone").toString()=="error")
                 // Word wrapping can resize the label after the menu is shown.
                 QTimer::singleShot(80,menuScroll,[this,menuScroll]{

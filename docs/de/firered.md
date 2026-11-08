@@ -4,7 +4,7 @@
 
 Der aktuelle Entwicklungsquellcode kann GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
 
-## Entwicklungsziel Feuerrot-Koop — 28. Oktober 2026
+## Feuerrot-Koop — aktueller Quellstand
 
 Der Entwicklungsquellstand enthält einen **experimentellen Feuerrot-Paarworker**:
 zwei echte mGBA-Kerne mit getrennten Saves, eine Partneransicht auf derselben
@@ -14,16 +14,22 @@ Alpha 8 bleibt unverändert. Der Testmodus unterstützt ausschließlich die exak
 unveränderte deutsche Original-ROM; andere GBA-Spiele, Sprachen und Hacks erhalten
 dadurch keinen Koop.
 
-Launcher und beide Worker zusammen bauen und den Testmodus ausdrücklich
-einschalten. Das Build-Skript legt die passenden Programme gemeinsam in
+Launcher und beide Worker zusammen bauen und den Modus unter **Einstellungen →
+Feuerrot-Koop (experimentell)** einschalten. Das Build-Skript legt die passenden Programme gemeinsam in
 `build/bin` ab:
 
 ```sh
 scripts/build.sh
-COUCHSPLIT_FIRERED_EXPERIMENT=1 build/bin/platinum-coop
+build/bin/platinum-coop
 ```
 
-Der gewählte Worker muss `FIRERED_PAIR_EXPERIMENT=1` melden. Ein Prozess verwaltet
+Die Auswahl wird gespeichert und gilt ab der nächsten Sitzung. Die Einstellungen
+zeigen, ob die ausgewählte ROM die unterstützte deutsche Original-ROM ist.
+Andere GBA-Spiele behalten ihre getrennten Sitzungen. Die bisherige Umgebungsvariable
+`COUCHSPLIT_FIRERED_EXPERIMENT=1` dient nur als Vorgabe, wenn noch keine Moduswahl
+gespeichert wurde; eine ausdrücklich gespeicherte Auswahl hat Vorrang.
+
+Der gewählte Worker muss `FIRERED_PAIR_EXPERIMENT=1` und `FIRERED_RECOVERY=1` melden. Ein Prozess verwaltet
 beide Emulatorkerne und beide bestehenden IPC-Flächen; Controller werden weiterhin
 nur im Launcher abgefragt. Normale GBA-Sitzungen verwenden zwei unabhängige Worker.
 Im Testmodus zeigen beide Ansichten denselben nativen Kampf, während der andere
@@ -51,18 +57,21 @@ die Sitzung blockiert. Beschädigte gewählte Backups werden vor dem Austausch
 der Dateien abgelehnt. Stromausfall und Hardwarefehler wurden nicht getestet.
 
 Passen aktive Pokémon und lebende EP-Teiler-Träger nicht in die sechs nativen
-Kampfplätze, stoppt die Sitzung vor der Teamumwandlung mit einem Hinweis, wie
-man mit weniger EP-Teilern erneut starten kann. Nicht gespeicherter Fortschritt
-seit dem letzten Ingame-Speichern kann verloren sein. Andere Workerfehler
-behalten allgemeine Fehlermeldungen und Logs.
+Kampfplätze oder trägt ein Team eine Enigmabeere, **pausieren beide Spiele vor
+der Teamumwandlung**. Bisheriger Sitzungsfortschritt, eigene Teams und Flash-Puffer
+bleiben erhalten. Der sichtbare Hinweis erklärt den Grund. Mit **Einzelkämpfe
+fortsetzen** bestätigt ihr per Maus, Tastatur oder Controller-A von Spieler 1,
+dass die ausstehenden originalen Begegnungen samt Szenen einzeln weiterlaufen.
+Dabei gelten die eigenen Teams und nativen Belohnungen. Sobald beide wieder in
+der freien Spielwelt sind, wird Koop fortgesetzt. Legt die betreffenden getragenen
+Gegenstände danach ab, um wieder gemeinsam zu kämpfen. Es gibt keinen
+automatischen Wechsel zu Einzelkämpfen.
 
-Eine gehaltene Enigmabeere wird vor der Teamumwandlung ebenfalls abgelehnt: Ihre
-Wirkung stammt aus dem jeweiligen Spielstand; allein die Daten des Initiators
-könnten sonst beim Partner zu falschen Effekten oder EP führen. Der Launcher
-erklärt diesen Fall gesondert. Bis eigene Beereneffekte pro Spieler unterstützt
-werden, die letzten Spielstände laden und gehaltene Enigmabeeren vor dem
-gemeinsamen Kampf ablegen. Beim Sitzungsstopp kann ungespeicherter Fortschritt
-verloren gehen.
+Die Kapazitätsgrenze und eigene Enigmabeereneffekte bleiben im gemeinsamen Kampf
+unvollständig. Die Fortsetzung erzeugt keinen Ingame-Spielstand: Vor einem späteren
+Beenden normal im Spiel speichern. Unerwartete Workerfehler stoppen die Sitzung
+weiterhin mit Diagnosehinweisen. Die Statuszeile in der Spielansicht zeigt auch,
+wer am Zug ist, auf welchen Partner gewartet wird und ob Einzelkämpfe laufen.
 
 Die Kampftransaktion sichert beide Maschinen und Flash-Puffer vollständig. Aktionen,
 Wechsel und Attackenlernen gehen an den zuständigen Menschen. Traineridentität,
@@ -197,7 +206,7 @@ Worker jetzt lebende EP-Teiler-Träger aus den vollständigen ursprünglichen Te
 auch auf späteren Plätzen. Native EP/EV, Attackenlernen und Entwicklung wurden
 mit vorbereiteten Zwei-Kern-Fällen für beide Kampfinitiatoren geprüft. Passen die
 beiden aktiven Pokémon und alle berechtigten Träger nicht in sechs native Plätze,
-stoppt die experimentelle Sitzung vor der Teamumwandlung; die zuletzt geprüften
+pausiert der aktuelle Worker vor der Teamumwandlung (siehe Fortsetzung oben); die zuletzt geprüften
 Speicherdateien bleiben erhalten. Vollständig gebundene Arbeitsplätze können
 weiterhin eine Rücksetzung verlangen; nicht alle Lern- und Entwicklungspfade der
 zwölf Pokémon sind abgedeckt. [Genauer Prüfumfang](../verification/firered-exp-share-2026-10-29.json).
@@ -317,9 +326,37 @@ build/launcher/verify-firered-public-pair ORIGINAL_DE.gba SAVE_0_ORDEN.sav SAVE_
 Das frühere [Einzelkern-Eingabeexperiment](../verification/firered-team-input-2026-10-28.json)
 belegt seinen historischen Umfang. Es ist kein Testbericht der Paarimplementierung.
 
-## Aktueller Splitscreen-Modus
+## Pausenfunktion prüfen
 
-Nach dem Zuordnen zweier Controller **Splitscreen starten** wählen. Jeder Spieler erhält einen Bildschirm mit 240×160 Pixeln, eigene Eingaben/Audio und einen eigenen Spielstand. Die Menüaufteilung bleibt erhalten, Texte und Bedienhinweise passen sich dem Spiel an. Es gibt kein zusätzliches Reisemenü und kein zusätzliches Emulatorfeld in den Einstellungen. Gemeinsame Spielwelt, GBA-Linktausch/-kämpfe, gemeinsame Pokémon-Bank und Regionsreisen werden durch diesen Worker nicht umgesetzt.
+Die nativen Szenarien `exp-share-overflow` und `exp-share-enigma` prüfen nun
+auch die Fortsetzung nach der Pause. Beide besitzen `-leader2`- und `-both`-
+Varianten für den anderen Initiator und gleichzeitig ausstehende Begegnungen.
+Die vollständige Matrix enthält alle sechs. Geprüft werden unveränderte laufende
+Zustände/Flash, ausdrücklicher Einzelkampf, beide nativen Saves/frisches Weiter
+und gemeinsamer Kampfbeginn nach dem Ablegen der Gegenstände.
+
+Für einen separaten Test mit echter Session/PlayView und Worker werden private
+Route-1-Saves angelegt und ein Kampf durch virtuelle Controller-Eingaben ausgelöst:
+
+```sh
+cmake --build build/launcher --target verify-firered-pair verify-gba gba-worker
+build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATER_STARTER_ZUSTAND NEUER_PRIVATER_EP_FIXTURE exp-share-overflow-launcher
+python3 tests/smoke_firered_recovery.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEUER_PRIVATER_EP_FIXTURE NEUES_PRIVATES_EP_ERGEBNIS 0
+build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATER_STARTER_ZUSTAND NEUER_PRIVATER_ENIGMA_FIXTURE exp-share-enigma-launcher
+python3 tests/smoke_firered_recovery.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEUER_PRIVATER_ENIGMA_FIXTURE NEUES_PRIVATES_ENIGMA_ERGEBNIS 1
+```
+
+Das letzte Argument wählt Spieler 1 (`0`) oder Spieler 2 (`1`). Erzeugte Saves,
+Screenshots und Spielprotokolle außerhalb des Repositorys aufbewahren. Der Test
+hält die Pause 16 Sekunden, prüft laufende Bildmeldungen und erhaltene Saves/
+Profilsperre, klickt die echte UI-Aktion und beendet den nativen Kampf bis zur
+Rückkehr zu Koop. Ausgangsteams, Gegenstände und Ort sind angelegte Testdaten;
+dies ist kein durchgehender Kampagnentest.
+[Prüfbelege und Grenzen](../verification/firered-recovery-ui-2026-11-08.json).
+
+## Getrennter GBA-Splitscreen-Modus
+
+Außerhalb des Feuerrot-Testmodus nach dem Zuordnen zweier Controller **Splitscreen starten** wählen. Jeder Spieler erhält einen Bildschirm mit 240×160 Pixeln, eigene Eingaben/Audio und einen eigenen Spielstand. Die Menüaufteilung bleibt erhalten, Texte und Bedienhinweise passen sich dem Spiel an. Es gibt kein zusätzliches Reisemenü und kein zusätzliches Emulatorfeld in den Einstellungen. Dieser getrennte Modus ergänzt keine gemeinsame Spielwelt, GBA-Linktausch/-kämpfe, gemeinsame Pokémon-Bank oder Regionsreisen.
 
 Im Spiel speichern und das Ende der Speicheranzeige abwarten. Start + Select für zwei Sekunden beendet die Sitzung. Der Worker sichert geänderte Speicherdaten alle 60 Frames und beim geordneten Beenden atomar. Unterstützt sind EEPROM mit 512 Byte / 8 KiB, SRAM mit 32 KiB und Flash/SRAM mit 64 KiB / Flash mit 128 KiB. Spiele ohne Batteriespeicher erzeugen keinen leeren Spielstand. Ungültige Größen und erkannte Größenkonflikte werden ohne Überschreiben des vorhandenen Stands abgewiesen. Die Dateisicherung ersetzt nicht das Speichern im Spiel. Spielstände und geprüfte Backups bleiben nach Spieler und exaktem ROM-SHA-256 getrennt. Andere Builds oder Sprachen übernehmen keine Spielstände automatisch.
 

@@ -1,6 +1,48 @@
-# Entwicklungsstatus — 29.10.2026
+# Entwicklungsstatus
 
 [English](../development-status.md) · **Deutsch** · [Anleitungen](README.md)
+
+Aktualisiert am 8. November 2026. Die öffentliche Ausgabe bleibt
+**[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**
+für Project PM / Pokémon Platin. Der Entwicklungsquellcode ergänzt getrennte
+GBA-Sitzungen und ausdrücklich aktivierbaren deutschen Feuerrot-Koop. Ältere
+Ergebnisse gelten für die jeweils genannte Version und Umgebung.
+
+## Feuerrot: Moduswahl und behebbare Kampfpausen — 8. November 2026
+
+**Einstellungen → Feuerrot-Koop (experimentell)** speichert jetzt die Moduswahl
+und zeigt, ob die ausgewählte ROM der unterstützten deutschen Original-ROM
+entspricht. Die deutsche und englische Oberfläche erläutern die noch offenen
+Kampagnengrenzen. Änderungen gelten ab der nächsten Sitzung; andere GBA-Spiele
+und der DS-Pfad behalten ihr bisheriges Verhalten. Warten auf den Partner und
+die aktuelle Kampfsteuerung werden direkt in der Spielansicht angezeigt.
+
+Zu viele notwendige EP-Teiler-Träger oder eine gehaltene Enigmabeere pausieren
+nun beide Spiele vor der Teamumwandlung und erhalten den laufenden Fortschritt.
+Die sichtbare Aktion **Einzelkämpfe fortsetzen** setzt die ursprünglichen nativen
+Begegnungen ausdrücklich mit eigenen Teams und Belohnungen fort. Sobald beide
+wieder in einer ruhenden Spielwelt sind, geht Koop weiter. Die betreffenden
+getragenen Gegenstände danach ablegen, um wieder gemeinsam kämpfen zu können.
+Dies ersetzt das Worker-Ende aus den historischen Einträgen vom 29. Oktober
+unten. Die fehlenden gemeinsamen Gegenstandseffekte werden dadurch nicht
+ergänzt; es entsteht auch kein automatischer Spielstand. Unerwartete Fehler
+beenden die Sitzung weiterhin mit einer Diagnose.
+
+Prüfung unter Linux: **22 native Tests und alle 60 Python-Tests bestehen**.
+Sechs vorbereitete Zwei-Kern-Fälle mit Original-ROM decken beide Gründe, beide
+Initiatoren und gleichzeitige Begegnungen ab: unveränderte Pause, ausdrückliche
+native Fortsetzung, eigenes Ingame-Speichern/frisches Weiter und erneuter
+gemeinsamer Kampfbeginn nach Ablegen der Gegenstände. Zwei normale gemeinsame
+Kämpfe bestehen ebenfalls. Echte Session/PlayView und Worker prüfen beide
+Ablehnungen durch einen Lauf ins Gras aus angelegten Test-Saves, eine Pause von
+16 Sekunden über die Frame-Überwachung hinaus, UI-Bestätigung, nativen Einzelkampf
+und Rückkehr zu Koop. Separate UI/IPC-Fixtures prüfen Deutsch/Englisch,
+Speicherfehler der Einstellungen, alte Worker sowie alte oder gehaltene
+Bestätigungseingaben. Absturz, Profil-/Save-Erhalt und allgemeine GBA-Speicher-,
+Eingabe- und Neustarttests bestehen. Das sind gezielte Testfälle mit virtuellen
+Controllern, kein Gesamtdurchlauf oder physischer Windows-/Bazzite-/Controllertest.
+[Belege und Grenzen](../verification/firered-recovery-ui-2026-11-08.json) ·
+[Einrichtung und Wiederholung](firered.md#pausenfunktion-prüfen).
 
 ## Feuerrot: Paar-Backup und Ton — 29. Oktober 2026
 

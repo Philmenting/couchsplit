@@ -4,7 +4,7 @@
 The user explicitly requires a shared FireRed world AND human-controlled team
 battles against wild Pokemon and trainers, analogous to Platinum co-op. Independent
 split-screen adventures and synchronized trainer wins alone do not satisfy this.
-An explicit COUCHSPLIT_FIRERED_EXPERIMENT=1 path now uses two real mGBA cores in
+The saved, explicit FireRed co-op setting now uses two real mGBA cores in
 one worker with owned battle input, transactional results, separate saves and a
 same-map/directly-connected outdoor-map partner framebuffer overlay. This does not complete shared-world co-op:
 reviewed campaign transactions now cover the Kanto/Sevii milestones, native
@@ -59,10 +59,31 @@ different objects remain queued, never consume each other's result. A matching
 pending partner resumes its own native callback exactly once without counting
 another battle. Keep whole-machine/Flash rollback and no battery flush during a
 combined battle. Paired FireRed IPC bridgeActive values are 0 field, 1 battle,
-2 waiting; role is the active or awaited player. The DS ABI/layout is unchanged.
+2 waiting; role is the active or awaited player. See the recovery extension below.
+The DS ABI/layout is unchanged.
 Private acceptance fixtures author map/prerequisites/strong parties explicitly;
 original native scenes/save/fresh Continue are separate execution evidence.
 Do not call these a natural continuous campaign or a production-UI campaign test.
+
+## FireRed visible mode and recoverable admission (8 November 2026)
+The opt-in is a persisted `fireRedCoop` setting, exposed in Settings in English
+and German. It applies only to the exact German FireRed hash and the next session;
+all other games retain their existing mode. The legacy environment opt-in is only
+a default when the saved choice is absent. A saved false must override it.
+Require `FIRERED_RECOVERY=1` from the paired worker, and acknowledge it with
+`PMCOOP_FIRERED_RECOVERY=1`; an old launcher must not enter an unresumable pause.
+For ABI 2 paired GBA only,
+bridgeActive's low byte is 3 for EXP Share capacity, 4 for Enigma, or 5 for explicitly
+approved individual encounters; paused states carry a unique generation in the
+upper bytes. The launcher echoes that exact pause into player 1's otherwise-unused
+GBA touch field. Drain commands every frame and reject stale generations.
+Recover only the two typed, read-only admission failures, before any team conversion.
+Keep both machines/Flash and the profile lock alive and publish frames during pause.
+No silent solo fallback: wait for an explicit UI action, suppress held activation,
+then run original encounters and scripts with separate native teams/rewards.
+Defer campaign/story delivery until both fields are quiescent. Unexpected errors
+and any mutation/rollback failures still fail closed. Never relabel this as support
+for unlimited shared EXP Share holders or per-owner Enigma effects.
 
 ## Authorized FireRed extension (21 October 2026)
 The user explicitly requested German FireRed support. Retain the Project PM DS worker and add an independent mGBA 0.10.5 worker for the exact verified German FireRed original. Shared IPC ABI stays 2; GBA occupies the top framebuffer's first 240x160 pixels. Do not call two independent GBA adventures shared-world co-op or link multiplayer. Keep GBA saves isolated by player and ROM hash, use atomic save snapshots, and include pinned mGBA source/licenses with distributed workers. German ROM acceptance, real emulation, input isolation, in-game saves/reload and ROM integrity must be verified separately from fixtures. Never commit GBA ROMs or saves.
