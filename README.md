@@ -11,6 +11,9 @@ A split-screen couch co-op launcher for Windows and Linux.
 Alpha 10 includes GBA split screen and an opt-in FireRed experiment with a visible
 partner, shared human-controlled battles and reviewed story synchronization.
 Alpha 10 keeps blocked reserve choices in the menu and adds owned Shedinja evolutions.
+Current source also fixes owned Roar/Whirlwind selection, Wish source retention and
+EXP paging at protected references. These follow-up fixes await the next release.
+[Verification details](docs/development-status.md#current-source--forced-switches-and-exp-boundaries).
 FireRed requires the exact unmodified German original ROM and remains experimental.
 [Setup, test evidence and limitations](docs/firered.md).
 
@@ -140,6 +143,8 @@ For all ARM tests, also install `tests/requirements-romfix.txt`; decoder tests r
 [Architecture](docs/architecture.md) · [Platforms](docs/platforms.md) · [ROM preparation](docs/project-pm-045.md) · [Localization](docs/german-localization.md) · [Report a bug](https://github.com/Philmenting/couchsplit/issues/new)
 
 ## Deutsch
+
+Der aktuelle Quellcode korrigiert zusätzlich Brüller/Wirbelwind, Wunschtraum-Plätze und die EP-Vergabe bei gebundenen Teamplätzen. Diese Nachbesserungen sind noch nicht in den Alpha-10-Downloads enthalten. [Prüfbericht und Stand](docs/de/development-status.md#aktueller-quellcode--erzwungene-wechsel-und-ep-vergabe).
 
 Alpha 10 unterstützt **GBA-Spiele und ROM-Hacks mit zwei getrennten Sitzungen**. Ein ausdrücklich aktivierter **deutscher Feuerrot-Koop-Testmodus** zeigt den Partner, ermöglicht gemeinsame menschlich gesteuerte Kämpfe und synchronisiert ausgewählte Storyfortschritte. Er benötigt die exakte unveränderte deutsche Original-ROM und bleibt unvollständig; [Einrichtung, Prüfumfang und Grenzen](docs/de/firered.md). Die Alpha-10-Downloads enthalten diese Erweiterungen. Für Bazzite gibt es eine [Testanleitung](docs/de/bazzite-firered-test.md). Pokémon-Bank, Regionsreisen und GBA-Linkspiel sind nicht implementiert.
 

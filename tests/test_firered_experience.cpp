@@ -20,13 +20,20 @@ Party roster(unsigned owner) {
 }
 struct Bus {
     mCore c{};std::map<uint32_t,uint8_t> memory;
+    std::vector<Party> partyWrites;
     static Bus& bus(mCore*c){return *static_cast<Bus*>(c->board);}
     Bus() {
         c.board=this;
         c.busRead8=[](mCore*c,uint32_t a)->uint32_t{return bus(c).memory[a];};
         c.busRead16=[](mCore*c,uint32_t a)->uint32_t{return bus(c).memory[a]|(unsigned(bus(c).memory[a+1])<<8);};
         c.busRead32=[](mCore*c,uint32_t a)->uint32_t{uint32_t v=0;for(unsigned i=0;i<4;++i)v|=uint32_t(bus(c).memory[a+i])<<(8*i);return v;};
-        c.busWrite8=[](mCore*c,uint32_t a,uint8_t v){bus(c).memory[a]=v;};
+        c.busWrite8=[](mCore*c,uint32_t a,uint8_t v){
+            auto& b=bus(c);b.memory[a]=v;
+            // writeParty publishes the count after its complete records. This
+            // exposes each restored layout even when the next award immediately
+            // borrows the same slot again before the coordinator returns.
+            if(a==PlayerPartyCountAddress)b.partyWrites.push_back(readParty(c));
+        };
         put(0x02023FE8,0x02038000);put(0x02023BCE,0,2);put(0x02023BD2,1,2);
         memory[0x0203805C]=6;memory[0x0203805E]=6;
         memory[0x02023F4E]=3;memory[0x02023F4F]=3;
@@ -37,21 +44,55 @@ struct Bus {
     void put(uint32_t a,uint32_t v,unsigned n=4){for(unsigned i=0;i<n;++i)memory[a+i]=uint8_t(v>>(i*8));}
 };
 template<class F> void rejects(F f){bool failed=false;try{f();}catch(const std::runtime_error&){failed=true;}assert(failed);}
-void allRecipientsAndEvolutions() {
+void allRecipientsAndEvolutions(bool pinned=false,unsigned active0=0,unsigned active1=1) {
     Bus b;auto t=combinePagedParties(roster(0),roster(1));const auto original=t;
+    b.put(0x02023BCE,active0,2);b.put(0x02023BD2,active1,2);
+    b.memory[0x02023F4E]=b.memory[0x02023F4F]=uint8_t((1u<<active0)|(1u<<active1));
+    if(pinned)for(unsigned owner=0;owner<2;++owner) {
+        bool queued=false;
+        for(unsigned slot=0;slot<6;++slot) {
+            if(t.owners[slot]!=int(owner) || slot==(owner?active1:active0))continue;
+            if(!queued) {b.memory[0x0203805C+owner*2]=uint8_t(slot);queued=true;}
+            else {b.memory[0x02023F40+owner*2]=2;b.memory[0x02023F44+owner*2]=uint8_t(slot);}
+        }
+    }
+    const auto references=readBenchReferences(&b.c,6,6);
+    if(pinned)assert(references.exclusions().size()==6);
+    auto expected=original.originals;
+    auto expectedWorking=[&] {
+        auto party=original.combined;
+        for(unsigned slot=0;slot<party.count;++slot)
+            party.mons[slot]=expected[unsigned(original.owners[slot])].mons[unsigned(original.originalSlots[slot])];
+        return party;
+    };
+    auto unchangedReferences=[&] {
+        const auto current=readBenchReferences(&b.c,6,6);
+        assert(current.active==references.active && current.queued==references.queued &&
+               current.wishCounters==references.wishCounters && current.wishSlots==references.wishSlots &&
+               current.participation==references.participation && current.knockedOff==references.knockedOff);
+    };
     writeParty(&b.c,t.combined);BattleExperience xp(&b.c,t);std::vector<unsigned> owners;
     xp.ownerChanged=[&](unsigned owner){owners.push_back(owner);};
     b.memory[0x02023FE0]=1;assert(xp.experienceCommand());
     assert(inventoryRead16(&b.c,0x02038050)==20 && inventoryRead16(&b.c,0x02023F52)==3);
     std::set<unsigned> visited;
     for(unsigned n=0;n<12;++n) {
+        unchangedReferences();
         const unsigned slot=b.memory[0x02038010];auto current=readParty(&b.c);
         const unsigned id=current.mons[slot].identity().personality/24-1;
         assert(visited.insert(id).second && xp.inputOwner()==id/6);
+        // Native summary reshow and move-learning helpers must always see
+        // the actual two active Pokemon, including after either has switched.
+        for(unsigned active:{active0,active1})assert(current.mons[active]==expectedWorking().mons[active]);
         // Model a completed native award, then verify the coordinator's merge.
         auto secure=current.mons[slot].secure();monPut32(secure.data()+4,1001);current.mons[slot].setSecure(secure);
+        expected[id/6].mons[id%6]=current.mons[slot];
         writeParty(&b.c,current);b.memory[0x03004F24]=uint8_t(1u<<slot);b.memory[0x02023FE0]=5;
+        const auto writesBefore=b.partyWrites.size();
         assert(xp.experienceCommand());
+        assert(b.partyWrites.size()>writesBefore && b.partyWrites[writesBefore]==expectedWorking());
+        assert(t.originals==expected);
+        unchangedReferences();
         if(n<11)assert(b.memory[0x02023FE0]==2);
     }
     assert(visited.size()==12 && !xp.temporaryParty() && b.memory[0x02023FE0]==6);
@@ -66,6 +107,43 @@ void allRecipientsAndEvolutions() {
     }
     assert(!xp.temporaryParty());
     const auto after=restoreParties(t,readParty(&b.c));assert(after[0].mons[5].species()==2 && after[1].mons[5].species()==2);
+}
+void invalidAwardReferences() {
+    // Missing, sentinel, out-of-range or foreign allied active indexes cannot
+    // be hidden by the temporary EXP working-set exception.
+    for(const auto active:std::array<std::array<unsigned,2>,5>{{{{6,1}},{{255,1}},{{7,1}},{{1,0}},{{0,0}}}}) {
+        Bus b;auto t=combinePagedParties(roster(0),roster(1));writeParty(&b.c,t.combined);
+        b.put(0x02023BCE,active[0],2);b.put(0x02023BD2,active[1],2);
+        BattleExperience xp(&b.c,t);b.memory[0x02023FE0]=1;const auto writes=b.partyWrites.size();
+        rejects([&]{xp.experienceCommand();});assert(b.partyWrites.size()==writes && readParty(&b.c)==t.combined);
+    }
+    const std::array<std::pair<uint32_t,uint32_t>,9> changes{{
+        {0x02023BCE,2}, // still-valid same-owner active slot changed
+        {0x02023BD2,3}, // the other active slot must remain pinned too
+        {0x0203805C,2}, // queued switch changed
+        {0x0203805E,7}, // malformed queued switch
+        {0x02023F40,1}, // Wish countdown changed
+        {0x02023F44,4}, // Wish source changed, even while its countdown is zero
+        {0x02023F4E,0}, // participation changed
+        {0x02023F49,4}, // Knock Off reference changed
+        {0x02038010,2}  // native recipient changed
+    }};
+    for(unsigned state:{2u,5u})for(const auto& change:changes) {
+        Bus b;auto t=combinePagedParties(roster(0),roster(1));writeParty(&b.c,t.combined);
+        BattleExperience xp(&b.c,t);b.memory[0x02023FE0]=1;assert(xp.experienceCommand());
+        b.memory[0x02023FE0]=uint8_t(state);b.memory[change.first]=uint8_t(change.second);
+        const auto before=readParty(&b.c);const auto originals=t.originals;const auto writes=b.partyWrites.size();
+        rejects([&]{xp.experienceCommand();});
+        assert(b.partyWrites.size()==writes && readParty(&b.c)==before && t.originals==originals);
+    }
+    // State 5 is not a completion boundary while another level's EXP remains
+    // or a controller still owns the award's task/text result.
+    Bus b;auto t=combinePagedParties(roster(0),roster(1));writeParty(&b.c,t.combined);
+    BattleExperience xp(&b.c,t);b.memory[0x02023FE0]=1;assert(xp.experienceCommand());
+    b.memory[0x02023FE0]=5;b.put(0x02023D50,1);const auto writes=b.partyWrites.size();
+    assert(!xp.experienceCommand() && b.partyWrites.size()==writes && xp.temporaryParty());
+    b.put(0x02023D50,0);b.put(0x02023BC8,1);
+    rejects([&]{xp.experienceCommand();});assert(b.partyWrites.size()==writes);
 }
 void retiredReferences() {
     Bus b;auto t=combinePagedParties(roster(0),roster(1));writeParty(&b.c,t.combined);BattleExperience xp(&b.c,t);
@@ -121,4 +199,9 @@ void shedinjaEvolutionJournal() {
 }
 
 }
-int main(){allRecipientsAndEvolutions();retiredReferences();shedinjaEvolutionJournal();}
+int main(){
+    allRecipientsAndEvolutions();
+    for(unsigned active0:{0u,2u,4u})for(unsigned active1:{1u,3u,5u})
+        allRecipientsAndEvolutions(true,active0,active1);
+    invalidAwardReferences();retiredReferences();shedinjaEvolutionJournal();
+}

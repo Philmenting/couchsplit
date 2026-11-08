@@ -3,6 +3,7 @@
 
 #include "FireRedEncounter.h"
 #include "FireRedPartyMenu.h"
+#include "FireRedReserves.h"
 #include <mgba/core/core.h>
 #include <mgba/internal/arm/arm.h>
 #include <array>
@@ -47,6 +48,15 @@ public:
     using EvolutionQueue = std::function<bool(bool ending)>;
     using OpponentReset = std::function<void(unsigned battler)>;
     using EvolutionDex = std::function<std::optional<bool>(unsigned slot)>;
+    using WishCast = std::function<void(unsigned battler,unsigned slot)>;
+    using WishName = std::function<std::optional<WishJournal::Name>(unsigned battler,unsigned slot)>;
+    using ForcedSwitch = std::function<std::optional<unsigned>(unsigned battler,unsigned original)>;
+    // Exact native Wish success and B_BUFF1 expansion, and trainer force-out
+    // count / random-choice boundaries. Enemy and wild force-outs are native.
+    static constexpr uint32_t WishCastAddress=0x0802C3DE;
+    static constexpr uint32_t WishTextAddress=0x080D7C6C;
+    static constexpr uint32_t ForcedCountAddress=0x0802838C;
+    static constexpr uint32_t ForcedChoiceAddress=0x080284A4;
     static constexpr uint32_t EvolutionDexAddress=0x0806E1C0;
     static constexpr uint32_t ExperienceCommandAddress=0x080219EC;
     static constexpr uint32_t EvolutionGateAddress=0x080159C6;
@@ -125,7 +135,10 @@ private:
     EvolutionQueue evolutionQueue;
     OpponentReset opponentReset;
     EvolutionDex evolutionDex;
-    std::array<Site,34> sites;
+    WishCast wishCast;
+    WishName wishName;
+    ForcedSwitch forcedSwitch;
+    std::array<Site,38> sites;
     std::exception_ptr error;
     bool attached = false;
     inline static std::mutex registryMutex;
@@ -249,6 +262,55 @@ private:
         }
         const auto flags = self->core->busRead32(self->core, 0x02022B4C);
         if (!(flags & 1u) || !sharedEncounterFlags(flags)) { ARMRunFake(active, site->preimage[0]); return; }
+        if(site->address==WishCastAddress || site->address==WishTextAddress ||
+           site->address==ForcedCountAddress || site->address==ForcedChoiceAddress) {
+            uint16_t instruction=site->preimage[0];
+            try {
+                if(!self->error && site->address==WishCastAddress) {
+                    const unsigned battler=self->core->busRead8(self->core,0x02023D6B);
+                    if(battler==0 || battler==2) {
+                        const auto slot=self->core->busRead8(self->core,0x02023F44+battler);
+                        if(self->core->busRead8(self->core,0x02023F40+battler)!=2 ||
+                           self->core->busRead16(self->core,0x02023BCE + battler*2)!=slot)
+                            throw std::runtime_error("Unexpected FireRed Wish success context");
+                        self->wishCast(battler,slot);
+                    }
+                } else if(!self->error && site->address==WishTextAddress &&
+                          uint32_t(active->gprs[9])==0x083FBE79u) {
+                    // Exact DE Wish-came-true string's B_BUFF1 placeholder.
+                    // Keep the structured-buffer path: raw Buff1 would treat
+                    // status-looking nicknames as native status messages.
+                    constexpr uint32_t buffer=0x02022AB8, destination=0x02021CD0;
+                    if(uint32_t(active->gprs[0])!=buffer || uint32_t(active->gprs[4])!=destination ||
+                       self->core->busRead8(self->core,buffer)!=0xFD ||
+                       self->core->busRead8(self->core,buffer+1)!=4 ||
+                       self->core->busRead8(self->core,buffer+4)!=0xFF)
+                        throw std::runtime_error("Unexpected FireRed Wish text context");
+                    const auto battler=self->core->busRead8(self->core,buffer+2);
+                    if(battler==0 || battler==2) {
+                        if(const auto name=self->wishName(battler,self->core->busRead8(self->core,buffer+3))) {
+                            for(unsigned i=0;i<name->size();++i)self->core->busWrite8(self->core,destination+i,(*name)[i]);
+                            instruction=0xE001; // skip expansion call; retain native copy from gStringVar1.
+                        }
+                    }
+                } else if(!self->error && (site->address==ForcedCountAddress || site->address==ForcedChoiceAddress) && (flags&8u)) {
+                    const auto battler=self->core->busRead8(self->core,0x02023D6C);
+                    if(battler==0 || battler==2) {
+                        if(site->address==ForcedCountAddress)
+                            active->gprs[7]=self->forcedSwitch(battler,6)?3:0;
+                        else {
+                            const auto selected=self->forcedSwitch(battler,unsigned(active->gprs[5]));
+                            if(selected) {
+                                if(*selected>=6)throw std::runtime_error("Invalid FireRed forced native slot");
+                                active->gprs[5]=int32_t(*selected);
+                                instruction=0xE04F; // B 0x08028546: native queue/order commit.
+                            } else instruction=0xE7F5; // B 0x08028492: next native Random draw.
+                        }
+                    }
+                }
+            } catch(...) {self->error=std::current_exception();}
+            ARMRunFake(active,instruction);return;
+        }
         if(site->address==EvolutionDexAddress) {
             std::optional<bool> enabled;
             try {
@@ -504,7 +566,8 @@ public:
                 BallTextName ownerBallTextName = {}, SingleWild isSingleWild = {}, SingleTrainer isSingleTrainer = {},
                 ExperienceCommand nativeExperience = {}, EvolutionGate beforeEvolution = {},
                 EvolutionQueue nativeEvolutionQueue = {}, OpponentReset resetParticipation = {},
-                EvolutionDex ownedEvolutionDex = {}, PartyMenuSelection allowPartyMenuSelection = {})
+                EvolutionDex ownedEvolutionDex = {}, PartyMenuSelection allowPartyMenuSelection = {},
+                WishCast successfulWish = {}, WishName sourceWishName = {}, ForcedSwitch ownForcedSwitch = {})
         : core(target), predicate(std::move(ownerHasNoMons)), otherTrainer(std::move(ownerIsOtherTrainer)),
           badge(std::move(ownerHasBadge)), captureFull(std::move(ownerCaptureFull)),
           ballThrow(std::move(executedBallThrow)), teamHealth(std::move(beforeTeamHealthCheck)),
@@ -515,7 +578,12 @@ public:
           ballTextName(std::move(ownerBallTextName)), singleWild(std::move(isSingleWild)), singleTrainer(std::move(isSingleTrainer)),
           experienceCommand(std::move(nativeExperience)), evolutionGate(std::move(beforeEvolution)),
           evolutionQueue(std::move(nativeEvolutionQueue)), opponentReset(std::move(resetParticipation)),
-          evolutionDex(std::move(ownedEvolutionDex)), sites{{
+          evolutionDex(std::move(ownedEvolutionDex)), wishCast(std::move(successfulWish)),
+          wishName(std::move(sourceWishName)),forcedSwitch(std::move(ownForcedSwitch)), sites{{
+              {WishCastAddress,0xBED8,{{0x6838,0x3006,0xE042,0x3F20}},bool(wishCast)},
+              {WishTextAddress,0xBED7,{{0x1C21,0xF000,0xFCD5,0xF000}},bool(wishName)},
+              {ForcedCountAddress,0xBED6,{{0x2F01,0xD805,0x480F,0x6800}},bool(forcedSwitch)},
+              {ForcedChoiceAddress,0xBED5,{{0x4813,0x7801,0x0048,0x1980}},bool(forcedSwitch)},
               {PartyMenuSelectionAddress,0xBED9,{{0x490E,0x7008,0x490E,0x2001}},bool(partyMenuSelection)},
               {EvolutionDexAddress,0xBEDA,{{0xB500,0x480A,0x6800,0x7EC0}},bool(evolutionDex)},
               {ExperienceCommandAddress,0xBEDF,{{0xB5F0,0x464F,0x4646,0xB4C0}},bool(experienceCommand)},
@@ -551,7 +619,7 @@ public:
               {ReshowCreateSpriteAddress,0xBEE1,{{0xB5F0,0x4657,0x464E,0x4645}},bool(singleWild)||bool(singleTrainer)},
               {ReshowCreateHealthboxAddress,0xBEE0,{{0xB570,0x0600,0x0E05,0x4808}},bool(singleWild)||bool(singleTrainer)}}} {
         if (!core || !core->cpu || !core->rawRead16 || !core->rawWrite16 || !core->busRead8 ||
-            !core->busRead16 || !core->busRead32 || ((ballTextName || singleWild || singleTrainer) && !core->busWrite8) || !predicate)
+            !core->busRead16 || !core->busRead32 || ((ballTextName || singleWild || singleTrainer || wishName) && !core->busWrite8) || !predicate)
             throw std::runtime_error("Cannot install FireRed battle ownership hooks");
         cpu = static_cast<ARMCore*>(core->cpu);
         for (const auto& site : sites) if (site.enabled)

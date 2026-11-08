@@ -4,6 +4,26 @@
 
 Aktualisiert am 8. November 2026. **[CouchSplit 0.2.0 Alpha 10](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)** enthält Project PM / Pokémon Platin, getrennten GBA-Splitscreen und den aktivierbaren deutschen Feuerrot-Testmodus. Ältere Ergebnisse gelten für die jeweils genannte Version und Umgebung, nicht als vollständige Kampagnen- oder Hardwarefreigabe.
 
+## Aktueller Quellcode — erzwungene Wechsel und EP-Vergabe
+
+Der Quellcode nach Alpha 10 beschränkt Brüller/Wirbelwind im Trainerkampf auf die
+eigenen sechs Pokémon, einschließlich ungeladener Reserven. Wunschtraum speichert
+den ursprünglichen Namen getrennt. Der Platz eines besiegten Anwenders darf dadurch
+wiederverwendet werden, ohne den Ersatz oder die spätere Meldung zu beschädigen.
+Die EP-Vergabe nutzt nur kurzzeitig inaktive eigene Plätze und stellt die vorherige
+Belegung nach jedem Empfänger wieder her. Auch beim Attackenlernen und beim
+Verlassen der Übersicht bleiben beide aktiven Pokémon beim richtigen Besitzer.
+
+Der [gezielte Prüfbericht](../verification/firered-reserves-2026-11-08.json)
+unterscheidet vorbereitete Platzblockaden von tatsächlich ausgeführten nativen
+Attacken, Niederlagen, Wechseln und EP-Vergaben. Er dokumentiert beide Kampfinitiatoren
+und Ingame-SAVE mit erneutem Continue. Alle elf gezielten nativen Szenarien,
+24 Komponententests und 64 Python-Tests bestanden ohne übersprungene Tests.
+Kampagnen- und echte Controller-/Bazzite-Tests
+bleiben offen; unbekannte oder beschädigte native Verweise führen weiterhin zum
+sicheren Abbruch. Veröffentlichte Alpha-10-Pakete bleiben unverändert. Diese
+Korrekturen liegen zunächst im Quellcode und warten auf ein späteres Release.
+
 ## Alpha 10 — Wechselmenü und besondere Besitzfälle
 
 Eine gesperrte Reserveauswahl bleibt mit Erklärung im Spielmenü; ein geladenes

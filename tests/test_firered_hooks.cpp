@@ -34,7 +34,11 @@ struct Fixture {
         core.rawRead16=rawRead16;core.rawWrite16=rawWrite16;
         cpu.executionMode=MODE_THUMB;cpu.cpsr.t=1;cpu.irqh.bkpt16=previousBreakpoint;
         put(0x02022B4C,5);
-        const std::array<std::pair<uint32_t,std::array<uint16_t,4>>,34> prologues{{
+        const std::array<std::pair<uint32_t,std::array<uint16_t,4>>,38> prologues{{
+            {BattleHooks::WishCastAddress,{{0x6838,0x3006,0xE042,0x3F20}}},
+            {BattleHooks::WishTextAddress,{{0x1C21,0xF000,0xFCD5,0xF000}}},
+            {BattleHooks::ForcedCountAddress,{{0x2F01,0xD805,0x480F,0x6800}}},
+            {BattleHooks::ForcedChoiceAddress,{{0x4813,0x7801,0x0048,0x1980}}},
             {BattleHooks::PartyMenuSelectionAddress,{{0x490E,0x7008,0x490E,0x2001}}},
             {BattleHooks::EvolutionDexAddress,{{0xB500,0x480A,0x6800,0x7EC0}}},
             {BattleHooks::ExperienceCommandAddress,{{0xB5F0,0x464F,0x4646,0xB4C0}}},
@@ -80,10 +84,127 @@ struct Fixture {
         check(cpu.gprs[0]==int(result),"predicate return value");check(cpu.prefetch[0]==0x4770,"BX LR queued");
     }
 };
+
+BattleHooks reserveHooks(Fixture& f,BattleHooks::WishCast cast={},BattleHooks::WishName name={},
+                         BattleHooks::ForcedSwitch forced={}) {
+    return BattleHooks(&f.core,[](unsigned,unsigned,unsigned){return true;},
+        {}, {}, {}, {}, {}, {}, {}, // OT through evolution callbacks.
+        {}, {}, {}, {}, {}, {}, {}, // Statistics through single-wild callback.
+        {}, {}, {}, {}, {}, {}, {}, // Single-trainer through own-menu selection.
+        std::move(cast),std::move(name),std::move(forced));
+}
+
+void wishContext(Fixture& f,unsigned battler=2,unsigned slot=5) {
+    f.put(0x02023D6B,battler,1);
+    f.put(0x02023F40+battler,2,1);f.put(0x02023F44+battler,slot,1);
+    f.put(0x02023BCE + battler*2,slot,2);
+    f.cpu.gprs[9]=0x083FBE79;f.cpu.gprs[0]=0x02022AB8;f.cpu.gprs[4]=0x02021CD0;
+    f.cpu.gprs[ARM_SP]=0x03007F00;
+    for(const auto& [offset,value]:{std::pair<unsigned,unsigned>{0,0xFD},{1,4},{2,battler},{3,slot},{4,0xFF}})
+        f.put(0x02022AB8+offset,value,1);
+}
+
+void reserveHookBoundaries() {
+    using Name=coop::firered::WishJournal::Name;
+    Name name;name.fill(0xFF);name[0]=0xCA;name[1]=0xCD;name[2]=0xC8; // Authored nickname "PSN".
+    { Fixture f;unsigned casts=0,expectedBattler=0,expectedSlot=0;
+      auto hook=reserveHooks(f,[&](unsigned battler,unsigned slot){
+          check(battler==expectedBattler&&slot==expectedSlot,"Wish capture lost native caster identity");++casts;});
+      for(unsigned battler:{0u,2u}) {
+          expectedBattler=battler;expectedSlot=4+battler/2;wishContext(f,battler,expectedSlot);
+          const auto before=f.memory;f.invoke(BattleHooks::WishCastAddress,0xD8);
+          check(f.cpu.prefetch[0]==0x6838&&f.memory==before&&f.cpu.gprs[ARM_SP]==0x03007F00,
+                "Wish success callback changed native state or skipped script advancement");
+      }
+      for(unsigned battler:{1u,3u}) {wishContext(f,battler);f.invoke(BattleHooks::WishCastAddress,0xD8);}
+      check(casts==2&&f.cpu.prefetch[0]==0x6838,"Opponent Wish was captured as a human's Wish");
+      for(unsigned flags:{0u,0x43u}) {f.put(0x02022B4C,flags);wishContext(f);f.invoke(BattleHooks::WishCastAddress,0xD8);}
+      check(casts==2&&f.cpu.prefetch[0]==0x6838,"Unshared Wish invoked ownership callback");
+      hook.check();hook.detach();check(Fixture::read16(&f.core,BattleHooks::WishCastAddress)==0x6838,"Wish capture patch not restored"); }
+    for(bool mismatch:{false,true}) {
+        Fixture f;unsigned casts=0;auto hook=reserveHooks(f,[&](unsigned,unsigned){++casts;});wishContext(f);
+        if(mismatch)f.put(0x02023BD2,4,2);else f.put(0x02023F42,1,1);
+        const auto before=f.memory;f.invoke(BattleHooks::WishCastAddress,0xD8);bool failed=false;
+        try{hook.check();}catch(const std::runtime_error&){failed=true;}
+        check(failed&&casts==0&&f.memory==before&&f.cpu.prefetch[0]==0x6838,"Invalid Wish success context was not contained");
+    }
+    { Fixture f;unsigned names=0;bool known=true;
+      auto hook=reserveHooks(f,{},[&](unsigned battler,unsigned slot)->std::optional<Name>{
+          ++names;check(battler==2&&slot==5,"Wish text used another source");return known?std::optional(name):std::nullopt;});
+      wishContext(f);auto expected=f.memory;
+      for(unsigned i=0;i<name.size();++i)expected[0x02021CD0+i]=name[i];
+      f.invoke(BattleHooks::WishTextAddress,0xD7);
+      check(names==1&&f.memory==expected&&f.cpu.prefetch[0]==0xE001&&f.cpu.gprs[ARM_SP]==0x03007F00,
+            "Status-looking Wish nickname was not copied exactly through native gStringVar1 path");
+      f.cpu.gprs[9]=0x083FBE78;f.put(0x02022AB8,0,1);const auto before=f.memory;
+      f.invoke(BattleHooks::WishTextAddress,0xD7);
+      check(names==1&&f.memory==before&&f.cpu.prefetch[0]==0x1C21,"Unrelated Buff1 text was intercepted");
+      for(unsigned battler:{1u,3u}) {wishContext(f,battler);const auto enemy=f.memory;f.invoke(BattleHooks::WishTextAddress,0xD7);
+          check(names==1&&f.memory==enemy&&f.cpu.prefetch[0]==0x1C21,"Enemy Wish text was rewritten");}
+      wishContext(f);known=false;const auto missing=f.memory;f.invoke(BattleHooks::WishTextAddress,0xD7);
+      check(names==2&&f.memory==missing&&f.cpu.prefetch[0]==0x1C21,"Unjournaled Wish did not retain native text expansion");
+      f.put(0x02022B4C,0x43);f.invoke(BattleHooks::WishTextAddress,0xD7);
+      check(names==2&&f.cpu.prefetch[0]==0x1C21,"Link Wish text was intercepted");
+      hook.check();hook.detach();check(Fixture::read16(&f.core,BattleHooks::WishTextAddress)==0x1C21,"Wish text patch not restored"); }
+    for(unsigned broken=0;broken<5;++broken) {
+        Fixture f;unsigned names=0;auto hook=reserveHooks(f,{},[&](unsigned,unsigned)->std::optional<Name>{++names;return name;});
+        wishContext(f);
+        if(broken==0)f.cpu.gprs[0]=0x02022AC8;
+        else if(broken==1)f.cpu.gprs[4]=0x02021CE0;
+        else f.put(0x02022AB8+(broken==2?0:broken==3?1:4),0,1);
+        const auto before=f.memory;f.invoke(BattleHooks::WishTextAddress,0xD7);bool failed=false;
+        try{hook.check();}catch(const std::runtime_error&){failed=true;}
+        check(failed&&names==0&&f.memory==before&&f.cpu.prefetch[0]==0x1C21,"Malformed Wish text context wrote nickname data");
+    }
+    { Fixture f;unsigned calls=0,expectedBattler=2;bool available=true;std::optional<unsigned> choice=4;
+      auto hook=reserveHooks(f,{}, {},[&](unsigned battler,unsigned original)->std::optional<unsigned>{
+          ++calls;check(battler==expectedBattler,"Forced switch used another target owner");
+          if(original==6)return available?std::optional<unsigned>(0):std::nullopt;
+          check(original==5,"Forced switch did not receive native modulo-six draw");return choice;});
+      f.put(0x02022B4C,9);f.put(0x02023D6C,2,1);f.cpu.gprs[7]=2;f.cpu.gprs[5]=5;f.cpu.gprs[0]=0xFEDC;
+      f.cpu.gprs[ARM_SP]=0x03007F00;const auto before=f.memory;
+      f.invoke(BattleHooks::ForcedCountAddress,0xD6);
+      check(calls==1&&f.cpu.gprs[7]==3&&f.cpu.prefetch[0]==0x2F01,"Owned reserve count did not enter native level check");
+      available=false;f.invoke(BattleHooks::ForcedCountAddress,0xD6);
+      check(calls==2&&f.cpu.gprs[7]==0&&f.cpu.prefetch[0]==0x2F01,"No own reserve did not take native failure gate");
+      for(unsigned battler:{0u,2u}) {
+          expectedBattler=battler;f.put(0x02023D6C,battler,1);f.cpu.gprs[5]=5;
+          f.invoke(BattleHooks::ForcedChoiceAddress,0xD5);
+          check(f.cpu.gprs[5]==4&&f.cpu.prefetch[0]==0xE04F,"Forced choice did not enter native queue/order commit");
+      }
+      choice.reset();f.cpu.gprs[5]=5;f.invoke(BattleHooks::ForcedChoiceAddress,0xD5);
+      check(calls==5&&f.cpu.gprs[5]==5&&f.cpu.prefetch[0]==0xE7F5&&f.cpu.gprs[0]==0xFEDC&&
+            f.cpu.gprs[ARM_SP]==0x03007F00&&f.memory==before,"Rejected forced draw changed RNG input, native memory or stack");
+      for(const auto& [flags,battler]:{std::pair<unsigned,unsigned>{5,2},{9,1},{9,3},{0,2},{0x43,2}}) {
+          f.put(0x02022B4C,flags);f.put(0x02023D6C,battler,1);f.cpu.gprs[7]=2;f.cpu.gprs[5]=5;
+          f.invoke(BattleHooks::ForcedCountAddress,0xD6);
+          check(calls==5&&f.cpu.gprs[7]==2&&f.cpu.prefetch[0]==0x2F01,"Wild, enemy or unshared force-out count changed");
+          f.invoke(BattleHooks::ForcedChoiceAddress,0xD5);
+          check(calls==5&&f.cpu.gprs[5]==5&&f.cpu.prefetch[0]==0x4813,"Wild, enemy or unshared force-out choice changed");
+      }
+      hook.check();hook.detach();check(Fixture::read16(&f.core,BattleHooks::ForcedCountAddress)==0x2F01&&
+          Fixture::read16(&f.core,BattleHooks::ForcedChoiceAddress)==0x4813,"Forced switch patches not restored"); }
+    for(unsigned invalid:{6u,7u,255u}) {
+        Fixture f;auto hook=reserveHooks(f,{}, {},[&](unsigned,unsigned)->std::optional<unsigned>{return invalid;});
+        f.put(0x02022B4C,9);f.put(0x02023D6C,2,1);f.cpu.gprs[5]=5;const auto before=f.memory;
+        f.invoke(BattleHooks::ForcedChoiceAddress,0xD5);bool failed=false;
+        try{hook.check();}catch(const std::runtime_error&){failed=true;}
+        check(failed&&f.cpu.gprs[5]==5&&f.cpu.prefetch[0]==0x4813&&f.memory==before,"Invalid forced native slot escaped into queue commit");
+    }
+    for(uint32_t address:{BattleHooks::WishCastAddress,BattleHooks::WishTextAddress,
+                          BattleHooks::ForcedCountAddress,BattleHooks::ForcedChoiceAddress}) {
+        Fixture f;f.put(address+2,0,2);const auto before=f.memory;bool failed=false;
+        try{auto hook=reserveHooks(f,[](unsigned,unsigned){},[](unsigned,unsigned)->std::optional<Name>{return std::nullopt;},
+            [](unsigned,unsigned)->std::optional<unsigned>{return std::nullopt;});}
+        catch(const std::runtime_error&){failed=true;}
+        check(failed&&f.memory==before&&f.cpu.irqh.bkpt16==previousBreakpoint,"Unexpected reserve preimage installed a partial hook");
+    }
+}
 }
 
 int main() {
     try {
+        reserveHookBoundaries();
         auto empty=[](unsigned,unsigned,unsigned){return true;};
         { Fixture f;unsigned calls=0;bool allow=false;
           BattleHooks hook(&f.core,empty,{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},

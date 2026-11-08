@@ -4,6 +4,24 @@
 
 Updated 8 November 2026. **[CouchSplit 0.2.0 Alpha 10](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.10)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
 
+## Current source — forced switches and EXP boundaries
+
+The source after Alpha 10 keeps trainer Roar/Whirlwind within the target player's
+own six Pokémon, including unloaded reserves. Wish records its original caster's
+name separately, so a fainted source can leave the working party without blocking
+a replacement or changing the later message. EXP temporarily borrows only inactive
+own slots and restores their previous identities after each recipient; native
+learning/summary screens retain both active Pokémon and their owners.
+
+The [focused verification record](verification/firered-reserves-2026-11-08.json)
+distinguishes authored saturation from actual native cast/faint/switch/award
+execution, records both initiators and in-game SAVE/fresh Continue, and retains
+the remaining campaign and real-controller/Bazzite limitations. All 11 targeted
+native scenarios, 24 component tests and 64 Python tests passed, with no skips.
+Unexpected or
+unknown native references still fail closed. Published Alpha 10 packages are
+unchanged; these fixes are a source follow-up awaiting a future release.
+
 ## Alpha 10 — switch rejection and native ownership edge cases
 
 Unavailable reserve selections stay in the native menu with an explanation;

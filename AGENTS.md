@@ -1,5 +1,20 @@
 # Project: CouchSplit
 
+## Source follow-up: forced reserves and EXP boundaries (8 November 2026)
+During a complete native EXP award, BOTH allied active records stay resident,
+including fainted ones used by summary reshow. Queued/Wish-only own bench records
+may be borrowed temporarily; restore the exact working layout after EACH recipient
+and validate unchanged native indexes, queue, Wish, participation and Knock Off
+references before continuing or merging. Never relax permanent references by this
+EXP-only rule. A successful native Wish cast journals its original encoded name;
+only that verified receipt releases its source slot. Expand it only in the exact
+Wish announcement, retaining native status/name/language semantics and healing.
+Trainer Roar/Whirlwind draws from the target owner's original six slots through
+native rejection sampling. Keep native level/RNG/failure/order/Natural Cure paths.
+Only its immediately replaced own queue may be omitted in the planner; retain
+both actives and the partner queue. Unknown/corrupt references still fail closed.
+The new changes are source-only after immutable Alpha 10, pending a future release.
+
 ## Alpha 10 native ownership corrections (8 November 2026)
 Protected switch selections must be rejected at the exact native pre-mutation
 boundary; retain the menu and its existing native FALSE dialog/return path.

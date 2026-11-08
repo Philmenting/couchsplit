@@ -199,12 +199,24 @@ Das native Wechselmenü zeigt jeder Person die eigenen sechs Pokémon. Eine
 ungeladene Reserve darf einen ungebundenen eigenen Bankplatz ersetzen, auch wenn
 dessen Pokémon noch lebt. Das Journal erhält Besitz, Fortschritt und Teilnahme.
 Kampfteam/Indizes/Reihenfolge werden vor dem nativen Wiederaufbau wiederhergestellt,
-auch bei Abbruch und Rücksetzung. Aktive Pokémon, vorgemerkte Wechsel und
-Wunschtraum-Ziele bleiben geschützt. Alpha 10 weist eine vorerst gesperrte Auswahl
+auch bei Abbruch und Rücksetzung. Alpha 10 weist eine vorerst gesperrte Auswahl
 vor dem Wechsel ab, zeigt einen deutschen Hinweis im Spiel und lässt die Person
 im Menü eine geladene Alternative wählen oder, soweit nativ erlaubt, abbrechen.
-Bei beschädigten Zuständen sowie vollständig gebundenen Zwangsersatz-/EP-Plätzen
-kann weiterhin eine vollständige Kampfrücksetzung nötig sein.
+
+**Aktueller Quellcode nach Alpha 10:** Beide aktiven Pokémon bleiben während der
+EP-Vergabe und beim Attackenlernen im Arbeitsteam. Nur durch vorgemerkte Wechsel
+oder Wunschtraum gebundene Bankplätze dürfen kurz für einen Empfänger verwendet
+werden. Vor der Fortsetzung des Kampfes wird die Belegung wiederhergestellt;
+die nativen Verweise werden währenddessen geprüft. Ein erfolgreicher Wunschtraum
+speichert den Namen seines ursprünglichen Anwenders getrennt. Dadurch darf dessen
+Bankplatz später neu belegt werden, ohne Meldung oder Heilung zu verfälschen.
+Unbekannte Wunschtraum-Verweise bleiben geschützt. Brüller/Wirbelwind wählen im
+Trainerkampf nur aus den eigenen ursprünglichen Pokémon, auch aus ungeladenen
+Reserven. Zufall, Levelprüfung, Fehlschlag und Wechseleffekte führt das Originalspiel
+aus. Nur die unmittelbar ersetzte eigene Wechselvormerkung wird freigegeben.
+Beschädigte Zustände führen weiterhin zum sicheren Abbruch. Diese Änderungen
+liegen im Quellcode; veröffentlichte Alpha-10-Downloads behalten ihr bisheriges
+Verhalten. [Gezielte Prüfungen](../verification/firered-reserves-2026-11-08.json).
 
 Alpha 9 verteilt native EP/EV über alle zwölf ursprünglichen Teamplätze.
 Vorbereitete Zwei-Kern-Tests decken zwölf EP-Teiler-Träger, zwölf ausstehende
@@ -254,7 +266,7 @@ aus Rubin/Saphir/Smaragd wird nicht hinzugefügt. Siehe den festgelegten
 [Originalcode](https://github.com/pret/pokefirered/blob/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/src/pokemon.c#L5607)
 und die [Alpha-10-Prüfungen](../verification/firered-alpha10-2026-11-08.json). Das Arbeitsteam lädt meist bis
 zu drei einsatzfähige Pokémon je Person; das Journal ist keine unbegrenzte
-Virtualisierung aller nativen Kampfmechaniken. Geschützte Referenzen können
+Virtualisierung aller nativen Kampfmechaniken. Unbekannte oder widersprüchliche Verweise können
 Rücksetzung verlangen. Mehrdeutige Duplikate beider Profile bleiben abgewiesen; nur das native
 Ninjask-/Ninjatom-Geschwisterpaar bildet eine gezielte Ausnahme. Der Modus bleibt experimentell.
 

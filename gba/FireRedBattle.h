@@ -64,6 +64,7 @@ class TeamBattle {
     BattleParty transaction;
     std::array<Party,2> initialParties;
     std::unique_ptr<BattleExperience> experience;
+    WishJournal wishes;
     std::unique_ptr<BattleHooks> hooks;
     std::array<Inventory, 2> bags;
     Inventory activeBag;
@@ -107,7 +108,7 @@ class TeamBattle {
         for(unsigned i=0;i<view.request.size();++i)view.request[i]=uint8_t(c->busRead8(c,buffer+i));
         requirePokemon(view.request[0]==22,"Unexpected native own-party menu command");
         const std::array<uint8_t,3> order{{view.request[4],view.request[5],view.request[6]}};
-        view.session=planPartyMenu(transaction,readParty(c),battler/2,readBenchReferences(c,6,6),order);
+        view.session=planPartyMenu(transaction,readParty(c),battler/2,wishes.protect(readBenchReferences(c,6,6)),order);
         view.flags=c->busRead32(c,BattleFlagsAddress);ownPartyMenu=view;
         writeParty(c,view.session.menu);
         // Native menu-only single layout: the complete own roster fills all six
@@ -216,7 +217,7 @@ class TeamBattle {
     void refillOwnerBench(unsigned owner, unsigned excludedOne = 6, unsigned excludedTwo = 6) {
         auto* c = cores[leader];
         experience->observeBattle();
-        const auto references = readBenchReferences(c, excludedOne, excludedTwo);
+        const auto references = wishes.protect(readBenchReferences(c, excludedOne, excludedTwo));
         const auto current = readParty(c);
         if (auto plan = planBenchRefill(transaction, current, owner, references)) {
             applyBenchRefill(c, *plan);
@@ -244,6 +245,25 @@ class TeamBattle {
             if (party.mons[slot].viable() && ownerOfSlot(slot) == int(battler / 2) &&
                 slot != excludedOne && slot != excludedTwo && slot != chosenOne && slot != chosenTwo) return false;
         return true;
+    }
+    std::optional<unsigned> ownForcedSwitch(unsigned battler,unsigned original) {
+        requirePokemon((battler==0 || battler==2) && original<=6 && !ownPartyMenu,
+                       "Invalid FireRed forced-switch boundary");
+        auto* c=cores[leader];experience->observeBattle();
+        const auto current=readParty(c);
+        const auto references=wishes.protect(readBenchReferences(c,6,6));
+        if(original==6) {
+            for(unsigned i=0;i<6;++i)
+                if(planForcedSwitch(transaction,current,battler/2,references,i).accepted)return 0;
+            return std::nullopt;
+        }
+        auto selected=planForcedSwitch(transaction,current,battler/2,references,original);
+        if(!selected.accepted)return std::nullopt;
+        writeParty(c,selected.party);
+        transaction=std::move(selected.transaction);
+        experience->projectReferences();
+        if(event)event("own forced reserve selected",int(battler/2));
+        return selected.nativeSlot;
     }
     void swapBag(unsigned owner) {
         if (owner == bagOwner) return;
@@ -565,6 +585,7 @@ public:
         battling = true;
         try {
             experience=std::make_unique<BattleExperience>(core,transaction);
+            wishes=WishJournal{};
             experience->ownerChanged=[this](unsigned owner){lastTextOwner=owner;currentOwner=int(owner);};
             experience->evolutionBag=[this](unsigned owner){swapBag(owner);};
             writeParty(core, transaction.combined);
@@ -678,7 +699,15 @@ public:
                    auto* c=cores[unsigned(ownerOfSlot(slot))];const auto memory=readSaveMemory(c);
                    const auto progress=readProgress(c);
                    return c->busRead8(c,memory.block2+0x1B)==0xB9 && progress.var(0x404E)==0x6258 && progress.flag(0x840);
-               }, [this](unsigned selected){return allowOwnPartyMenuSelection(selected);});
+               }, [this](unsigned selected){return allowOwnPartyMenuSelection(selected);},
+               [this](unsigned battler,unsigned slot) {
+                   wishes.capture(battler,slot,transaction,readParty(cores[leader]));
+                   if(event)event("own Wish source recorded",int(battler/2));
+               }, [this](unsigned battler,unsigned slot) {
+                   const auto name=wishes.name(battler,slot);
+                   if(name && event)event("own Wish source announced",int(battler/2));
+                   return name;
+               }, [this](unsigned battler,unsigned original){return ownForcedSwitch(battler,original);});
         } catch (...) { rollback(); throw; }
         if (event) event("team battle joined", int(initiator));
         return true;

@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "date": "2026-11-08",
+  "status": "Source follow-up after immutable Alpha 10; no new binary release",
+  "base_commit": "b91ceca87041bf8a8e66636715fab6e30cb3c9e9",
+  "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "rom_bytes_unchanged": true,
+  "source_reference": "https://github.com/pret/pokefirered/tree/ce6406d8c2eaf46d543c8a2606de0c3cb1951982",
+  "analysis": "Pinned native source review and bounded exact-ROM Thumb disassembly; four preimage-verified in-memory hooks. No full Thumb decompiler analysis claimed.",
+  "environment": "Linux x86_64; two real mGBA 0.10.5 cores; sequential headless checks under a 70%-of-one-CPU quota",
+  "production_source_sha256": {
+    "gba/FireRedBattle.h": "5746ca5b9f7d87133bf71b4f252f99c583febeace9532f586f4bbfedaba3cd77",
+    "gba/FireRedBattleHooks.h": "bfe79c5643e6c750165bd4e239d10da30da58d5702ad8d8e1da090f9355c90be",
+    "gba/FireRedBench.h": "d5dcb0c46876b21cecad9eb5fb54688c953bd594f8d375ddf5f91883973fca7a",
+    "gba/FireRedExperience.h": "86370fb008f4bb2fcc452dfdad9c26adfdcdaafc86e413da1f28ac9230cebaea",
+    "gba/FireRedReserves.h": "14e04f3c2d53ca0a06d741bdd3e0adf17ec99e0daa1a33770d6d9e1a980c6d1d"
+  },
+  "local_worker_sha256": "1d40885f70b7392c7123c6c4a167954f3493f8da62dd7c6e5df54b59ae4c9b77",
+  "native_verifier_sha256": "268dc322b11cbb45f5475cc6750b18faabd949f240e6524dde2a86f70b3d02d9",
+  "component_tests": {
+    "ctest_passed": 24,
+    "python_passed": 64,
+    "python_skipped": 0
+  },
+  "regressions": [
+    "Both active records stay resident through native EXP/level/move-learning summaries, including all nine unit-tested active-slot pairs.",
+    "Queued/Wish-only own slots can be borrowed through one complete award; exact working identities restored after every recipient; unexpected native-reference changes reject before continuation or merge.",
+    "Wish source names are captured only after native success and expanded only for the exact native Wish message, including status-looking and Japanese encoded-name unit cases.",
+    "An authored all-fainted active/queue/Wish saturation can refill from the correct own journal without losing the fainted source or changing protected records.",
+    "Trainer Roar/Whirlwind uses native rejection sampling over the target owner's original slots, including unloaded reserves. Both active records and partner queue remain protected; no own reserve follows native failure.",
+    "Malformed hook preimages, invalid references, foreign ownership and unknown Wish receipts remain rejected or protected."
+  ],
+  "native_cases": [
+    {
+      "scenario": "exp-share-twelve-learn-pinned",
+      "frames": 6391,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "native_exp_restored_all_working_records_and_references": true,
+      "native_move_learning_summary_reshows": 8,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners",
+        "exp_share_holders_kept_original_owner_and_item",
+        "both_sixth_party_holders_received_native_exp_and_evs",
+        "guest_move_learning_ignores_other_players_b"
+      ]
+    },
+    {
+      "scenario": "exp-share-twelve-learn-pinned-leader2",
+      "frames": 6391,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "native_exp_restored_all_working_records_and_references": true,
+      "native_move_learning_summary_reshows": 8,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners",
+        "exp_share_holders_kept_original_owner_and_item",
+        "both_sixth_party_holders_received_native_exp_and_evs",
+        "guest_move_learning_ignores_other_players_b"
+      ]
+    },
+    {
+      "scenario": "exp-share-twelve-evolution-pinned",
+      "frames": 26487,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "native_exp_restored_all_working_records_and_references": true,
+      "native_move_learning_summary_reshows": 0,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners",
+        "exp_share_holders_kept_original_owner_and_item",
+        "both_sixth_party_holders_received_native_exp_and_evs",
+        "exp_share_evolutions_owned_by_actual_players"
+      ]
+    },
+    {
+      "scenario": "party-menu-wish",
+      "frames": 13471,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "native_wish_names_survive_source_eviction_both_owners": true,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners"
+      ]
+    },
+    {
+      "scenario": "party-menu-wish-leader2",
+      "frames": 13471,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "native_wish_names_survive_source_eviction_both_owners": true,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners"
+      ]
+    },
+    {
+      "scenario": "reserves-roar",
+      "frames": 16338,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "owned_native_roar_counts": [
+        7,
+        3
+      ],
+      "native_roar_selected_unloaded_own_original": true,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners"
+      ]
+    },
+    {
+      "scenario": "reserves-roar-whirlwind-leader2",
+      "frames": 13758,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "owned_native_roar_counts": [
+        5,
+        3
+      ],
+      "native_roar_selected_unloaded_own_original": true,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners"
+      ]
+    },
+    {
+      "scenario": "reserves-roar-exhausted",
+      "frames": 18348,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "owned_native_roar_counts": [
+        0,
+        6
+      ],
+      "native_roar_selected_unloaded_own_original": true,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners"
+      ]
+    },
+    {
+      "scenario": "party-menu-forced",
+      "frames": 6570,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners"
+      ]
+    },
+    {
+      "scenario": "party-menu-protected",
+      "frames": 5310,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "both_protected_selections_rejected_in_place_and_battle_completed": true,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "experience_transferred_to_owners",
+        "pp_transferred_to_owners"
+      ]
+    },
+    {
+      "scenario": "exhaust",
+      "frames": 4800,
+      "native_save_and_fresh_battery_reload_both_players": true,
+      "player_one_save_generation": 2,
+      "player_two_save_generation": 2,
+      "passed_ownership_checks": [
+        "owned_inputs_both_players",
+        "party_ownership_preserved",
+        "pp_transferred_to_owners",
+        "exhausted_owner_partner_continues"
+      ]
+    }
+  ],
+  "fixture_scope": "Parties, enemies and starting prerequisites are authored. Pinned EXP cases explicitly author queued/Wish references at the native command boundary and do not establish natural reachability. Wish scenarios execute actual native casts, double fainting, forced resident choices, unloaded voluntary choices and later original-caster text. Roar/Whirlwind choices and ordinary battle completion execute natively. Each final case verifies both saves through native SAVE and fresh battery Continue.",
+  "production_test_api_added": false,
+  "rom_save_or_checkpoint_distributed": false,
+  "limits": [
+    "No continuous natural campaign or multi-hour run in this follow-up.",
+    "No physical controllers, audible-output test or actual Windows/Bazzite Pokemon gameplay.",
+    "Enigma and special-mode/campaign limitations remain as documented.",
+    "Unknown or inconsistent native references can still require whole-transaction rollback.",
+    "Published Alpha 10 assets are unchanged; these corrections await a future release."
+  ]
+}

@@ -187,11 +187,23 @@ The native switch menu shows each human's own six Pokémon. An unloaded reserve
 may replace an unreferenced own bench slot, including a living one. A journal
 retains its owned progress and participation. Physical party/index/order data
 are restored before native battle reshow, including cancel and rollback paths.
-Active Pokémon, queued switches and Wish targets still protect physical slots;
 Alpha 10 rejects an unavailable reserve before changing party order, shows a
 German in-game explanation and lets the owner pick a resident alternative or
-cancel when the native request permits cancellation. Unexpected corruption still
-fails closed; fully pinned forced refills or EXP paging can still require rollback.
+cancel when the native request permits cancellation.
+
+**Current source after Alpha 10:** both active Pokémon remain resident throughout
+EXP awards, including move-learning summaries. Queued/Wish-only bench slots may be
+borrowed for one recipient and are restored before native battle processing
+resumes. The native references are checked throughout the award. Successful Wish
+casts retain their source nickname independently, allowing that source's bench
+slot to be reused without changing its later announcement or healing. Unknown
+Wish references remain protected. Trainer Roar/Whirlwind samples only the target
+player's own original roster, including unloaded reserves; the original RNG,
+level checks, failure script and switch effects still run. The selected player's
+old queue is released only at the immediate native replacement boundary.
+Unexpected corruption still fails closed. These changes are in source; published
+Alpha 10 downloads retain their earlier behavior.
+[Focused verification](verification/firered-reserves-2026-11-08.json).
 
 Alpha 9 distributes native EXP/EV awards across all twelve original party slots.
 Prepared two-core tests cover twelve EXP Share holders, twelve pending evolutions,
@@ -238,7 +250,7 @@ engine applies its EV bonus, including unloaded EXP Share recipients. It does
 not add Ruby/Sapphire/Emerald infection mechanics. See the pinned
 [original source](https://github.com/pret/pokefirered/blob/ce6406d8c2eaf46d543c8a2606de0c3cb1951982/src/pokemon.c#L5607)
 and the [Alpha 10 checks](verification/firered-alpha10-2026-11-08.json). The working party usually contains up to three viable Pokémon per
-player; the journal is not unlimited native battle virtualization. Protected
+player; the journal is not unlimited native battle virtualization. Unrecognized or inconsistent native
 references can require rollback. Ambiguous duplicate identities across profiles are rejected, with the narrow
 native Ninjask/Shedinja sibling exception. The mode remains experimental.
 

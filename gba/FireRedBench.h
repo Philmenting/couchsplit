@@ -14,6 +14,9 @@ struct BenchReferences {
     std::array<unsigned, 2> callerExcluded{{6, 6}};
     std::array<uint8_t, 4> wishCounters{};
     std::array<unsigned, 4> wishSlots{{0, 0, 0, 0}};
+    // Planner-only receipts: the source nickname was captured at native Wish
+    // success and will be supplied at its exact message expansion boundary.
+    uint8_t journaledWish = 0;
     uint8_t leveled = 0;
     std::array<uint8_t, 2> participation{};
     uint8_t knockedOff = 0;
@@ -21,7 +24,8 @@ struct BenchReferences {
     std::vector<unsigned> exclusions() const {
         requirePokemon((leveled & ~0x3Fu) == 0 &&
                        (participation[0] & ~0x3Fu) == 0 && (participation[1] & ~0x3Fu) == 0 &&
-                       (knockedOff & ~0x3Fu) == 0, "Invalid FireRed bench bit mask");
+                       (knockedOff & ~0x3Fu) == 0 && (journaledWish & ~5u) == 0,
+                       "Invalid FireRed bench bit mask");
         std::vector<unsigned> result;
         auto add = [&](unsigned slot) {
             requirePokemon(slot <= 6 || slot == 0xFF, "Invalid FireRed referenced party slot");
@@ -31,7 +35,10 @@ struct BenchReferences {
         for (auto slot : queued) add(slot);
         for (auto slot : callerExcluded) add(slot);
         // Opponent Wish IDs refer to the enemy party and cannot pin our slots.
-        for (unsigned battler : {0u, 2u}) if (wishCounters[battler]) add(wishSlots[battler]);
+        for (unsigned battler : {0u, 2u}) if (wishCounters[battler]) {
+            requirePokemon(wishSlots[battler]<6,"Invalid FireRed Wish source slot");
+            if (!(journaledWish & (1u << battler))) add(wishSlots[battler]);
+        }
         for (unsigned slot = 0; slot < 6; ++slot) if (leveled & (1u << slot)) add(slot);
         return result;
     }

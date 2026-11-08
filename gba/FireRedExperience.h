@@ -17,6 +17,8 @@ class BattleExperience {
     uint16_t leveled=0, knockedOff=0;
     struct Award {
         BattleParty working;
+        BenchReferences references;
+        uint32_t battle=0;
         std::vector<unsigned> recipients;
         unsigned next=0, slot=6, recipient=12;
         unsigned flank=0;
@@ -55,6 +57,19 @@ class BattleExperience {
         restoreParties(transaction,transaction.combined);
         writeParty(core,transaction.combined);
     }
+    void checkAwardReferences(uint32_t battle) const {
+        requirePokemon(award && battle==award->battle,"FireRed experience structure changed during an award");
+        const auto current=readBenchReferences(core,6,6);
+        const auto& saved=award->references;
+        // Among these references only the level mask may change while getexp,
+        // its controller tasks and nested move-learning script own the award.
+        requirePokemon(current.active==saved.active && current.queued==saved.queued &&
+                       current.wishCounters==saved.wishCounters && current.wishSlots==saved.wishSlots &&
+                       current.participation==saved.participation && current.knockedOff==saved.knockedOff,
+                       "FireRed native battle references changed during an experience award");
+        requirePokemon(core->busRead8(core,battle+0x10)==award->slot,
+                       "FireRed experience recipient changed during an award");
+    }
     void nextRecipient(uint32_t battle) {
         requirePokemon(award && award->next<award->recipients.size(),"Missing FireRed experience recipient");
         const auto recipient=award->recipients[award->next++];
@@ -63,12 +78,16 @@ class BattleExperience {
         for(unsigned s=0;s<transaction.combined.count;++s)
             if(virtualSlot(s)==recipient)slot=s;
         if(slot==6) {
-            auto references=readBenchReferences(core,6,6);references.leveled=0;
-            const auto protectedSlots=references.exclusions();
+            // getexp owns the native script until all EXP, level and move
+            // dialogs have returned. Queued switches and Wish cannot consume
+            // their party IDs until restoreWorking has restored this layout.
+            // BOTH active records must remain resident: the EXP controller,
+            // move-learning/Choice Band helpers and summary reshow read them.
+            const auto& active=award->references.active;
             for(unsigned s=0;s<transaction.combined.count;++s)
                 if(transaction.owners[s]==int(owner) &&
-                   std::find(protectedSlots.begin(),protectedSlots.end(),s)==protectedSlots.end()) {slot=s;break;}
-            requirePokemon(slot<6,"FireRed experience recipient is blocked by active, queued or Wish references");
+                   s!=active[0] && s!=active[1]) {slot=s;break;}
+            requirePokemon(slot<6,"FireRed experience recipient has no inactive owned working slot");
             transaction.originalSlots[slot]=int(original);
             transaction.combined.mons[slot]=transaction.originals[owner].mons[original];
             restoreParties(transaction,transaction.combined);
@@ -134,12 +153,21 @@ public:
         const auto state=core->busRead8(core,State);
         const auto battle=inventoryRead32(core,0x02023FE8);
         requirePokemon(validSaveBlock(battle,0xE0),"Invalid FireRed experience structure");
+        if(award) {
+            requirePokemon(state>=2 && state<=5,"Unexpected FireRed native experience state");
+            checkAwardReferences(battle);
+        }
         if(state==1) {
             requirePokemon(!award && !evolving && !inventoryRead32(core,0x02023BC8),"Overlapping FireRed experience awards");
             observeBattle();rebase();
             const unsigned fainted=core->busRead8(core,0x02023D6D);
             requirePokemon(fainted==1 || fainted==3,"FireRed experience has no defeated opponent");
             Award next;next.working=transaction;next.flank=(fainted&2u)/2;
+            next.battle=battle;next.references=readBenchReferences(core,6,6);
+            for(unsigned owner=0;owner<2;++owner)
+                requirePokemon(next.references.active[owner]<transaction.combined.count &&
+                               transaction.owners[next.references.active[owner]]==int(owner),
+                               "Invalid FireRed active party ownership during experience");
             unsigned participants=0,holders=0;
             for(unsigned owner=0;owner<2;++owner)for(unsigned slot=0;slot<transaction.originals[owner].count;++slot) {
                 const auto& mon=transaction.originals[owner].mons[slot];const auto id=owner*6+slot;
