@@ -102,7 +102,7 @@ int main(int argc,char** argv) {
     try {
         const QString rom=QString::fromLocal8Bit(argv[1]),state=QString::fromLocal8Bit(argv[2]),out=QString::fromLocal8Bit(argv[3]);
         const auto scenario=argc==5?QString::fromLocal8Bit(argv[4]):QStringLiteral("wild");
-        requirePokemon(scenario=="wild" || scenario.startsWith("single") || scenario.startsWith("exp-share") || scenario=="escape" || scenario=="escape-leader2" || scenario=="escape-player2" || scenario=="grass-rendezvous" || scenario=="deferred-script" || scenario=="marowak" || scenario=="scripted" || scenario=="legendary" || scenario=="rendezvous" || scenario=="capture-scripted" || scenario=="capture-legendary" || scenario=="trainer" || scenario.startsWith("trainer-single") || scenario=="payday" || (scenario=="capture" || scenario=="capture-leader2" || scenario=="capture-full-native" || scenario=="capture-party-space" || scenario=="capture-pc" || scenario=="capture-denied" || scenario.startsWith("capture-both") || scenario=="capture-sequential" || scenario=="capture-unown" || scenario=="capture-spinda" || scenario=="capture-unown-first") || scenario=="owners" || scenario=="leader2" || scenario=="action-stats" || scenario=="evolution" || scenario=="bench" || scenario=="exhaust" || scenario=="defeat" || scenario.startsWith("party-menu"),"Unknown acceptance scenario");
+        requirePokemon(scenario=="wild" || scenario=="capture-small" || scenario=="soak-launcher" || scenario.startsWith("single") || scenario.startsWith("exp-share") || scenario=="escape" || scenario=="escape-leader2" || scenario=="escape-player2" || scenario=="grass-rendezvous" || scenario=="deferred-script" || scenario=="marowak" || scenario=="scripted" || scenario=="legendary" || scenario=="rendezvous" || scenario=="capture-scripted" || scenario=="capture-legendary" || scenario=="trainer" || scenario.startsWith("trainer-single") || scenario=="payday" || (scenario=="capture" || scenario=="capture-leader2" || scenario=="capture-full-native" || scenario=="capture-party-space" || scenario=="capture-pc" || scenario=="capture-denied" || scenario.startsWith("capture-both") || scenario=="capture-sequential" || scenario=="capture-unown" || scenario=="capture-spinda" || scenario=="capture-unown-first") || scenario=="owners" || scenario=="leader2" || scenario=="action-stats" || scenario=="evolution" || scenario=="bench" || scenario=="exhaust" || scenario=="defeat" || scenario.startsWith("party-menu"),"Unknown acceptance scenario");
         requirePokemon(hashFile(rom)==RomHash,"Only the exact German FireRed original is supported");
         QFile checkpoint(state); requirePokemon(checkpoint.open(QIODevice::ReadOnly),"Cannot open private checkpoint");
         const auto bytes=checkpoint.readAll(); const auto stateHash=QCryptographicHash::hash(bytes,QCryptographicHash::Sha256).toHex();
@@ -121,6 +121,21 @@ int main(int argc,char** argv) {
         Party p0,p1;p0.count=p1.count=2;
         p0.mons[0]=mon(24,trainer0.id,25);p0.mons[1]=mon(120,trainer0.id,19);
         p1.mons[0]=mon(48,trainer1.id,25);p1.mons[1]=mon(144,trainer1.id,19);
+        if(scenario=="soak-launcher") {
+            // Private long-run fixture: level-capped, no held items or pending
+            // learning/evolution, sufficient native PP for repeated encounters.
+            for(unsigned owner=0;owner<2;++owner)for(unsigned slot=0;slot<2;++slot) {
+                auto& pokemon=(owner?p1:p0).mons[slot];
+                pokemon=mon(24*(owner*6+slot+1),(owner?trainer1:trainer0).id,150);
+                auto plain=pokemon.secure();monPut32(plain.data()+4,1250000);plain[8]=0xFF;
+                for(unsigned move=0;move<4;++move) {
+                    monPut16(plain.data()+12+move*2,std::array<unsigned,4>{{33,10,1,98}}[move]);
+                    plain[20+move]=move==3?48:56;
+                }
+                pokemon.setSecure(plain);pokemon.bytes[84]=100;
+                for(unsigned offset=86;offset<100;offset+=2)monPut16(pokemon.bytes.data()+offset,300);
+            }
+        }
         if(scenario=="action-stats") {
             p0.count=p1.count=1;p0.mons[1]=p1.mons[1]={};
             auto plain=p0.mons[0].secure();monPut16(plain.data()+12,150);plain[20]=40;p0.mons[0].setSecure(plain);
@@ -140,13 +155,15 @@ int main(int argc,char** argv) {
             p0.count=p1.count=6;
             for(unsigned owner=0;owner<2;++owner)for(unsigned slot=0;slot<6;++slot) {
                 auto& pokemon=(owner?p1:p0).mons[slot];
-                const unsigned species=slot==5 && scenario.contains("evolution") ? (owner?4u:1u) :
+                const unsigned species=slot==5 && scenario.contains("dex") ? 42u :
+                    (slot==5 || scenario.contains("twelve")) && scenario.contains("evolution") ? (owner?4u:1u) :
                     slot==5 && owner==1 && scenario.contains("learn") ? 1u : 25u;
                 pokemon=mon(24*(owner*6+slot+1),(owner?trainer1:trainer0).id,species);
-                const bool share=scenario.contains("overflow") ? ((owner==0 && slot>=2) || (owner==1 && slot==5)) :
+                const bool share=scenario.contains("twelve") ? true : scenario.contains("overflow") ? ((owner==0 && slot>=2) || (owner==1 && slot==5)) :
                     scenario.contains("many") ? owner==0 && slot>=2 : slot==5;
                 if(share) {
                     auto secure=pokemon.secure();monPut16(secure.data()+2,182);
+                    if(scenario.contains("dex")) {monPut32(secure.data()+4,132650);secure[9]=255;}
                     if(scenario.contains("evolution")) {
                         monPut32(secure.data()+4,2534);pokemon.bytes[84]=15;
                         monPut16(pokemon.bytes.data()+86,41);monPut16(pokemon.bytes.data()+88,41);
@@ -168,6 +185,11 @@ int main(int argc,char** argv) {
         if(scenario.startsWith("exp-share-enigma")) {
             auto& holder=(scenario.endsWith("-leader2")?p0:p1).mons[5];
             auto secure=holder.secure();monPut16(secure.data()+2,EnigmaBerryItem);holder.setSecure(secure);
+        }
+        if(scenario.contains("exp-share-dex"))for(unsigned owner=0;owner<2;++owner) {
+            auto* c=owner?b:a;const auto memory=readSaveMemory(c);auto progress=readProgress(c);
+            progress.flag(0x840,owner==1);progress.var(0x404E,owner?0x6258:0);
+            writeProgressDelta(c,readProgress(c),progress);c->busWrite8(c,memory.block2+0x1B,owner?0xB9:0);
         }
         if(scenario.contains("multiturn"))for(auto* party:{&p0,&p1}) {
             auto plain=party->mons[0].secure();monPut16(plain.data()+12,45);monPut16(plain.data()+14,33);
@@ -200,6 +222,7 @@ int main(int argc,char** argv) {
         }
         if(scenario.startsWith("capture")) {
             p0.count=p1.count=3;p0.mons[2]=mon(168,trainer0.id,25);p1.mons[2]=mon(192,trainer1.id,25);
+            if(scenario=="capture-small") {p0.count=1;p0.mons[1]={};p0.mons[2]={};}
             const auto firstBall=[](Inventory& bag,unsigned item) {
                 auto& entries=bag.pockets[PokeBalls];
                 const auto found=std::find_if(entries.begin(),entries.begin()+PocketCapacities[PokeBalls],
@@ -258,6 +281,7 @@ int main(int argc,char** argv) {
         const auto originalBag0=readInventory(a),originalBag1=readInventory(b);
         const std::array<DexEntry,2> originalDex{{readDexEntry(a,captureSpecies),readDexEntry(b,captureSpecies)}};
         const auto originalDex2b=readDexEntry(b,2), originalDex5a=readDexEntry(a,5);
+        const auto originalCrobat0=readDexEntry(a,169);
         const std::array<PersonalCaptureState,2> originalPersonal{{readPersonalCapture(a),readPersonalCapture(b)}};
         const auto saveBlocks=[](mCore* c) {
             const auto m=readSaveMemory(c);
@@ -277,7 +301,7 @@ int main(int argc,char** argv) {
         const std::array<uint32_t,2> struggleStatsBefore{{readGameStatistic(a,27),readGameStatistic(b,27)}};
         std::array<std::array<bool,6>,2> benchEntered{};
         unsigned liveFrame=0;
-        std::array<unsigned,2> menuOpens{},menuCancels{},menuImports{},menuAt{},menuActionAt{};
+        std::array<unsigned,2> menuOpens{},menuCancels{},menuImports{},menuPicks{},menuAt{},menuActionAt{};
         std::array<bool,2> menuActionStarted{},menuScreens{},summaryScreens{};
         std::array<unsigned,2> summaryStage{},summaryAt{};
         bool menuRollback=false;
@@ -285,7 +309,12 @@ int main(int argc,char** argv) {
             fprintf(stdout,"%s: %d\n",text,detail);fflush(stdout);
             if(QString::fromLatin1(text)=="own party menu opened") {++menuOpens[unsigned(detail)];menuAt[unsigned(detail)]=liveFrame;}
             if(QString::fromLatin1(text)=="own party menu canceled") {++menuCancels[unsigned(detail)/6];menuActionStarted[unsigned(detail)/6]=false;}
-            if(QString::fromLatin1(text)=="own reserve selected") {requirePokemon(unsigned(detail)%6==5,"Native menu did not select own sixth original");++menuImports[unsigned(detail)/6];}
+            if(QString::fromLatin1(text)=="own reserve selected") {requirePokemon(scenario=="party-menu-cycle" || unsigned(detail)%6==5,"Native menu did not select own sixth original");++menuImports[unsigned(detail)/6];}
+            if(scenario=="party-menu-cycle" && (QString::fromLatin1(text)=="own reserve selected" || QString::fromLatin1(text)=="own resident selected")) {
+                const unsigned owner=unsigned(detail)/6;
+                requirePokemon(unsigned(detail)%6==menuPicks[owner]+1,"Native cycle selected the wrong original");
+                ++menuPicks[owner];menuActionStarted[owner]=false;
+            }
             if(QString::fromLatin1(text)=="owner bench replenished" && detail>=0 && detail<2)++benchRefills[unsigned(detail)];
             if(QString::fromLatin1(text)=="owned evolution started" && detail>=0 && detail<2)++evolutionStarts[unsigned(detail)];
             if(QString::fromLatin1(text)=="native trainer money announced" || QString::fromLatin1(text)=="native payday share announced") {
@@ -323,11 +352,24 @@ int main(int argc,char** argv) {
             // production worker receives ordinary, natively written batteries.
             for(unsigned owner=0;owner<2;++owner) {
                 auto* c=owner?b:a;const auto memory=readSaveMemory(c);
-                inventoryWrite16(c,memory.block1,14);inventoryWrite16(c,memory.block1+2,26);
+                inventoryWrite16(c,memory.block1,scenario=="soak-launcher"?12:14);
+                inventoryWrite16(c,memory.block1+2,scenario=="soak-launcher"?38:26);
                 c->busWrite8(c,memory.block1+4,3);c->busWrite8(c,memory.block1+5,19);
                 c->busWrite8(c,0x03003478,0);c->busWrite32(c,MainCallbackAddress,0x0805673D);
                 for(unsigned f=0;f<240;++f){c->setKeys(c,0);c->runFrame(c);}
-                requirePokemon(campaignFieldQuiescent(c),"Recovery fixture did not enter Route 1");
+                requirePokemon(campaignFieldQuiescent(c),"Launcher fixture did not enter Route 1");
+                if(scenario=="soak-launcher" && owner==0) {
+                    const auto layout=inventoryRead32(c,0x02036DFC);
+                    const auto width=inventoryRead32(c,layout),height=inventoryRead32(c,layout+4);
+                    const auto tiles=inventoryRead32(c,layout+12);
+                    fprintf(stdout,"Route1 map=3/19 origin=12,38 size=%ux%u\n",width,height);
+                    requirePokemon(width<=64 && height<=128,"Unexpected Route 1 fixture dimensions");
+                    for(unsigned y=0;y<height;++y) {
+                        fprintf(stdout,"%02u ",y);
+                        for(unsigned x=0;x<width;++x)fprintf(stdout,"%04x ",c->busRead16(c,tiles+(y*width+x)*2));
+                        fprintf(stdout,"\n");
+                    }
+                }
                 const auto proof=acceptance::verifyNativeSaveReload(c,rom.toStdString());
                 QFile file(out+QString("/player%1.sav").arg(owner+1));
                 requirePokemon(file.open(QIODevice::WriteOnly|QIODevice::NewOnly) &&
@@ -347,7 +389,7 @@ int main(int argc,char** argv) {
             c->busWrite32(c,GlobalScriptContextAddress+12,owner?0x08125000:0x08124000);
         }
         trigger(leading,scenario);
-        if(scenario.contains("exp-share-overflow") || scenario.contains("exp-share-enigma")) {
+        if(scenario.contains("exp-share-enigma")) {
             // Authored native single encounters, with actual unmodified game
             // execution after the user explicitly chooses individual battles.
             trigger(leading,"single");
@@ -562,11 +604,11 @@ int main(int argc,char** argv) {
                             if(elapsed>150)summaryStage[owner]=3;
                         } else if(summaryStage[owner]==3)inputs[owner]=pulse?2u:0u;
                     } else if(scenario=="party-menu-cancel"&&menuCancels[owner]==0)inputs[owner]=age>120&&pulse?2u:0u;
-                    else if(age>120)inputs[owner]=pulse?(a->busRead8(a,0x0203B0A9)==5?1u:128u):0u;
+                    else if(age>120)inputs[owner]=pulse?(a->busRead8(a,0x0203B0A9)==(scenario=="party-menu-cycle"?menuPicks[owner]+1:5u)?1u:128u):0u;
                 } else if(scenario!="party-menu-forced") {
                     for(unsigned owner=0;owner<2;++owner) {
                         const unsigned battler=owner*2;
-                        if(menuImports[owner] || !(pending&(1u<<battler)) || a->busRead8(a,ControllerBufferA+battler*0x200)!=18)continue;
+                        if((scenario=="party-menu-cycle"?menuPicks[owner]>=5:bool(menuImports[owner])) || !(pending&(1u<<battler)) || a->busRead8(a,ControllerBufferA+battler*0x200)!=18)continue;
                         if(!menuActionStarted[owner]){menuActionStarted[owner]=true;menuActionAt[owner]=frames;}
                         const unsigned elapsed=frames-menuActionAt[owner];
                         inputs[owner]=elapsed>=20&&elapsed<24?128u:elapsed>=40&&elapsed<44?1u:0u;
@@ -745,7 +787,7 @@ int main(int argc,char** argv) {
         requirePokemon(r0.count==p0.count+(scenario.startsWith("capture-both")?1:0) && r1.count==p1.count+(scenario.startsWith("capture") && scenario!="capture-pc" && scenario!="capture-denied" && !scenario.startsWith("capture-both")?1:0),"Battle changed original party sizes");
         for(unsigned s=0;s<p0.count;++s)requirePokemon(r0.mons[s].identity()==p0.mons[s].identity(),"Battle swapped player-one Pokemon ownership");
         for(unsigned s=0;s<p1.count;++s)requirePokemon(r1.mons[s].identity()==p1.mons[s].identity(),"Battle swapped player-two Pokemon ownership");
-        if(scenario.startsWith("exp-share") && !scenario.contains("many")) {
+        if(scenario.startsWith("exp-share") && !scenario.contains("many") && !scenario.contains("twelve") && !scenario.contains("overflow")) {
             for(unsigned owner=0;owner<2;++owner) {
                 const auto& before=owner?p1:p0;const auto& after=owner?r1:r0;
                 requirePokemon(after.mons[5].experience()>before.mons[5].experience() && after.mons[5].heldItem()==182,
@@ -774,6 +816,23 @@ int main(int argc,char** argv) {
                                readDexEntry(b,2).isCaught()==originalDex2b.isCaught(),
                                "EXP Share evolution ownership leaked between trainers");
             }
+        }
+        if(scenario.contains("exp-share-twelve") || scenario.contains("exp-share-overflow")) {
+            for(unsigned owner=0;owner<2;++owner)for(unsigned slot=0;slot<6;++slot) {
+                const auto& before=(owner?p1:p0).mons[slot];const auto& after=(owner?r1:r0).mons[slot];
+                const bool recipient=slot==0 || before.heldItem()==ExpShareItem;
+                requirePokemon(after.heldItem()==before.heldItem() && (recipient?after.experience()>before.experience():after==before),
+                               "Virtual experience omitted or changed an owned recipient");
+                if(recipient) {
+                    const auto x=before.secure(),y=after.secure();
+                    requirePokemon(y[27]==x[27]+2,"Virtual recipient did not receive both native Speed EVs");
+                }
+                if(scenario.contains("twelve") && !scenario.contains("evolution"))
+                    requirePokemon(after.experience()-before.experience()==(slot?6u:45u),"Twelve-holder native EXP split is incorrect");
+                if(scenario.contains("evolution"))
+                    requirePokemon(after.level()==16 && after.species()==(owner?5u:2u),"A queued virtual evolution was lost");
+            }
+            if(scenario.contains("evolution"))requirePokemon(evolutionStarts[0]==6 && evolutionStarts[1]==6,"All twelve native evolution scenes must complete");
         }
         if(scenario.contains("exp-share-many")) {
             for(unsigned slot=2;slot<6;++slot) {
@@ -845,7 +904,15 @@ int main(int argc,char** argv) {
         } else if(scenario=="exhaust") {
             requirePokemon(r0.mons[0].hp()==0 && r1.mons[0].hp()>0 && r1.mons[0].pp(1)<p1.mons[0].pp(1),"Partner did not complete the battle after player-one exhaustion");
         }
-        if(scenario.startsWith("party-menu")) {
+        if(scenario=="party-menu-cycle") {
+            for(unsigned owner=0;owner<2;++owner) {
+                requirePokemon(menuPicks[owner]==5,"All own originals were not selected natively");
+                for(unsigned slot=0;slot<6;++slot) {
+                    const auto& before=(owner?p1:p0).mons[slot];const auto& after=(owner?r1:r0).mons[slot];
+                    requirePokemon(after.experience()-before.experience()==12,"Retired living participant lost or duplicated its native award");
+                }
+            }
+        } else if(scenario.startsWith("party-menu")) {
             if(scenario=="party-menu-single")
                 requirePokemon(singleAbsentObserved,"Single opponent was not held absent through own-party menus");
             for(unsigned owner=0;owner<2;++owner) {
@@ -931,6 +998,12 @@ int main(int argc,char** argv) {
                            "Wild escape changed an owner's wallet, inventory or PC");
         }
         requirePokemon(hashFile(rom)==RomHash && hashFile(state)==stateHash,"Input ROM/checkpoint changed");
+        if(scenario.contains("exp-share-dex")) {
+            requirePokemon(evolutionStarts[0]==1 && evolutionStarts[1]==1 && r0.mons[5].species()==42 && r1.mons[5].species()==169,
+                           "National Dex evolution restriction did not use the actual owner");
+            requirePokemon(readDexEntry(a,169).isCaught()==originalCrobat0.isCaught() && readDexEntry(b,169).isCaught(),
+                           "Crobat evolution dex receipt belongs to the wrong trainer");
+        }
         QJsonObject report{{"rom_sha256",RomHash},{"checkpoint_sha256",QString::fromLatin1(stateHash)},{"scenario",scenario},{"two_real_mgba_cores",true},{"authored_test_parties",true},{"native_battle_completed",true},{"owned_inputs_both_players",true},{"party_ownership_preserved",true},{"pp_transferred_to_owners",!scenario.startsWith("capture") && scenario!="defeat"},{"experience_transferred_to_owners",!scenario.startsWith("capture") && scenario!="exhaust" && scenario!="defeat"},{"capture_and_bag_and_dex_ownership",scenario.startsWith("capture")},{"exhausted_owner_partner_continues",scenario=="exhaust"},{"blackout_uses_own_level_and_wallet",scenario=="defeat"},{"rollback_preserves_parties_and_wallets",true},{"wallet0",int(readWallet(a))},{"wallet1",int(readWallet(b))},{"frames",int(frames)},{"battery_files_written",false},{"production_launcher",false},{"complete_world_coop",false}};
         report["native_save_and_fresh_battery_reload_both_players"]=saveReload;
         if(scenario.startsWith("exp-share")) {

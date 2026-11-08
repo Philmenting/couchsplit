@@ -5,6 +5,7 @@
 #include "FireRedStorage.h"
 #include "FireRedCapture.h"
 #include "FireRedBench.h"
+#include "FireRedExperience.h"
 #include "FireRedRewards.h"
 #include "FireRedBattleHooks.h"
 #include "FireRedDex.h"
@@ -61,6 +62,8 @@ class TeamBattle {
     std::array<std::vector<uint8_t>, 2> rollbackStates;
     std::array<std::vector<uint8_t>, 2> rollbackBatteries;
     BattleParty transaction;
+    std::array<Party,2> initialParties;
+    std::unique_ptr<BattleExperience> experience;
     std::unique_ptr<BattleHooks> hooks;
     std::array<Inventory, 2> bags;
     Inventory activeBag;
@@ -99,6 +102,7 @@ class TeamBattle {
         requirePokemon((battler==0 || battler==2) && !ownPartyMenu && !ownPartyMenuReply,
                        "Conflicting FireRed own-party menu request");
         auto* c=cores[leader];NativePartyMenu view;view.battler=battler;
+        experience->observeBattle();
         const auto buffer=ControllerBufferA+battler*0x200;
         for(unsigned i=0;i<view.request.size();++i)view.request[i]=uint8_t(c->busRead8(c,buffer+i));
         requirePokemon(view.request[0]==22,"Unexpected native own-party menu command");
@@ -125,7 +129,7 @@ class TeamBattle {
         const auto chosen=c->busRead8(c,NativePartyMenuExitChosenAddress);
         requirePokemon(chosen<=1,"Invalid FireRed native own-party menu completion flag");
         const unsigned original=chosen?c->busRead8(c,NativePartyMenuSelectedAddress):6u;
-        const auto picked=planPartyMenuSelection(view.session,readParty(c),original);
+        const auto picked=planPartyMenuSelection(view.session,readParty(c),original,true);
         // Restore physical battle ownership BEFORE the native reshow callback,
         // including when a protected reference forces a full battle rollback.
         writeParty(c,picked.party);
@@ -145,6 +149,7 @@ class TeamBattle {
         ownPartyMenu.reset();
         if(!picked.accepted)throw std::runtime_error("FireRed own reserve is protected by pending native battle references: "+picked.reason);
         transaction=picked.transaction;
+        experience->projectReferences();
         c->busWrite8(c,NativePartyMenuSelectedAddress,uint8_t(picked.nativeSlot));
         ownPartyMenuReply=std::make_pair(view.battler,picked.nativeSlot);
         if(event)event(picked.canceled?"own party menu canceled":picked.imported?"own reserve selected":"own resident selected",
@@ -174,6 +179,11 @@ class TeamBattle {
         return result;
     }
     int ownerOfSlot(unsigned slot) const {
+        if(experience && experience->evolutionOwner()) {
+            const auto owner=*experience->evolutionOwner();
+            requirePokemon(slot<cores[leader]->busRead8(cores[leader],PlayerPartyCountAddress),"Invalid FireRed evolution party slot");
+            return int(owner);
+        }
         requirePokemon(slot < transaction.combined.count, "Invalid FireRed battle party selection");
         auto* c = cores[leader];
         const auto address = PlayerPartyAddress + slot * PartyMonSize;
@@ -184,11 +194,13 @@ class TeamBattle {
     }
     void refillOwnerBench(unsigned owner, unsigned excludedOne = 6, unsigned excludedTwo = 6) {
         auto* c = cores[leader];
+        experience->observeBattle();
         const auto references = readBenchReferences(c, excludedOne, excludedTwo);
         const auto current = readParty(c);
         if (auto plan = planBenchRefill(transaction, current, owner, references)) {
             applyBenchRefill(c, *plan);
             transaction = std::move(plan->transaction);
+            experience->projectReferences();
             if (event) event("owner bench replenished", int(owner));
         } else {
             // Never declare defeat while a protected native slot prevents a
@@ -227,6 +239,7 @@ class TeamBattle {
     void finish() {
         if (hooks) hooks->check();
         requirePokemon(!ownPartyMenu && !ownPartyMenuReply,"FireRed battle ended inside a temporary own-party menu");
+        requirePokemon(!experience->temporaryParty(),"FireRed battle ended with an unfinished experience transaction");
         auto* core = cores[leader];
         const auto outcome = core->busRead8(core, OutcomeAddress);
         requirePokemon(outcome >= 1 && outcome <= 7, "Unsupported FireRed battle outcome");
@@ -311,8 +324,8 @@ class TeamBattle {
             // Evolution executes on the leader's native engine. Its personal
             // dex writes were reset above; grant ownership to the actual holder.
             for (unsigned owner = 0; owner < 2; ++owner)
-                for (unsigned slot = 0; slot < transaction.originals[owner].count; ++slot) {
-                    const auto& before = transaction.originals[owner].mons[slot];
+                for (unsigned slot = 0; slot < initialParties[owner].count; ++slot) {
+                    const auto& before = initialParties[owner].mons[slot];
                     const auto& after = results[owner].mons[slot];
                     if (before.species() == after.species()) continue;
                     if (player == owner) markCaught(cores[player], after.species(), after.identity().personality);
@@ -492,7 +505,7 @@ public:
         for (unsigned s = 0; s < first.count; ++s) viable0 |= first.mons[s].viable();
         for (unsigned s = 0; s < second.count; ++s) viable1 |= second.mons[s].viable();
         if (!viable0 || !viable1) return false;
-        const auto combined = combineParties(first, second);
+        const auto combined = combinePagedParties(first, second);
         unsigned viableWild=0;
         if (!(flags & 8u)) for (unsigned slot=0;slot<6;++slot) {
             const auto mon=0x0202402Cu+slot*PartyMonSize;
@@ -512,7 +525,7 @@ public:
         std::array<StorageSnapshot, 2> boxes{{readStorage(cores[0]), readStorage(cores[1])}};
         std::array<TrainerIdentity, 2> identities{{readTrainerIdentity(cores[0]), readTrainerIdentity(cores[1])}};
         for (unsigned p = 0; p < 2; ++p) personal[p]=readPersonalCapture(cores[p]);
-        transaction = combined; bags = inventories; wallets = money;
+        transaction = combined; initialParties={{first,second}}; bags = inventories; wallets = money;
         executedBalls = {};
         for (unsigned owner = 0; owner < 2; ++owner) for (unsigned item = 1; item <= 12; ++item)
             initialBalls[owner][item] = bags[owner].quantity(item);
@@ -529,6 +542,9 @@ public:
         catcher = -1; captureStaging.reset(); captureBeforeGift.reset(); encountered = {};
         battling = true;
         try {
+            experience=std::make_unique<BattleExperience>(core,transaction);
+            experience->ownerChanged=[this](unsigned owner){lastTextOwner=owner;currentOwner=int(owner);};
+            experience->evolutionBag=[this](unsigned owner){swapBag(owner);};
             writeParty(core, transaction.combined);
             core->busWrite32(core, BattleFlagsAddress, (flags & ~0x10u) | 1u);
             hooks = std::make_unique<BattleHooks>(core, [this](unsigned battler, unsigned first, unsigned second) {
@@ -631,7 +647,16 @@ public:
                    const unsigned owner=battler/2;
                    if (catcher != int(owner) || owner == leader) return std::nullopt;
                    return trainers[owner].name;
-               }, [this]{return singleWildBattle;}, [this]{return singleTrainerBattle;});
+               }, [this]{return singleWildBattle;}, [this]{return singleTrainerBattle;},
+               [this]{return experience->experienceCommand();}, [this]{experience->evolutionGate();},
+               [this](bool ending){return experience->evolutionBoundary(ending);},
+               [this](unsigned battler){experience->opponentReset(battler);},
+               [this](unsigned slot)->std::optional<bool> {
+                   if(!experience->evolutionOwner())return std::nullopt;
+                   auto* c=cores[unsigned(ownerOfSlot(slot))];const auto memory=readSaveMemory(c);
+                   const auto progress=readProgress(c);
+                   return c->busRead8(c,memory.block2+0x1B)==0xB9 && progress.var(0x404E)==0x6258 && progress.flag(0x840);
+               });
         } catch (...) { rollback(); throw; }
         if (event) event("team battle joined", int(initiator));
         return true;
@@ -676,6 +701,7 @@ public:
                 requirePokemon(owner < 0 || owner == evolutionOwner, "Conflicting FireRed evolution input owners");
                 owner = evolutionOwner;
             }
+            if(const auto recipient=experience->inputOwner())owner=int(*recipient);
             if (owner >= 0) lastTextOwner = unsigned(owner);
             currentOwner = owner;
             if (sawNativeBattle) if (const auto state = readNativeRewardState(core)) rewardState = *state;

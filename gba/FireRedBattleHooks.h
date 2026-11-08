@@ -41,6 +41,17 @@ public:
     using BallTextName = std::function<std::optional<std::array<uint8_t,7>>(unsigned battler)>;
     using SingleWild = std::function<bool()>;
     using SingleTrainer = std::function<bool()>;
+    using ExperienceCommand = std::function<bool()>;
+    using EvolutionGate = std::function<void()>;
+    using EvolutionQueue = std::function<bool(bool ending)>;
+    using OpponentReset = std::function<void(unsigned battler)>;
+    using EvolutionDex = std::function<std::optional<bool>(unsigned slot)>;
+    static constexpr uint32_t EvolutionDexAddress=0x0806E1C0;
+    static constexpr uint32_t ExperienceCommandAddress=0x080219EC;
+    static constexpr uint32_t EvolutionGateAddress=0x080159C6;
+    static constexpr uint32_t EvolutionQueueAddress=0x08015A24;
+    static constexpr uint32_t EvolutionQueueEndAddress=0x08015A9A;
+    static constexpr uint32_t OpponentResetAddress=0x080173B8;
     static constexpr uint32_t HasNoMonsAddress = 0x08019B94;
     static constexpr uint32_t IsOtherTrainerAddress = 0x08044188;
     static constexpr uint32_t FlagGetAddress = 0x0806E634;
@@ -104,7 +115,12 @@ private:
     BallTextName ballTextName;
     SingleWild singleWild;
     SingleTrainer singleTrainer;
-    std::array<Site,27> sites;
+    ExperienceCommand experienceCommand;
+    EvolutionGate evolutionGate;
+    EvolutionQueue evolutionQueue;
+    OpponentReset opponentReset;
+    EvolutionDex evolutionDex;
+    std::array<Site,33> sites;
     std::exception_ptr error;
     bool attached = false;
     inline static std::mutex registryMutex;
@@ -223,6 +239,37 @@ private:
         }
         const auto flags = self->core->busRead32(self->core, 0x02022B4C);
         if (!(flags & 1u) || !sharedEncounterFlags(flags)) { ARMRunFake(active, site->preimage[0]); return; }
+        if(site->address==EvolutionDexAddress) {
+            std::optional<bool> enabled;
+            try {
+                if(!self->error && uint32_t(active->gprs[ARM_LR])==0x080CEAA9u)
+                    enabled=self->evolutionDex(self->partySlot(uint32_t(active->gprs[9])));
+            } catch(...) {self->error=std::current_exception();}
+            if(enabled)active->gprs[0]=*enabled?1:0;
+            ARMRunFake(active,enabled?0x4770:site->preimage[0]);return;
+        }
+        if(site->address==ExperienceCommandAddress || site->address==EvolutionGateAddress ||
+           site->address==EvolutionQueueAddress || site->address==EvolutionQueueEndAddress ||
+           site->address==OpponentResetAddress) {
+            uint16_t instruction=site->preimage[0];
+            try {
+                if(!self->error) {
+                    if(site->address==ExperienceCommandAddress) {
+                        if(self->experienceCommand())instruction=0x4770; // function entry: BX LR
+                    } else if(site->address==EvolutionGateAddress) self->evolutionGate();
+                    else if(site->address==OpponentResetAddress) self->opponentReset(unsigned(active->gprs[0])&255u);
+                    else {
+                        const bool ending=site->address==EvolutionQueueEndAddress;
+                        if(self->evolutionQueue(ending)) {
+                            if(!ending || uint32_t(active->gprs[3])!=0x03004F24u)
+                                throw std::runtime_error("Unexpected FireRed evolution loop context");
+                            instruction=0xE7C9; // within the existing stack frame: B 0x08015A30
+                        }
+                    }
+                }
+            } catch(...) {self->error=std::current_exception();}
+            ARMRunFake(active,instruction);return;
+        }
         if (site->address == TrainerIntroBattlerAddress || site->address == TrainerIntroTextAddress ||
             site->address == BattlerSpritePresentAddress || site->address == IsDoubleBattleAddress ||
             site->address == ReshowLoadSpriteAddress || site->address == ReshowCreateSpriteAddress ||
@@ -444,14 +491,26 @@ public:
                 EvolutionObserver ownerEvolution = {}, GameStatisticHandler ownedGameStatistic = {},
                 MoneyAnnouncement announcedMoney = {}, PartyMenuOpen beforePartyMenu = {},
                 PartyMenuReturn beforePartyMenuReshow = {}, PartyMenuReply normalizePartyMenuReply = {},
-                BallTextName ownerBallTextName = {}, SingleWild isSingleWild = {}, SingleTrainer isSingleTrainer = {})
+                BallTextName ownerBallTextName = {}, SingleWild isSingleWild = {}, SingleTrainer isSingleTrainer = {},
+                ExperienceCommand nativeExperience = {}, EvolutionGate beforeEvolution = {},
+                EvolutionQueue nativeEvolutionQueue = {}, OpponentReset resetParticipation = {},
+                EvolutionDex ownedEvolutionDex = {})
         : core(target), predicate(std::move(ownerHasNoMons)), otherTrainer(std::move(ownerIsOtherTrainer)),
           badge(std::move(ownerHasBadge)), captureFull(std::move(ownerCaptureFull)),
           ballThrow(std::move(executedBallThrow)), teamHealth(std::move(beforeTeamHealthCheck)),
           capturedMon(std::move(beforeCapturedMonGift)), evolution(std::move(ownerEvolution)), gameStatistic(std::move(ownedGameStatistic)),
           moneyAnnouncement(std::move(announcedMoney)), partyMenuOpen(std::move(beforePartyMenu)),
           partyMenuReturn(std::move(beforePartyMenuReshow)), partyMenuReply(std::move(normalizePartyMenuReply)),
-          ballTextName(std::move(ownerBallTextName)), singleWild(std::move(isSingleWild)), singleTrainer(std::move(isSingleTrainer)), sites{{
+          ballTextName(std::move(ownerBallTextName)), singleWild(std::move(isSingleWild)), singleTrainer(std::move(isSingleTrainer)),
+          experienceCommand(std::move(nativeExperience)), evolutionGate(std::move(beforeEvolution)),
+          evolutionQueue(std::move(nativeEvolutionQueue)), opponentReset(std::move(resetParticipation)),
+          evolutionDex(std::move(ownedEvolutionDex)), sites{{
+              {EvolutionDexAddress,0xBEDA,{{0xB500,0x480A,0x6800,0x7EC0}},bool(evolutionDex)},
+              {ExperienceCommandAddress,0xBEDF,{{0xB5F0,0x464F,0x4646,0xB4C0}},bool(experienceCommand)},
+              {EvolutionGateAddress,0xBEDE,{{0x4806,0x7800,0x2800,0xD003}},bool(evolutionGate)},
+              {EvolutionQueueAddress,0xBEDD,{{0xB530,0x4814,0x7801,0x1C03}},bool(evolutionQueue)},
+              {EvolutionQueueEndAddress,0xBEDC,{{0x4904,0x4804,0x6008,0xBC30}},bool(evolutionQueue)},
+              {OpponentResetAddress,0xBEDB,{{0xB5F0,0x4647,0xB480,0x0600}},bool(opponentReset)},
               {HasNoMonsAddress, 0xBEF1, {{0xB5F0,0x4657,0x464E,0x4645}}, true},
               {IsOtherTrainerAddress, 0xBEF2, {{0xB530,0x1C0D,0x490F,0x680B}}, bool(otherTrainer)},
               {FlagGetAddress, 0xBEF3, {{0xB510,0x0400,0x0C04,0x1C20}}, bool(badge)},

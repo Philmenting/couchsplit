@@ -3,7 +3,8 @@
 """Opt-in production Session/PlayView/worker recovery with private native saves.
 
 Create the two authored Route 1 saves using verify-firered-pair and scenario
-exp-share-overflow-launcher or exp-share-enigma-launcher. No ROM/saves are shipped.
+exp-share-enigma-launcher. EXP Share overflow now succeeds in shared battles.
+No ROM/saves are shipped.
 This targeted acceptance uses virtual SDL controllers, not physical hardware.
 """
 import hashlib

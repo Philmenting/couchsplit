@@ -2,17 +2,16 @@
 
 [English](../bazzite-firered-test.md) · **Deutsch** · [Dokumentation](README.md)
 
-Dies ist ein Test aus dem Quellcode, kein Alpha-8-Installer: Die veröffentlichte
-Alpha 8 enthält den experimentellen Feuerrot-Worker noch nicht. Verwende den
-Desktopmodus und deine eigene unveränderte deutsche Feuerrot-ROM. Umfang und
-verbleibende Grenzen stehen in der [Feuerrot-Anleitung](firered.md). Diese
-Anleitung konnte hier noch nicht auf einem Bazzite-Gerät ausgeführt werden.
+Alpha 9 enthält den experimentellen Feuerrot-Worker. Für die normale Einrichtung
+[das Bazzite-Paket](one-file-installer.md) installieren, die eigene unveränderte
+deutsche Feuerrot-ROM wählen und **Einstellungen → Feuerrot-Koop (experimentell)**
+aktivieren. [Feuerrot-Anleitung und Grenzen](firered.md). Tatsächliche Bazzite-Spiel-
+und Controller-Abnahme steht weiterhin aus.
 
-Führe die folgenden Befehle in einem Terminal aus. Der neue Projektordner darf
-noch nicht existieren. Die Befehle erstellen eine eigene Distrobox, laden den
-aktuellen GitHub-Quellcode und verwenden einen separaten Datenordner. Die
-Installation der Abhängigkeiten benötigt Internet und fragt **innerhalb des
-Containers** nach Administratorrechten.
+Die folgende optionale Quellcode-Anleitung nutzt einen eigenen Container und
+eigene Profile. Im Desktopmodus ein Terminal öffnen; der neue Quellordner darf
+noch nicht existieren. Die Paketinstallation verwendet `sudo` nur innerhalb des
+Containers und benötigt Internetzugang.
 
 ```bash
 distrobox create --name couchsplit-firered-dev --image registry.fedoraproject.org/fedora:44 --yes

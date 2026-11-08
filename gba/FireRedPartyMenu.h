@@ -105,7 +105,7 @@ inline void validatePartyMenuSnapshot(const PartyMenuSession& session,const Part
 // saved order before letting battle engine instructions execute again. Holding
 // the other core stopped and snapshot/Flash rollback remain coordinator duties.
 inline PartyMenuSelection planPartyMenuSelection(const PartyMenuSession& session,const Party& menuAfter,
-                                                 unsigned selectedOriginal) {
+                                                 unsigned selectedOriginal,bool journaledExperience=false) {
     validatePartyMenuSnapshot(session,menuAfter);
     requirePokemon(selectedOriginal<=6,"Invalid FireRed native switch-menu return value");
     session.references.exclusions();validatePartyMenuOrder(session.savedNativeOrder);
@@ -141,7 +141,7 @@ inline PartyMenuSelection planPartyMenuSelection(const PartyMenuSession& session
     // replacing it would silently discard that original Pokemon's earned EXP.
     const unsigned participating=session.references.participation[0] | session.references.participation[1];
     for(unsigned slot=0;slot<session.before.count;++slot)
-        if(((participating&(1u<<slot)) || session.before.mons[slot].heldItem()==ExpShareItem) && session.before.mons[slot].hp()!=0 &&
+        if(!journaledExperience && ((participating&(1u<<slot)) || session.before.mons[slot].heldItem()==ExpShareItem) && session.before.mons[slot].hp()!=0 &&
            std::find(protectedSlots.begin(),protectedSlots.end(),slot)==protectedSlots.end())protectedSlots.push_back(slot);
     unsigned destination=6;
     for(unsigned pass=0;pass<2 && destination==6;++pass)

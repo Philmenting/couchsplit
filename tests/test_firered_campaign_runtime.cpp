@@ -253,6 +253,74 @@ void chamberLighting() {
     check(!planCampaignObjectRefresh(&other.core,p,q).ready,"Incomplete chamber weather setup was silently replayed");
 }
 
+void pendingSeafoamLayout() {
+    constexpr uint32_t OtherLayout=0x08001100,OtherTiles=0x08005000,Border=0x08006000,Grid=0x02020000;
+    auto prepare=[&](Bus& b) {
+        b.map(1,86);b.loadScript();b.code(Load,{0xA7,0x16,1,2});
+        b.put(Save+0x32,159,2);b.put(0x0834EAB0+(159-1)*4,Layout);
+        b.put(0x0834EAB0+(278-1)*4,OtherLayout);
+        b.put(Layout+8,Border);b.put(Layout+24,0x202);
+        b.put(OtherLayout,20);b.put(OtherLayout+4,20);b.put(OtherLayout+8,Border);
+        b.put(OtherLayout+12,OtherTiles);b.put(OtherLayout+24,0x202);
+        b.put(0x03006000,35);b.put(0x03006004,34);b.put(0x03006008,Grid);
+        for(unsigned y=0;y<20;++y)for(unsigned x=0;x<20;++x) {
+            b.put(OtherTiles+(y*20+x)*2,0x154,2);b.put(Grid+((y+7)*35+x+7)*2,0x154,2);
+        }
+        b.put(OtherTiles+(3*20+2)*2,0x4354,2); // Include native elevation bits.
+    };
+    Bus b;prepare(b);b.put(Grid+((3+7)*35+3+7)*2,0x755,2);
+    auto before=b.state(),after=before;after.flag(0x821,true);
+    const auto baseline=b.data;const auto plan=planCampaignObjectRefresh(&b.core,before,after);
+    check(plan.ready && plan.changedLayout && plan.layoutEntries.size()==1 && plan.code.size()==9,
+          "Pending own Seafoam layout did not plan exact grid plus native header/redraw");
+    check(b.data==baseline,"Seafoam preflight mutated the live grid");
+    b.state(after);check(startCampaignObjectRefresh(&b.core,plan),"Seafoam layout transaction did not start");
+    check(inventoryRead16(&b.core,Grid+((3+7)*35+2+7)*2)==0x4354,"Native layout lost its elevation bits");
+    check(inventoryRead16(&b.core,Grid+((3+7)*35+3+7)*2)==0x755,"Layout replaced an unchanged personal tile");
+
+    Bus stale;prepare(stale);before=stale.state();after=before;after.flag(0x821,true);
+    auto pending=planCampaignObjectRefresh(&stale.core,before,after);stale.state(after);
+    stale.put(Grid+((3+7)*35+2+7)*2,0x222,2);const auto staleData=stale.data;
+    check(!startCampaignObjectRefresh(&stale.core,pending)&&stale.data==staleData,"Stale Seafoam grid partially committed");
+    const auto bad=planCampaignObjectRefresh(&stale.core,after,before);
+    check(!bad.ready&&bad.layoutEntries.empty(),"Conflicting own Seafoam tile was overwritten");
+
+    Bus underfoot;prepare(underfoot);underfoot.put(CampaignObjectsAddress+0x10,9,2);
+    underfoot.put(CampaignObjectsAddress+0x14,9,2);underfoot.put(CampaignObjectsAddress+0x12,10,2);
+    underfoot.put(CampaignObjectsAddress+0x16,10,2);before=underfoot.state();after=before;after.flag(0x821,true);
+    const auto standing=planCampaignObjectRefresh(&underfoot.core,before,after);
+    check(!standing.ready&&standing.reason.find("player leaves")!=std::string::npos&&standing.layoutEntries.empty(),
+          "Seafoam elevation/current changed beneath the player");
+    Bus puzzle;prepare(puzzle);before=puzzle.state();after=before;after.flag(0x2D2,true);
+    check(!planCampaignObjectRefresh(&puzzle.core,before,after).ready,"Another player's Seafoam solution was copied");
+    Bus tileset;prepare(tileset);tileset.put(OtherLayout+16,0x08009000);before=tileset.state();after=before;after.flag(0x821,true);
+    check(!planCampaignObjectRefresh(&tileset.core,before,after).ready,"Different Seafoam graphics were applied without loading ownership");
+    Bus occupied;prepare(occupied);occupied.active(1,1);occupied.put(CampaignObjectsAddress+0x24+9,86,1);
+    occupied.put(CampaignObjectsAddress+0x24+10,1,1);occupied.put(CampaignObjectsAddress+0x24+0x10,9,2);
+    occupied.put(CampaignObjectsAddress+0x24+0x12,10,2);before=occupied.state();after=before;after.flag(0x821,true);
+    check(!planCampaignObjectRefresh(&occupied.core,before,after).ready,"Seafoam layout changed underneath an active object");
+    Bus border;prepare(border);border.put(OtherLayout+8,Border+0x10);border.put(Border+0x10,1,1);
+    before=border.state();after=before;after.flag(0x821,true);
+    check(!planCampaignObjectRefresh(&border.core,before,after).ready,"Seafoam refresh changed original border geometry");
+}
+
+void retainedCableClub() {
+    for(bool hidden:{false,true}) {
+        Bus b;b.map(5,5);b.loadScript();
+        b.code(Load,{0x26,0x0D,0x80,0x80,1,0x21,0x0D,0x80,0,0,0x06,1,0,0x32,0,8,0x2A,0x70,0,2});
+        b.code(Child,{0x29,0x70,0,2});auto before=b.state();before.flag(0x70,hidden);b.state(before);
+        auto after=before;after.flag(0x821,true);const auto data=b.data;
+        const auto plan=planCampaignObjectRefresh(&b.core,before,after);
+        check(plan.ready&&plan.code.empty()&&b.data==data,"Own Wonder Card visibility blocked or changed shared campaign receipt");
+        after.flag(0x70,!hidden);
+        check(!planCampaignObjectRefresh(&b.core,before,after).ready,"Other player's deliveryman receipt replaced a personal Wonder Card");
+        after=before;after.var(0x406F,1);
+        check(!planCampaignObjectRefresh(&b.core,before,after).ready,"Own loaded Cable Club state changed during campaign receipt");
+        b.map(5,4);before=b.state();after=before;after.flag(0x821,true);
+        check(!planCampaignObjectRefresh(&b.core,before,after).ready,"Wonder Card exception escaped reviewed Pokemon Center floors");
+    }
+}
+
 void guards() {
     Bus b; const auto before = b.state(); auto after = before; after.flag(0x100,true);
     auto plan = planCampaignObjectRefresh(&b.core,before,after);
@@ -291,7 +359,8 @@ void guards() {
 }
 }
 int main() {
-    try { objects(); metatiles(); placements(); derivedSetup(); originalFlatLeaves(); retainedPersonalMaps(); chamberLighting(); guards();
+    try { objects(); metatiles(); placements(); derivedSetup(); originalFlatLeaves(); retainedPersonalMaps(); chamberLighting();
+        pendingSeafoamLayout(); retainedCableClub(); guards();
         std::cout << "FireRed campaign runtime: " << checks << " checks passed\n"; return 0;
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

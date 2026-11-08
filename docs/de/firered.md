@@ -2,24 +2,24 @@
 
 [English](../firered.md) · **Deutsch** · [Dokumentation](README.md)
 
-Der aktuelle Entwicklungsquellcode kann GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
+Alpha 9 und der aktuelle Quellcode können GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
 
-## Feuerrot-Koop — aktueller Quellstand
+## Feuerrot-Koop — Alpha 9
 
-Der Entwicklungsquellstand enthält einen **experimentellen Feuerrot-Paarworker**:
+Alpha 9 enthält einen **experimentellen Feuerrot-Paarworker**:
 zwei echte mGBA-Kerne mit getrennten Saves, eine Partneransicht auf derselben
 oder direkt verbundenen Außenkarte und gemeinsame native Kämpfe, in denen jeder Mensch seine eigenen Aktionen wählt.
-Der geforderte vollständige Welt-Koop ist weiterhin unvollständig. Das öffentliche
-Alpha 8 bleibt unverändert. Der Testmodus unterstützt ausschließlich die exakte
+Der vollständige Welt-Koop ist weiterhin nicht abgeschlossen. Die älteren
+Alpha-8-Pakete bleiben unverändert. Der Testmodus unterstützt ausschließlich die exakte
 unveränderte deutsche Original-ROM; andere GBA-Spiele, Sprachen und Hacks erhalten
 dadurch keinen Koop.
 
-Launcher und beide Worker zusammen bauen und den Modus unter **Einstellungen →
-Feuerrot-Koop (experimentell)** einschalten. Das Build-Skript legt die passenden Programme gemeinsam in
-`build/bin` ab:
+Alpha 9 installieren und den Modus unter **Einstellungen → Feuerrot-Koop
+(experimentell)** einschalten. Für einen Quellcode-Build Launcher und beide
+Worker gemeinsam bauen; das Skript legt sie in `build/bin` ab:
 
 ```sh
-scripts/build.sh
+COOP_BUILD_JOBS=1 scripts/build.sh
 build/bin/platinum-coop
 ```
 
@@ -56,22 +56,22 @@ Journals zurückzusetzen. Sind die Wiederherstellungsdaten nicht lesbar, wird
 die Sitzung blockiert. Beschädigte gewählte Backups werden vor dem Austausch
 der Dateien abgelehnt. Stromausfall und Hardwarefehler wurden nicht getestet.
 
-Passen aktive Pokémon und lebende EP-Teiler-Träger nicht in die sechs nativen
-Kampfplätze oder trägt ein Team eine Enigmabeere, **pausieren beide Spiele vor
-der Teamumwandlung**. Bisheriger Sitzungsfortschritt, eigene Teams und Flash-Puffer
-bleiben erhalten. Der sichtbare Hinweis erklärt den Grund. Mit **Einzelkämpfe
-fortsetzen** bestätigt ihr per Maus, Tastatur oder Controller-A von Spieler 1,
-dass die ausstehenden originalen Begegnungen samt Szenen einzeln weiterlaufen.
-Dabei gelten die eigenen Teams und nativen Belohnungen. Sobald beide wieder in
-der freien Spielwelt sind, wird Koop fortgesetzt. Legt die betreffenden getragenen
-Gegenstände danach ab, um wieder gemeinsam zu kämpfen. Es gibt keinen
-automatischen Wechsel zu Einzelkämpfen.
+Eine gehaltene Enigmabeere in einem der Teams lässt **beide Spiele vor der
+Teamumwandlung pausieren**. Laufender Fortschritt, eigene Teams und Flash-Puffer
+bleiben erhalten. **Einzelkämpfe fortsetzen** bestätigt ihr per Maus, Tastatur
+oder Controller-A von Spieler 1. Die ursprünglichen Begegnungen und Szenen laufen
+danach mit eigenen Teams und nativen Belohnungen weiter. Sobald beide in einer
+ruhenden Spielwelt sind, geht Koop weiter. Die Enigmabeere danach ablegen, um
+wieder gemeinsam zu kämpfen. Es gibt keinen automatischen Einzelkampfwechsel.
 
-Die Kapazitätsgrenze und eigene Enigmabeereneffekte bleiben im gemeinsamen Kampf
-unvollständig. Die Fortsetzung erzeugt keinen Ingame-Spielstand: Vor einem späteren
-Beenden normal im Spiel speichern. Unerwartete Workerfehler stoppen die Sitzung
-weiterhin mit Diagnosehinweisen. Die Statuszeile in der Spielansicht zeigt auch,
-wer am Zug ist, auf welchen Partner gewartet wird und ob Einzelkämpfe laufen.
+EP-Teiler lösen die bisherige Sechs-Plätze-Pause nicht mehr aus. Alpha 9 verwaltet
+Teilnahme und Gegenstandsträger für alle zwölf eigenen Pokémon, lädt Empfänger
+gezielt in das native Arbeitsteam und lässt die originale Engine EP/EV vergeben,
+Attacken lernen und Entwicklungen ausführen. Eigene Enigmabeereneffekte bleiben
+im gemeinsamen Kampf unvollständig. Die Fortsetzung erzeugt keinen Ingame-Save:
+vor dem Beenden normal speichern. Unerwartete Workerfehler stoppen weiterhin die
+Sitzung. Die Statuszeile zeigt die zuständige Person, Warten auf den Partner und
+Einzelkämpfe an. [Aktueller Prüfumfang](../verification/firered-alpha9-2026-11-08.json).
 
 Die Kampftransaktion sichert beide Maschinen und Flash-Puffer vollständig. Aktionen,
 Wechsel und Attackenlernen gehen an den zuständigen Menschen. Traineridentität,
@@ -195,21 +195,22 @@ Die ursprünglichen Sprachen und vorbereiteten Kartenpositionen sind dort angege
 bestehen. Die Voraussetzungen sind vorbereitete Testdaten; das ist kein
 durchgehender natürlicher Kampagnendurchlauf.
 
-Das native Wechselmenü zeigt jetzt jeder Person die eigenen sechs Pokémon.
-Eine ungeladene Reserve darf einen ungebundenen eigenen Bankplatz ersetzen,
-auch wenn dessen Pokémon noch lebt. Dessen Daten bleiben im Eigentumsjournal.
+Das native Wechselmenü zeigt jeder Person die eigenen sechs Pokémon. Eine
+ungeladene Reserve darf einen ungebundenen eigenen Bankplatz ersetzen, auch wenn
+dessen Pokémon noch lebt. Das Journal erhält Besitz, Fortschritt und Teilnahme.
 Kampfteam/Indizes/Reihenfolge werden vor dem nativen Wiederaufbau wiederhergestellt,
-auch bei Abbruch und Rücksetzung. Lebende Teilnehmer mit ausstehenden EP,
-geladene EP-Teiler-Träger, Wunschtraum-Ziele, vorgemerkte Wechsel und ausstehende
-Entwicklungen bleiben geschützt. Vor einem gemeinsamen Kampf berücksichtigt der
-Worker jetzt lebende EP-Teiler-Träger aus den vollständigen ursprünglichen Teams,
-auch auf späteren Plätzen. Native EP/EV, Attackenlernen und Entwicklung wurden
-mit vorbereiteten Zwei-Kern-Fällen für beide Kampfinitiatoren geprüft. Passen die
-beiden aktiven Pokémon und alle berechtigten Träger nicht in sechs native Plätze,
-pausiert der aktuelle Worker vor der Teamumwandlung (siehe Fortsetzung oben); die zuletzt geprüften
-Speicherdateien bleiben erhalten. Vollständig gebundene Arbeitsplätze können
-weiterhin eine Rücksetzung verlangen; nicht alle Lern- und Entwicklungspfade der
-zwölf Pokémon sind abgedeckt. [Genauer Prüfumfang](../verification/firered-exp-share-2026-10-29.json).
+auch bei Abbruch und Rücksetzung. Aktive Pokémon, vorgemerkte Wechsel und
+Wunschtraum-Ziele bleiben geschützt; vollständig gebundene Arbeitsplätze können
+eine Rücksetzung verlangen.
+
+Alpha 9 verteilt native EP/EV über alle zwölf ursprünglichen Teamplätze.
+Vorbereitete Zwei-Kern-Tests decken zwölf EP-Teiler-Träger, zwölf ausstehende
+Entwicklungen, beide Initiatoren, Attackenlernen bei störenden Eingaben der
+anderen Person und Wechsel durch beide vollständigen Teams ab. Frühere
+Teilnahme geht beim Auslagern nicht verloren. Entwicklung verwendet Eingaben
+und Nationaldex-Freischaltung des tatsächlichen Besitzers, auch wenn diese vom
+Initiator abweichen. Native Saves und frisches Weiter erhalten die Ergebnisse.
+[Genauer Prüfumfang](../verification/firered-alpha9-2026-11-08.json).
 
 Die ROM-Datei bleibt unverändert. Der Paar-Worker zeigt Partner jetzt auch über
 beidseitige native Verbindungen angrenzender Außenkarten an, einschließlich
@@ -225,21 +226,23 @@ Geschenk; die originale Voll-Meldung erlaubt den Story-Fortschritt. Später wird
 keine Ersatzbeere erfunden. Echte Kämpfe/Fortsetzungsszenen prüfen die geladenen
 Türen/NPCs und gespeicherten Fortschritte beider Personen.
 
-Die Kartenaktualisierung erhält eigenes Eiskaskadenhöhlen-Eis, die bestehende
-Seeschaum-Kartenvariante und Loreleis eigene Puppensammlung. Die Tanoby-Kammern
-verwenden ihre originale Beleuchtungsänderung. Elf native Kartenfälle prüfen
-echtes Speichern und frisches Weiter. Neue Seeschaum-Varianten warten weiterhin
-auf normalen Karteneintritt; optionale Link-/Spezialmodus-Helfer sind nicht abgedeckt.
+Die Kartenaktualisierung erhält eigenes Eiskaskadenhöhlen-Eis und Loreleis Puppen.
+Seeschaum UG3/UG4 können ihre nativen Wasserströmungs-Varianten ohne Kartenaustritt
+anwenden, nach Prüfung von Raster, Abmessungen und Tilesets. Durch Spieler/Objekte
+besetzte geänderte Felder warten sicher; persönliche Rätsel-Flags bleiben lokal.
+Linkclub-/Wunderkarten-Abfragen erhalten eigene Daten, Tanoby nutzt seine originale
+Beleuchtungsänderung. 32 gezielte Kartenfälle umfassen alle 19 oberen Stockwerke
+der Pokémon-Center sowie natives Speichern und frisches Weiter.
 
 **Vor vollständiger Koop-Freigabe noch nötig:** ein durchgehender Zwei-Spieler-Lauf
-vom Anfang durch Hauptspiel und Nachspiel, verbleibende nicht unterstützte
-Kartenoperationen, vollständiger EP-Teiler und alle Lern-/
-Entwicklungspfade, Partnerkollision/Geländeverdeckung, Spezialmodi, lange Sitzungen,
-echte Controller, hörbarer Ton und native Windows-/Bazzite-Abnahme. Das native
-Kampfteam lädt normalerweise bis zu drei einsatzfähige Pokémon je Person; für
-EP-Teiler-Träger können mehr Plätze an eine Person gehen. Sicheres
-Nachladen und das eigene Wechselmenü können das ganze eigene Team unter den
-oben genannten Referenzgrenzen verwenden. Geschützte native Referenzen können weiterhin
+durch Hauptspiel und Nachspiel, verbleibende Trainerturm-/e-Reader-Kartenoperationen,
+Partnerkollision/Geländeverdeckung, Spezialmodi, mehrstündige Sitzungen, echte
+Controller, hörbarer Ton und Pokémon-Spielabnahme unter Windows/Bazzite.
+Ninjatoms zusätzliches Teammitglied bei Entwicklung wird nicht unterstützt.
+Pokérus-Verbreitung nach Kämpfen arbeitet weiterhin mit dem gemischten nativen
+Team statt mit vollständigen getrennten Teams. Das Arbeitsteam lädt meist bis
+zu drei einsatzfähige Pokémon je Person; das Journal ist keine unbegrenzte
+Virtualisierung aller nativen Kampfmechaniken. Geschützte Referenzen können
 Rücksetzung verlangen. Identische PID-/OT-Identitäten beider Profile werden
 abgewiesen. Der Modus bleibt experimentell.
 
@@ -258,7 +261,8 @@ baut die Testprogramme, vergleicht die Eingabedateien vor und nach dem Lauf,
 verwendet einen privaten temporären Ordner und erstellt den Bericht nur unter
 einem neuen Dateinamen. Fehlerdiagnosen können private Spieldetails enthalten;
 den Bericht vor dem Teilen prüfen.
-Mit `--jobs 2` (höchstens acht) laufen unabhängige native Szenarien parallel.
+Standardmäßig laufen Build, Komponenten und native Szenarien mit einem Auftrag.
+Mit `--jobs 2` (höchstens acht) steigen Parallelität und CPU-Last.
 Für gezielte Wiederholungen wählen `--case pair/capture --case gyms/misty` nur
 die genannten nativen Szenarien sowie Komponenten- und Python-Tests aus.
 
@@ -269,9 +273,9 @@ python3 scripts/test-firered-matrix.py --profile full --rom ORIGINAL_DE.gba \
 ```
 
 Die Voraussetzungen vieler Szenarien werden vorbereitet. Ein erfolgreicher Lauf
-belegt weder eine natürlich durchgespielte Kampagne noch echte Controller. Bei
-Kapazitätsüberschreitung und Enigmabeere wird die sichere Ablehnung geprüft,
-nicht deren volle Unterstützung.
+belegt weder eine natürlich durchgespielte Kampagne noch echte Controller. Die
+Überlauf-Szenarien prüfen jetzt gemeinsame EP-Vergabe bis zu zwölf Empfängern.
+Enigmabeeren-Fälle prüfen die ausdrückliche Fortsetzung mit Einzelkämpfen.
 Der [Matrixbericht vom 29. Oktober](../verification/firered-matrix-2026-10-29.json)
 hält 94 bestandene Prüfgruppen unter Linux fest, darunter Komponenten- und
 Python-Tests, zwei unabhängige öffentliche Saves und ein aus dem frühen Save
@@ -328,20 +332,16 @@ belegt seinen historischen Umfang. Es ist kein Testbericht der Paarimplementieru
 
 ## Pausenfunktion prüfen
 
-Die nativen Szenarien `exp-share-overflow` und `exp-share-enigma` prüfen nun
-auch die Fortsetzung nach der Pause. Beide besitzen `-leader2`- und `-both`-
-Varianten für den anderen Initiator und gleichzeitig ausstehende Begegnungen.
-Die vollständige Matrix enthält alle sechs. Geprüft werden unveränderte laufende
-Zustände/Flash, ausdrücklicher Einzelkampf, beide nativen Saves/frisches Weiter
-und gemeinsamer Kampfbeginn nach dem Ablegen der Gegenstände.
+Das native Szenario `exp-share-enigma` und seine Varianten `-leader2` und `-both`
+prüfen unveränderte laufende Zustände/Flash, ausdrücklichen Einzelkampf, beide
+nativen Saves/frisches Weiter und späteren gemeinsamen Kampfbeginn ohne Beere.
+`exp-share-overflow` prüft in Alpha 9 stattdessen erfolgreichen gemeinsamen Kampf.
 
 Für einen separaten Test mit echter Session/PlayView und Worker werden private
 Route-1-Saves angelegt und ein Kampf durch virtuelle Controller-Eingaben ausgelöst:
 
 ```sh
 cmake --build build/launcher --target verify-firered-pair verify-gba gba-worker
-build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATER_STARTER_ZUSTAND NEUER_PRIVATER_EP_FIXTURE exp-share-overflow-launcher
-python3 tests/smoke_firered_recovery.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEUER_PRIVATER_EP_FIXTURE NEUES_PRIVATES_EP_ERGEBNIS 0
 build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATER_STARTER_ZUSTAND NEUER_PRIVATER_ENIGMA_FIXTURE exp-share-enigma-launcher
 python3 tests/smoke_firered_recovery.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEUER_PRIVATER_ENIGMA_FIXTURE NEUES_PRIVATES_ENIGMA_ERGEBNIS 1
 ```
@@ -354,6 +354,27 @@ Rückkehr zu Koop. Ausgangsteams, Gegenstände und Ort sind angelegte Testdaten;
 dies ist kein durchgehender Kampagnentest.
 [Prüfbelege und Grenzen](../verification/firered-recovery-ui-2026-11-08.json).
 
+## Dauertest in einer Produktionssitzung
+
+Der private Test wiederholt natürliche Grasbegegnungen mit wechselndem Initiator,
+Übergänge zwischen Alabastia und Route 1 und Ingame-Speichern in einer laufenden
+Session/PlayView/Worker-Sitzung. Er prüft beide Eingabebesitzer, vollständige native
+Save-Prüfsummen/Generationen, eigene Teams, PC, Geld und Kampfzähler. Erst am Ende
+folgen Neustart und frisches Weiter. Vorbereitete starke Level-100-Teams machen
+die Strecke wiederholbar; dies ist kein natürlicher Kampagnen- oder Hardwaretest.
+
+```sh
+cmake --build build/launcher --parallel 1 --target verify-firered-pair verify-gba gba-worker
+build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATER_STARTER_ZUSTAND NEUE_PRIVATE_DAUERTEST_SAVES soak-launcher
+python3 tests/smoke_firered_soak.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEUE_PRIVATE_DAUERTEST_SAVES NEUES_PRIVATES_DAUERTEST_ERGEBNIS --cycles 10 --minimum-minutes 10
+```
+
+Erzeugte Saves, Bilder und Protokolle außerhalb von Git halten; der Ausgabeordner
+muss neu sein. Die Matrix baut und testet standardmäßig mit einem Auftrag zur
+Zeit; dies lässt sich mit `--jobs 1` ausdrücklich wählen. Unter Linux mit
+systemd-Benutzersitzung begrenzt `systemd-run --user --scope -p CPUQuota=70% nice -n 15 …` die gesamte Prozessgruppe auf 70 % eines CPU-Kerns. Dies ändert
+nur die Ausführungsplanung, weder Lüftersteuerung noch Spielstand.
+
 ## Getrennter GBA-Splitscreen-Modus
 
 Außerhalb des Feuerrot-Testmodus nach dem Zuordnen zweier Controller **Splitscreen starten** wählen. Jeder Spieler erhält einen Bildschirm mit 240×160 Pixeln, eigene Eingaben/Audio und einen eigenen Spielstand. Die Menüaufteilung bleibt erhalten, Texte und Bedienhinweise passen sich dem Spiel an. Es gibt kein zusätzliches Reisemenü und kein zusätzliches Emulatorfeld in den Einstellungen. Dieser getrennte Modus ergänzt keine gemeinsame Spielwelt, GBA-Linktausch/-kämpfe, gemeinsame Pokémon-Bank oder Regionsreisen.
@@ -362,7 +383,7 @@ Im Spiel speichern und das Ende der Speicheranzeige abwarten. Start + Select fü
 
 Der Launcher wählt den mitgelieferten `gba-worker` automatisch. Das vorhandene DS-Emulatorfeld und die BIOS-Einstellungen bleiben unverändert und betreffen GBA nicht. mGBA nutzt seine Software-BIOS-Implementierung; ein externes GBA-BIOS ist nicht erforderlich. Select + R wird als normale GBA-Eingabe weitergegeben, weil GBA keinen zweiten Bildschirm hat. Controller-Zuordnung, Trennungsverhalten und Beenden-Tastenkombination bleiben erhalten.
 
-Build: `scripts/build.sh`; mGBA 0.10.5 ist in `config/mgba.lock.json` festgelegt. Quellpakete enthalten die festgelegte mGBA-Quelle und MPL-2.0-Lizenzen unter `gba-corresponding-source` sowie die nachvollziehbare Erweiterung `patches/mgba-xrom.patch`. CMake wendet diese auf eine separate Buildkopie an; die festgelegte Originalquelle bleibt unverändert. Offline ist `-DCOUCHSPLIT_MGBA_SOURCE=/pfad/zu/gba-corresponding-source` möglich. IPC-ABI bleibt 2. Die veröffentlichten Alpha-8-Pakete und die frühere reine Feuerrot-Vorschau enthalten diese allgemeine Erweiterung nicht. Native Windows-/Bazzite-Ausführung dieser Änderung ist noch nicht geprüft.
+Build: `scripts/build.sh`; mGBA 0.10.5 ist in `config/mgba.lock.json` festgelegt. Quellpakete enthalten die festgelegte mGBA-Quelle und MPL-2.0-Lizenzen unter `gba-corresponding-source` sowie die nachvollziehbare Erweiterung `patches/mgba-xrom.patch`. CMake wendet diese auf eine separate Buildkopie an; die festgelegte Originalquelle bleibt unverändert. Offline ist `-DCOUCHSPLIT_MGBA_SOURCE=/pfad/zu/gba-corresponding-source` möglich. IPC-ABI bleibt 2. Alpha 9 enthält diese GBA-Erweiterung. Native Paketprüfungen sind von tatsächlicher Pokémon-Spielabnahme unter Windows/Bazzite zu unterscheiden; Letztere bleibt offen.
 
 Produktions-Worker ohne kommerzielle Spielinhalte prüfen:
 

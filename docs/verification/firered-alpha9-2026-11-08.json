@@ -1,0 +1,783 @@
+{
+  "date": "2026-11-08",
+  "scope": "Alpha 9 experimental German FireRed co-op; targeted original-ROM scenarios and sustained production session on Linux",
+  "environment": "Linux; mGBA 0.10.5; offscreen Qt; virtual SDL controllers; dummy audio",
+  "rom_sha256": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+  "original_rom_unchanged": true,
+  "native_component_suites_passed": 23,
+  "python_tests_passed": 63,
+  "python_tests_skipped": 0,
+  "targeted_results": [
+    {
+      "name": "build/default",
+      "status": "pass",
+      "seconds": 4.58,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "build/private-scenarios",
+      "status": "pass",
+      "seconds": 19.39,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "native-component-and-launcher-tests",
+      "status": "pass",
+      "seconds": 13.72,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "python-tests",
+      "status": "pass",
+      "seconds": 3.63,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/single-leader2",
+      "status": "pass",
+      "seconds": 4.14,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/single",
+      "status": "pass",
+      "seconds": 4.26,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/wild",
+      "status": "pass",
+      "seconds": 4.65,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/single-multiturn",
+      "status": "pass",
+      "seconds": 5.84,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/single-multiturn-leader2",
+      "status": "pass",
+      "seconds": 5.83,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/trainer",
+      "status": "pass",
+      "seconds": 6.04,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/trainer-single",
+      "status": "pass",
+      "seconds": 4.7,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/trainer-single-leader2",
+      "status": "pass",
+      "seconds": 4.7,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/payday",
+      "status": "pass",
+      "seconds": 5.06,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/owners",
+      "status": "pass",
+      "seconds": 4.76,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/leader2",
+      "status": "pass",
+      "seconds": 4.72,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/escape",
+      "status": "pass",
+      "seconds": 3.89,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/escape-leader2",
+      "status": "pass",
+      "seconds": 3.82,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/escape-player2",
+      "status": "pass",
+      "seconds": 3.88,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/scripted",
+      "status": "pass",
+      "seconds": 4.28,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/legendary",
+      "status": "pass",
+      "seconds": 4.43,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/grass-rendezvous",
+      "status": "pass",
+      "seconds": 4.36,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/deferred-script",
+      "status": "pass",
+      "seconds": 5.44,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/action-stats",
+      "status": "pass",
+      "seconds": 4.8,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture",
+      "status": "pass",
+      "seconds": 6.37,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-leader2",
+      "status": "pass",
+      "seconds": 6.43,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-small",
+      "status": "pass",
+      "seconds": 6.12,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-scripted",
+      "status": "pass",
+      "seconds": 6.32,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-legendary",
+      "status": "pass",
+      "seconds": 6.8,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-full-native",
+      "status": "pass",
+      "seconds": 6.67,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-party-space",
+      "status": "pass",
+      "seconds": 6.79,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-pc",
+      "status": "pass",
+      "seconds": 6.93,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-denied",
+      "status": "pass",
+      "seconds": 4.86,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-both",
+      "status": "pass",
+      "seconds": 7.04,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-both-leader2",
+      "status": "pass",
+      "seconds": 7.67,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-sequential",
+      "status": "pass",
+      "seconds": 7.76,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-unown",
+      "status": "pass",
+      "seconds": 6.48,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/capture-spinda",
+      "status": "pass",
+      "seconds": 6.5,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/party-menu-single",
+      "status": "pass",
+      "seconds": 9.95,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/party-menu-forced",
+      "status": "pass",
+      "seconds": 8.63,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/party-menu-cancel",
+      "status": "pass",
+      "seconds": 7.44,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/party-menu-summary",
+      "status": "pass",
+      "seconds": 8.47,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/party-menu-exp-share",
+      "status": "pass",
+      "seconds": 7.27,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/party-menu-rollback",
+      "status": "pass",
+      "seconds": 7.71,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/party-menu-cycle",
+      "status": "pass",
+      "seconds": 15.3,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exhaust",
+      "status": "pass",
+      "seconds": 9.09,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/defeat",
+      "status": "pass",
+      "seconds": 10.06,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share",
+      "status": "pass",
+      "seconds": 5.37,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/evolution",
+      "status": "pass",
+      "seconds": 9.94,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-leader2",
+      "status": "pass",
+      "seconds": 5.28,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-trainer",
+      "status": "pass",
+      "seconds": 6.68,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-trainer-leader2",
+      "status": "pass",
+      "seconds": 6.58,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-evolution",
+      "status": "pass",
+      "seconds": 7.98,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-evolution-leader2",
+      "status": "pass",
+      "seconds": 8.05,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-learn",
+      "status": "pass",
+      "seconds": 7.58,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-learn-leader2",
+      "status": "pass",
+      "seconds": 7.23,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-many",
+      "status": "pass",
+      "seconds": 5.7,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-many-leader2",
+      "status": "pass",
+      "seconds": 5.53,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-overflow",
+      "status": "pass",
+      "seconds": 5.66,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/bench",
+      "status": "pass",
+      "seconds": 61.0,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-overflow-leader2",
+      "status": "pass",
+      "seconds": 5.75,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-twelve",
+      "status": "pass",
+      "seconds": 7.06,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-twelve-leader2",
+      "status": "pass",
+      "seconds": 7.0,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-dex",
+      "status": "pass",
+      "seconds": 7.41,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "pair/exp-share-dex-leader2",
+      "status": "pass",
+      "seconds": 7.37,
+      "run": "before_user_requested_stop"
+    },
+    {
+      "name": "map-setup",
+      "status": "pass",
+      "run": "prior_current_source_native_map_acceptance",
+      "native_cases": 32
+    },
+    {
+      "name": "pair/exp-share-twelve-evolution",
+      "status": "pass",
+      "seconds": 101.65,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "pair/exp-share-twelve-evolution-leader2",
+      "status": "pass",
+      "seconds": 103.09,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "pair/exp-share-enigma",
+      "status": "pass",
+      "seconds": 19.05,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "pair/exp-share-enigma-leader2",
+      "status": "pass",
+      "seconds": 19.25,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "pair/exp-share-enigma-both",
+      "status": "pass",
+      "seconds": 19.9,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/cut",
+      "status": "pass",
+      "seconds": 32.4,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/surf",
+      "status": "pass",
+      "seconds": 29.7,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/strength",
+      "status": "pass",
+      "seconds": 25.29,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/marowak",
+      "status": "pass",
+      "seconds": 37.71,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/national-dex",
+      "status": "pass",
+      "seconds": 16.91,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/network-0",
+      "status": "pass",
+      "seconds": 18.53,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/network-1",
+      "status": "pass",
+      "seconds": 18.4,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/network-2",
+      "status": "pass",
+      "seconds": 16.36,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/network-loaded",
+      "status": "pass",
+      "seconds": 18.69,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/network-guard",
+      "status": "pass",
+      "seconds": 18.55,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/grass-rendezvous",
+      "status": "pass",
+      "seconds": 25.45,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/shared-champion-rendezvous",
+      "status": "pass",
+      "seconds": 109.41,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "campaign/hall-of-fame",
+      "status": "pass",
+      "seconds": 25.09,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "gyms/misty",
+      "status": "pass",
+      "seconds": 48.6,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "gyms/surge",
+      "status": "pass",
+      "seconds": 50.2,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "gyms/erika",
+      "status": "pass",
+      "seconds": 53.81,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "gyms/koga",
+      "status": "pass",
+      "seconds": 51.24,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "gyms/sabrina",
+      "status": "pass",
+      "seconds": 50.69,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "gyms/blaine",
+      "status": "pass",
+      "seconds": 57.75,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "gyms/giovanni",
+      "status": "pass",
+      "seconds": 72.75,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "gyms/misty-full",
+      "status": "pass",
+      "seconds": 49.95,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "progression/rocket-door",
+      "status": "pass",
+      "seconds": 53.1,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "progression/tower-grunt",
+      "status": "pass",
+      "seconds": 45.2,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "progression/lostelle-full-berry",
+      "status": "pass",
+      "seconds": 55.51,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "progression/bill-full",
+      "status": "pass",
+      "seconds": 30.34,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "progression/bill-full-leader2",
+      "status": "pass",
+      "seconds": 27.84,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "connections",
+      "status": "pass",
+      "seconds": 15.41,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "public-saves/early-and-late",
+      "status": "pass",
+      "seconds": 16.59,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "public-pair/wild-0",
+      "status": "pass",
+      "seconds": 24.8,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "public-pair/wild-1",
+      "status": "pass",
+      "seconds": 24.21,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "public-pair/brock",
+      "status": "pass",
+      "seconds": 40.5,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "public-pair/sync",
+      "status": "pass",
+      "seconds": 40.59,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "public-pair/questlog",
+      "status": "pass",
+      "seconds": 23.89,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "production-session/crash-and-backup",
+      "status": "pass",
+      "seconds": 5.3,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "production-recovery/create-fixture",
+      "status": "pass",
+      "seconds": 14.72,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "production-recovery/enigma",
+      "status": "pass",
+      "seconds": 57.49,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "generic-gba/production-worker",
+      "status": "pass",
+      "seconds": 6.41,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "generic-ds/two-production-workers",
+      "status": "pass",
+      "seconds": 9.09,
+      "run": "quiet_resume"
+    },
+    {
+      "name": "private-inputs-unchanged",
+      "status": "pass"
+    }
+  ],
+  "targeted_matrix_context": "64 completed matrix result groups before a user-requested stop and the separately completed 32-case native map acceptance were retained; unfinished cases and remaining checks were run sequentially on the identical runtime. This is not one continuous matrix run.",
+  "sustained_production_session": {
+    "production_session_playview_and_paired_worker": true,
+    "authored_native_fixture": true,
+    "virtual_controllers": true,
+    "qt_platform": "offscreen",
+    "audio_driver": "dummy",
+    "runtime_ram_writes_from_test": false,
+    "cycles": 10,
+    "sustained_seconds": 1156.71,
+    "shared_battles": 10,
+    "battle_initiators_alternate": true,
+    "cycle_battle_initiators": [
+      1,
+      2
+    ],
+    "both_human_input_owners_observed": true,
+    "native_map_transitions": 20,
+    "native_saves_per_player": 44,
+    "complete_save_generations_and_party_checksums": true,
+    "owned_parties_and_pc_preserved": true,
+    "native_battle_counters_exact": true,
+    "one_worker_session_during_cycles": true,
+    "fresh_continue_retains_owned_progress": true,
+    "profile_locks_and_clean_shutdown": true,
+    "rom_and_source_saves_unchanged": true,
+    "physical_controllers": false,
+    "full_campaign": false,
+    "minimum_ten_cycles_met": true,
+    "tested_binary_sha256": {
+      "driver": "18723804a05e81beceb4ae4ef5b10e003d3f794a700b2d3ee96448d41a6d71f9",
+      "worker": "ab587d68437f5cbd02ed2ad41db8a2907c4af55bc9f9abab83c084e4b2ee1a3f"
+    }
+  },
+  "sustained_test_context": "Author-created level-100 parties and a native saved Route 1 border position; natural walking encounters and human-owner input through production Session/PlayView. Native SAVE outputs are inspected read-only. No runtime RAM-writing test API.",
+  "earlier_sustained_runs": [
+    {
+      "result": "user_requested_stop",
+      "completed_cycles": 7,
+      "shared_battles": 7,
+      "seconds": 776.95,
+      "fresh_continue_completion": false
+    },
+    {
+      "result": "test_driver_timing_failure",
+      "completed_cycles": 1,
+      "detail": "Under limited CPU, 28 neutral frames after a step could miss inputs during a native map transition; the next SAVE required a common field. No runtime change. The driver now allows 90 neutral frames for map fades. The same saved border state passed the targeted replay and native saves."
+    }
+  ],
+  "quiet_local_validation": {
+    "cpu_quota_percent_of_one_core": 70,
+    "cpu_affinity_logical_cores": 1,
+    "nice": 15,
+    "io_priority_class": "idle",
+    "simultaneous_heavy_local_jobs": 1,
+    "fan_or_power_settings_changed": false
+  },
+  "map_refresh": {
+    "native_cases": 32,
+    "cases": [
+      "seafoam-b3f",
+      "seafoam-b4f",
+      "icefall-owned-ice",
+      "lorelei-owned-dolls",
+      "tanoby-monean",
+      "tanoby-liptoo",
+      "tanoby-weepth",
+      "tanoby-dilford",
+      "tanoby-scufib",
+      "tanoby-rixy",
+      "tanoby-viapois",
+      "seafoam-b3f-pending-own-layout",
+      "seafoam-b4f-pending-own-layout",
+      "cableclub-viridian",
+      "cableclub-pewter",
+      "cableclub-cerulean",
+      "cableclub-lavender",
+      "cableclub-vermilion",
+      "cableclub-celadon",
+      "cableclub-fuchsia",
+      "cableclub-cinnabar",
+      "cableclub-indigo",
+      "cableclub-saffron",
+      "cableclub-route4",
+      "cableclub-route10",
+      "cableclub-sevenisland",
+      "cableclub-oneisland",
+      "cableclub-twoisland",
+      "cableclub-threeisland",
+      "cableclub-fourisland",
+      "cableclub-fiveisland",
+      "cableclub-sixisland"
+    ],
+    "native_save_and_fresh_continue_all_cases": true,
+    "own_ice_dolls_and_puzzle_state_preserved": true,
+    "seafoam_changed_occupied_cells_defer": true,
+    "reviewed_source_commit": "ce6406d8c2eaf46d543c8a2606de0c3cb1951982"
+  },
+  "owned_battle_regressions": [
+    "Twelve living EXP Share holders receive exact native EXP fractions and EVs, including unloaded original slots.",
+    "Twelve pending native evolutions are processed as two owned parties, with correct input and native save/fresh Continue.",
+    "Both battle initiators; owned move learning with conflicting other-player input.",
+    "Each player switches through all six original slots; retired living participants retain their earned EXP.",
+    "Golbat/Crobat eligibility uses the evolving owner National Dex state in both initiator directions.",
+    "A capture with an initially small physical party survives the evolution gate and final ownership transfer.",
+    "Enigma recovery remains explicit; overflow EXP Share scenarios now complete as shared battles."
+  ],
+  "remaining_limits": [
+    "No natural continuous campaign or postgame playthrough; authored prerequisites do not establish complete progression.",
+    "No physical-controller, audible-output, Windows/Bazzite Pokemon gameplay or multi-hour certification.",
+    "Partner rendering is a framebuffer overlay without native collision or terrain occlusion.",
+    "Trainer Tower/e-Reader map helpers and special battle modes remain outside the reviewed runtime.",
+    "Active/queued/Wish references can exhaust safe physical slots and require full rollback.",
+    "Shedinja native party addition is unsupported; identical PID/OT identities across profiles are rejected.",
+    "Pokerus post-battle spreading still uses the physical mixed party, not both complete owned rosters.",
+    "Per-owner held Enigma effects remain unsupported; explicit individual-battle recovery is offered."
+  ],
+  "platform_ci": "Release publication is gated by native Linux/Windows, package/upgrade and ARM jobs. CI uses authored homebrew, not a Nintendo ROM.",
+  "no_rom_save_screenshot_or_raw_game_log_in_this_report": true
+}

@@ -2,9 +2,48 @@
 
 **English** · [Deutsch](de/development-status.md) · [Documentation](README.md)
 
-Updated 8 November 2026. Current public release: **[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**, supporting Project PM / Pokémon Platinum. The development source additionally supports independent GBA sessions and opt-in German FireRed co-op. Historical results below apply to the versions and environments named; they are not full-playthrough or target-hardware certification.
+Updated 8 November 2026. **[CouchSplit 0.2.0 Alpha 9](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.9)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
+
+## Alpha 9 — owned EXP, map refresh and sustained acceptance
+
+The six-slot admission limit no longer rejects extra EXP Share holders. A journal
+retains all twelve original identities, participation, owned progress and pending
+evolutions while the original engine performs awards and learning. Native switch
+menus expose each player's own six Pokémon. Prepared original-ROM checks cover
+exact EXP/EV shares for twelve holders, twelve pending evolutions, both initiators,
+conflicting learning input, all-six switching and different owner National Dex
+eligibility. A regression in capture with small parties was fixed and retested.
+Active, queued and Wish references still protect physical working slots.
+
+Native map refresh now handles the two reviewed Seafoam current-stopped layouts
+without re-entry, defers occupied/conflicting cells and preserves personal puzzle
+state. Cable Club/Wonder Card getters preserve the loaded player's own outcome.
+Thirty-two targeted native map cases, including all nineteen Pokémon Center upper
+floors, pass SAVE and fresh Continue. Trainer Tower/e-Reader helpers remain open.
+
+Local component checks pass **23 native suites and all 63 Python tests without
+skips**. The sustained acceptance tool uses the production Session/PlayView and
+paired worker, virtual controllers, natural walking encounters, native map
+transitions and in-game saves. It validates complete native save generations,
+owned party/PC/wallet data and battle counters, followed by a fresh Continue.
+The [Alpha 9 verification record](verification/firered-alpha9-2026-11-08.json)
+distinguishes completed runs from the earlier user-interrupted run and records
+exact counts and duration. The completed run spans **19 minutes 17 seconds, ten
+shared battles and twenty map transitions**, with 43 native saves per player in
+the session plus one after fresh Continue. Strong parties and starting positions are authored;
+no continuous natural campaign is claimed.
+
+FireRed remains experimental. Held Enigma Berries use explicit individual-battle
+recovery; Shedinja party additions and per-owner Pokérus spreading remain
+unsupported. Partner collision/occlusion, special modes, multi-hour play, physical
+controllers, audible output and actual Windows/Bazzite Pokémon gameplay remain
+unverified. Native platform CI verifies builds, tests and installation separately.
+[Release notes](releases/v0.2.0-alpha.9.md) · [Setup and reproduction](firered.md).
 
 ## FireRed mode selection and recoverable battle admission — 8 November 2026
+
+Historical pre-Alpha-9 checkpoint: the capacity restriction described here is
+superseded by the owned EXP journal above; the Enigma recovery still applies.
 
 **Settings → FireRed co-op (experimental)** now saves the mode selection and
 shows whether the selected ROM matches the supported German original. English

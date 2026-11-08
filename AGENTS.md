@@ -1,5 +1,35 @@
 # Project: CouchSplit
 
+## Alpha 9 native ownership and sustained verification (8 November 2026)
+Alpha 9 packages the existing GBA worker and opt-in German FireRed experiment.
+Original ROM bytes stay unchanged. BattleExperience journals participation,
+Knock Off, owned progress and pending evolutions across twelve original slots.
+Only exact preimage-verified native command boundaries may page recipients;
+native EXP/EV arithmetic, move learning and evolution still run in the game.
+Active, queued and Wish references remain pinned. Never retire an owned record
+without journaling it or restore CPU state without the C++ ownership journal.
+Evolution uses each owner's own party, bag, input and National Dex eligibility.
+Capture/escape/defeat must not rebase an appended catch as an ordinary win.
+
+This supersedes the historical six-slot EXP Share admission restriction below;
+Enigma still requires explicit individual-battle recovery. The legacy capacity
+IPC code remains compatible. Shedinja additions, per-owner Pokerus spreading,
+fully pinned working sets and special modes are not certified. Never call the
+journal unlimited native battle virtualization.
+
+Seafoam B3F/B4F layout refresh validates full 16-bit collision/elevation cells,
+dimensions, tilesets and borders; defer occupied/conflicting changes and preserve
+personal puzzle flags. Cable Club getters retain personal loaded native values.
+Native map acceptance covers 32 authored cases with SAVE/fresh Continue, not a
+continuous campaign. Trainer Tower/e-Reader map helpers remain unsupported.
+
+The opt-in smoke_firered_soak.py uses the production Session/PlayView and worker,
+virtual controllers, native walking/encounters/SAVE and read-only battery checks.
+Never ship its authored ROM-dependent fixtures. A user-interrupted run is partial;
+only a fresh completed run proves the uninterrupted cycle count. No RAM-writing
+acceptance interface belongs in the production worker. Test scope and remaining
+hardware/campaign limitations are recorded in the Alpha 9 verification document.
+
 ## FireRed shared-world and team-battle requirement (28 October 2026)
 The user explicitly requires a shared FireRed world AND human-controlled team
 battles against wild Pokemon and trainers, analogous to Platinum co-op. Independent
@@ -9,7 +39,7 @@ one worker with owned battle input, transactional results, separate saves and a
 same-map/directly-connected outdoor-map partner framebuffer overlay. This does not complete shared-world co-op:
 reviewed campaign transactions now cover the Kanto/Sevii milestones, native
 Hall of Fame/National Dex/network completion and live map refresh. A continuous
-natural campaign, unsupported map setup operations, complete EXP Share/evolutions
+natural campaign, unsupported map setup operations, special evolution/item cases
 and native partner collision remain incomplete. Native own-six switch menus now
 work subject to protected working references; this is not unlimited twelve-mon
 battle virtualization. Keep default
@@ -149,7 +179,7 @@ User-selected `de`/`en` is independent of ROM/firmware language. Keep both in th
 
 
 ## CouchSplit identity
-The visible project is CouchSplit and the repository is Philmenting/couchsplit. Published Alpha 8 supports Project PM / Pokemon Platinum; the current source also supports independent GBA sessions and an explicitly opt-in German FireRed co-op experiment. Do not infer complete shared-world support for other games from the broader name. Retain the legacy executable/app/organization/profile/desktop/installer/runtime IDs for compatible upgrades. New distribution filenames use CouchSplit. Native CI must upgrade the exact published Alpha 7 Windows/Debian packages and preserve owned test profile/save bytes; Windows replaces only known old application shortcuts. Keep historical release assets immutable.
+The visible project is CouchSplit and the repository is Philmenting/couchsplit. Alpha 9 supports Project PM / Pokemon Platinum, independent GBA sessions and an explicitly opt-in German FireRed co-op experiment. Alpha 8 remains the older Platinum-only release. Do not infer complete shared-world support for other games from the broader name. Retain the legacy executable/app/organization/profile/desktop/installer/runtime IDs for compatible upgrades. New distribution filenames use CouchSplit. Native CI must upgrade the exact published Alpha 7 Windows/Debian packages and preserve owned test profile/save bytes; Windows replaces only known old application shortcuts. Keep historical release assets immutable.
 
 ## Documentation languages
 English is the default for public documentation at the existing `docs/*.md` URLs. Keep German counterparts under `docs/de/` and reciprocal language links on every guide. English README sections and English guides must lead to English local documentation; the German README summary uses German guide links. Keep commands, fingerprints, technical requirements, dated evidence and limitations consistent across languages. Historical reports must not be presented as current certification. Released assets remain immutable; documentation-only updates do not require a binary release.

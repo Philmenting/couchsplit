@@ -2,22 +2,22 @@
 
 **English** · [Deutsch](de/firered.md) · [Documentation](README.md)
 
-The current development source can run GBA games and ROM hacks in the existing CouchSplit interface. Select a `.gba` file or ZIP containing exactly one game. The launcher checks the GBA fixed header byte, header checksum and a size between 512 bytes and 32 MiB for standard cartridges. Explicitly marked CouchSplit XROM v1 files can be up to 512 MiB. A valid header identifies the file format; it does not certify that every game or hack works. Oversized and malformed files are rejected. Existing Project PM / Platinum support and the DS worker are retained; other DS games are not enabled by this change.
+Alpha 9 and the current source can run GBA games and ROM hacks in the existing CouchSplit interface. Select a `.gba` file or ZIP containing exactly one game. The launcher checks the GBA fixed header byte, header checksum and a size between 512 bytes and 32 MiB for standard cartridges. Explicitly marked CouchSplit XROM v1 files can be up to 512 MiB. A valid header identifies the file format; it does not certify that every game or hack works. Oversized and malformed files are rejected. Existing Project PM / Platinum support and the DS worker are retained; other DS games are not enabled by this change.
 
-## FireRed co-op — current source
+## FireRed co-op — Alpha 9
 
-The development source includes an **experimental paired FireRed worker**: two real
+Alpha 9 includes an **experimental paired FireRed worker**: two real
 mGBA cores with separate saves, a partner overlay on the same or directly connected outdoor maps, and shared native
 battles with each human choosing their own actions. This remains an unfinished
-implementation of the requested shared-world co-op. Public Alpha 8 is unchanged.
+implementation of the requested shared-world co-op. Older Alpha 8 assets are unchanged.
 It is restricted to the exact unmodified German original; generic GBA games,
 other languages and ROM hacks do not acquire co-op through this option.
 
-Build the launcher and both workers together, then explicitly opt in through **Settings → FireRed co-op (experimental)**. The
-build script places the matching executables together in `build/bin`:
+Install Alpha 9, then explicitly opt in through **Settings → FireRed co-op (experimental)**. For a source build, build the launcher and both workers together; the
+script places matching executables in `build/bin`:
 
 ```sh
-scripts/build.sh
+COOP_BUILD_JOBS=1 scripts/build.sh
 build/bin/platinum-coop
 ```
 
@@ -51,22 +51,22 @@ attempts to roll it back from a journal. Unreadable recovery data block the
 session; a corrupt selected backup is rejected before either file is replaced.
 Power-loss and hardware-failure recovery have not been tested.
 
-If active leads and living EXP Share holders exceed the native six-slot battle
-party, or either party holds an Enigma Berry, **both games pause before party
+A held Enigma Berry in either party makes **both games pause before party
 conversion**. Their live progress, original parties and Flash buffers remain
-in the running session. A visible message explains the reason. Choose **Continue
-individual battles** with the mouse, keyboard, or player 1's controller A button.
-This explicit choice lets the pending original encounters and their scripts run
-individually, with each player's own team and native rewards. Shared co-op resumes
-when both players return to an idle field. Remove the relevant held items after
-the battle to allow future shared battles. No automatic fallback occurs.
+in the running session. Choose **Continue individual battles** with the mouse,
+keyboard, or player 1's controller A button. This explicit choice resumes the
+original encounters and scripts with each player's own team and native rewards.
+Shared co-op resumes when both reach an idle field. Remove the held Enigma Berry
+afterwards to allow future shared battles. No automatic fallback occurs.
 
-The native party capacity and per-owner Enigma effects remain unsupported in a
-shared battle. This recovery does not create an in-game save: save normally
-before later closing the session. Unexpected worker errors still stop the session
-with diagnostics. A status strip in the play view also shows whose turn it is,
-which partner is being awaited, and when individual battles are in progress.
-[Recovery verification and limits](verification/firered-recovery-ui-2026-11-08.json).
+EXP Share no longer triggers the six-slot admission pause. Alpha 9 tracks all
+owned participants and holders, pages recipients into the native working party,
+and lets the original engine award EXP/EVs and run move-learning/evolutions.
+Per-owner Enigma effects remain unsupported. Recovery does not create an in-game
+save: save normally before closing. Unexpected worker errors still stop the
+session with diagnostics. The play-view status shows whose turn it is, which
+partner is awaited, and whether individual battles are in progress.
+[Current evidence and limits](verification/firered-alpha9-2026-11-08.json).
 
 The battle transaction snapshots both machines and their Flash buffers. It
 routes actions, replacements and move-learning requests to the owning human,
@@ -183,20 +183,20 @@ The files' original languages and the authored map placement are recorded there.
 suites, 60 Python tests without skips and 50 targeted ROM cases pass. Prerequisites
 are authored fixtures; this is not a continuous natural campaign.
 
-The native switch menu now shows each human's own six Pokémon. An unloaded
-reserve may replace an unreferenced own bench slot, including a living one;
-retired records stay in the ownership journal. Physical party/index/order data
+The native switch menu shows each human's own six Pokémon. An unloaded reserve
+may replace an unreferenced own bench slot, including a living one. A journal
+retains its owned progress and participation. Physical party/index/order data
 are restored before native battle reshow, including cancel and rollback paths.
-Living participants awaiting EXP, resident EXP Share holders, Wish targets,
-queued switches and pending evolutions remain protected. Before an ordinary
-shared battle, the worker now prioritizes living EXP Share holders from the
-complete original parties, including late party slots. Native EXP/EV awards,
-level-up learning and evolution were exercised with prepared two-core cases for
-both initiators. If the two leads and eligible holders cannot fit in six native
-slots, the current worker pauses before converting either party (see recovery above); the last
-validated disk saves are retained. A fully pinned working set can still require
-a rollback, and not every 12-Pokémon learning/evolution path is covered.
-[Exact test scope](verification/firered-exp-share-2026-10-29.json).
+Active Pokémon, queued switches and Wish targets still protect physical slots;
+a fully pinned working set can require rollback.
+
+Alpha 9 distributes native EXP/EV awards across all twelve original party slots.
+Prepared two-core tests cover twelve EXP Share holders, twelve pending evolutions,
+both battle initiators, move learning with conflicting other-player input, and
+switching through both complete teams without losing retired participation.
+Evolution checks use the evolving owner's National Dex status and input, including
+when it differs from the initiator's. Native saves and fresh Continue preserve
+the results. [Exact scope](verification/firered-alpha9-2026-11-08.json).
 
 The ROM file stays unchanged. The paired worker now projects partner avatars
 across reciprocal native outdoor-map connections, including signed coordinate
@@ -210,23 +210,24 @@ the Tower 7F grunts after their original removal receipts. Lostelle's rescue no
 longer waits for room for the optional berry. Actual native battle/post-scene
 checks verify loaded doors/NPCs and both trainers' saved progress.
 
-Loaded map refresh preserves the player's own Icefall ice state, existing
-Seafoam layout and Lorelei doll collection. The Tanoby chambers apply their
-original lighting update. Eleven native map cases verify actual SAVE and fresh
-Continue. A change to a new Seafoam layout still waits for normal native map
-re-entry; optional/link/facility helpers remain outside the reviewed interpreter.
+Loaded map refresh preserves each player's own Icefall ice and Lorelei dolls.
+Seafoam B3F/B4F can apply their native water-current layout changes without leaving
+the map, after validating the current grid, dimensions and tilesets. Changed
+cells occupied by a player/object defer safely; personal puzzle flags remain
+local. Cable Club/Wonder Card getters retain personal data, and Tanoby lighting
+uses its original native update. Thirty-two targeted map cases include all
+nineteen Pokémon Center upper floors, native SAVE and fresh Continue.
 
 **Still required before complete co-op sign-off:** a continuous two-player run
-from the beginning through the campaign and postgame, remaining unsupported map
-setup operations, complete EXP Share and all
-learning/evolution paths, partner collision/terrain occlusion, special battle
-modes, long sessions, physical controllers, audible output and native
-Windows/Bazzite acceptance. The native battle working set usually loads up to
-three viable Pokémon per player, but may allocate more slots to one player to
-accommodate EXP Share holders. Safe exhaustion refills and the own switch menu
-can use the full own roster subject to the protected-reference limit above.
-Protected native references can still require a rollback. Identical PID/OT
-Pokémon identities across profiles are rejected. The mode remains experimental.
+through campaign and postgame, remaining Trainer Tower/e-Reader setup operations,
+partner collision/terrain occlusion, special battle modes, multi-hour sessions,
+physical controllers, audible output and native Windows/Bazzite gameplay.
+Shedinja's extra-party-member evolution is not supported; Pokérus post-battle
+spreading still uses the physical mixed party rather than complete separate
+rosters. The working party usually contains up to three viable Pokémon per
+player; the journal is not unlimited native battle virtualization. Protected
+references can require rollback. Identical PID/OT identities across profiles
+are rejected. The mode remains experimental.
 
 ROM-dependent acceptance tools are excluded from normal builds, installation and
 CTest. No ROM, save or raw checkpoint is distributed. Supply your own exact ROM,
@@ -243,7 +244,8 @@ production crash test is marked skipped on other systems. The script builds the
 targets, verifies input hashes before and after, uses a private temporary
 directory and only creates a report at a new path. Failure diagnostics can
 contain private game details, so review a report before sharing it.
-Add `--jobs 2` (up to eight) to run independent native scenarios concurrently.
+By default, builds, component tests and native scenarios run with one job.
+Add `--jobs 2` (up to eight) to increase concurrency and CPU load.
 For a focused rerun, add `--case pair/capture --case gyms/misty`; these names
 select only the named native scenarios plus the component and Python tests.
 
@@ -255,7 +257,8 @@ python3 scripts/test-firered-matrix.py --profile full --rom ORIGINAL_DE.gba \
 
 The checkpoint and many scenario prerequisites are prepared; a successful suite
 does not establish a complete natural campaign or physical-controller coverage.
-The capacity and Enigma Berry scenarios check safe rejection, not support.
+The overflow scenarios now check shared awards, including twelve recipients.
+The Enigma Berry scenarios check explicit recovery into individual battles.
 The [29 October matrix report](verification/firered-matrix-2026-10-29.json)
 records 94 passing result groups on Linux, including the component and Python
 suites, two independent public saves and a checkpoint created from the early
@@ -311,19 +314,16 @@ records only its historical scope. It is not the paired implementation's test re
 
 ## Recovery acceptance
 
-The `exp-share-overflow` and `exp-share-enigma` native scenarios now check
-recovery, not only rejection. Each also has `-leader2` and `-both` variants
-for the other initiator and simultaneous pending encounters. The full matrix
-includes all six. They verify live state/Flash preservation, explicit individual
-combat, both native saves/fresh Continue, and shared admission after item removal.
+The `exp-share-enigma` native scenario and its `-leader2` and `-both` variants
+verify live state/Flash preservation, explicit individual combat, both native
+saves/fresh Continue, and later shared admission after removing the berry.
+`exp-share-overflow` instead verifies successful shared combat in Alpha 9.
 
 For a separate production Session/PlayView/worker check, create private authored
 Route 1 saves and then trigger an encounter through virtual-controller walking:
 
 ```sh
 cmake --build build/launcher --target verify-firered-pair verify-gba gba-worker
-build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATE_STARTER_STATE NEW_PRIVATE_EXP_FIXTURE exp-share-overflow-launcher
-python3 tests/smoke_firered_recovery.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEW_PRIVATE_EXP_FIXTURE NEW_PRIVATE_EXP_RESULT 0
 build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATE_STARTER_STATE NEW_PRIVATE_ENIGMA_FIXTURE exp-share-enigma-launcher
 python3 tests/smoke_firered_recovery.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEW_PRIVATE_ENIGMA_FIXTURE NEW_PRIVATE_ENIGMA_RESULT 1
 ```
@@ -334,6 +334,27 @@ pause for 16 seconds, tests its heartbeat and retained saves/lock, clicks the re
 UI action, and finishes native combat until co-op resumes. The starting parties,
 items and location are authored fixtures; this is not a continuous campaign.
 
+## Sustained production-session test
+
+The private test below repeats natural grass encounters, alternating initiators,
+Pallet/Route 1 walking transitions and in-game saves in one production
+Session/PlayView/worker. It checks both input owners, complete native save
+checksums/generations, owned parties, PC storage, money and battle counts. Only
+at the end does it restart and verify fresh Continue. Strong authored level-100
+parties keep the route repeatable; this is not a natural campaign or hardware test.
+
+```sh
+cmake --build build/launcher --parallel 1 --target verify-firered-pair verify-gba gba-worker
+build/launcher/verify-firered-pair ORIGINAL_DE.gba PRIVATE_STARTER_STATE NEW_PRIVATE_SOAK_FIXTURE soak-launcher
+python3 tests/smoke_firered_soak.py build/launcher/verify-gba build/launcher/gba/gba-worker ORIGINAL_DE.gba NEW_PRIVATE_SOAK_FIXTURE NEW_PRIVATE_SOAK_RESULT --cycles 10 --minimum-minutes 10
+```
+
+Keep generated saves, screenshots and logs outside Git. The test requires a new
+output directory. For lighter local validation, the matrix defaults to one build
+job/test/scenario at a time; use `--jobs 1` explicitly if desired. Linux users with
+a user systemd session can run a command under `systemd-run --user --scope -p CPUQuota=70% nice -n 15 …` to cap the whole process group at 70% of one CPU.
+This changes scheduling, not fan controls or the saved game.
+
 ## Independent GBA split-screen mode
 
 Outside the FireRed experiment, use **Start split screen** after assigning two controllers. Each player has one 240×160 screen, independent input/audio and their own battery save. The menu layout is retained, with game-specific labels/help. There is no additional journey menu or emulator settings field. This independent mode does not add shared-world co-op, GBA link trading/battles, a shared Pokémon bank or travel between editions.
@@ -342,7 +363,7 @@ Save through the game's own menu and wait until its save indicator finishes. Sta
 
 The launcher chooses the bundled `gba-worker` automatically. The existing DS emulator and BIOS settings remain unchanged and do not affect GBA games. No external GBA BIOS is needed; mGBA uses its software implementation. Select + R is ordinary GBA input, because there is no second GBA screen to toggle. Native controller assignment/disconnect behaviour and the exit chord are retained.
 
-Build with `scripts/build.sh`; mGBA 0.10.5 is pinned in `config/mgba.lock.json`. Source packages include pinned mGBA source and MPL-2.0 licenses under `gba-corresponding-source`, plus the reproducible XROM overlay in `patches/mgba-xrom.patch`. CMake applies the overlay to a separate owned build copy; the pinned checkout stays pristine. An offline build can set `-DCOUCHSPLIT_MGBA_SOURCE=/path/to/gba-corresponding-source`. The IPC ABI remains 2. Released Alpha 8 packages and the previous FireRed-only preview do not include this general GBA extension. Native Windows/Bazzite execution has not been verified for this change.
+Build with `scripts/build.sh`; mGBA 0.10.5 is pinned in `config/mgba.lock.json`. Source packages include pinned mGBA source and MPL-2.0 licenses under `gba-corresponding-source`, plus the reproducible XROM overlay in `patches/mgba-xrom.patch`. CMake applies the overlay to a separate owned build copy; the pinned checkout stays pristine. An offline build can set `-DCOUCHSPLIT_MGBA_SOURCE=/path/to/gba-corresponding-source`. The IPC ABI remains 2. Alpha 9 packages include this GBA extension. Native package tests and real Pokémon gameplay on Windows/Bazzite are separate checks; the latter remain unverified.
 
 Production-worker acceptance without commercial game assets:
 

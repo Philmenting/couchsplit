@@ -2,13 +2,13 @@
 
 **English** · [Deutsch](de/README.md) · [Project overview](../README.md)
 
-Current source: **Project PM / Pokémon Platinum**, **GBA games and ROM hacks with independent sessions**, and an **opt-in German FireRed co-op experiment**. Released Alpha 8 packages support Platinum only. These guides are available in English and German. The launcher language does not change your game ROM. Commands are run from the project root unless stated otherwise.
+Alpha 9 and current source: **Project PM / Pokémon Platinum**, **GBA games and ROM hacks with independent sessions**, and an **opt-in German FireRed co-op experiment**. Alpha 8 remains available as the older Platinum-only release. These guides are available in English and German. The launcher language does not change your game ROM. Commands are run from the project root unless stated otherwise.
 
 ## Getting started
 
 - [Platform packages](platforms.md)
 - [GBA games and experimental original-ROM FireRed co-op](firered.md)
-- [Bazzite: test FireRed from source](bazzite-firered-test.md)
+- [Bazzite: test FireRed](bazzite-firered-test.md)
 - [Bazzite single-file installation](one-file-installer.md)
 - [Developer build](bazzite-installation.md)
 - [Project PM 0.4.5 requirements](project-pm-045.md)
@@ -30,6 +30,6 @@ Current source: **Project PM / Pokémon Platinum**, **GBA games and ROM hacks wi
 - [Historical original-ROM boot test](rom-boot-check.md)
 - [Historical feasibility review](technical-feasibility.md)
 
-[Release notes](releases/v0.2.0-alpha.8.md) · [Screenshot provenance](images/README.md)
+[Release notes](releases/v0.2.0-alpha.9.md) · [Screenshot provenance](images/README.md)
 
 Historical reports retain their dates and test limits; use Development status for newer evidence.

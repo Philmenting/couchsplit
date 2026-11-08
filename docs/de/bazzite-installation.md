@@ -6,7 +6,7 @@ Für die komfortable Installation die [Ein-Datei-Anleitung](one-file-installer.m
 
 ## Voraussetzungen
 
-Bazzite mit funktionierenden vorhandenen NVIDIA-Treibern, Distrobox/Podman, zwei SDL-kompatible USB-/Bluetooth-Controller. Eine rechtmäßig bereitgestellte Pokémon-Platin-ROM, die bereits mit dem zur Bridge passenden Project-PM-Patch vorbereitet ist. Das Projekt liefert weder ROM noch Nintendo-Dumps und lädt diese nicht herunter.
+Bazzite mit funktionierenden Grafiktreibern, Distrobox/Podman und zwei SDL-kompatiblen USB-/Bluetooth-Controllern. Benötigt wird eine eigene kompatible Project-PM-gepatchte Platin-ROM oder ein GBA-Spiel. Der [Feuerrot-Testmodus](firered.md) verlangt die exakte unterstützte unveränderte deutsche Original-ROM. Das Projekt liefert weder Spiele noch Nintendo-Dumps und lädt diese nicht herunter.
 
 Ein normaler Platin-Spielstand und ein normaler ROM-Header beweisen keine Multiplayer-Kompatibilität. Die passende Patchquelle und Patchversion müssen beim Project-PM-Projekt geklärt werden.
 

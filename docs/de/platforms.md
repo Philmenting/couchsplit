@@ -56,3 +56,15 @@ Unter **Einstellungen → Sprache / Settings → Language** lässt sich die Ober
 ## CouchSplit — Alpha 8
 
 Das Projekt heißt jetzt CouchSplit. Die neuen Downloads verwenden `CouchSplit-…`; ältere Release-Dateien behalten ihre bisherigen Namen. Bestehende Installationen lassen sich darüber aktualisieren. Zur Kompatibilität bleiben die bisherigen technischen Kennungen (`platinum-coop`, `pokemon-platinum-local-coop`, Windows-AppId/Installationsordner und Bazzite-Laufzeit) erhalten. Vorhandene Einstellungen, ROMs und Spielstände werden weiter am bisherigen Ort verwendet; keine automatische Migration oder Zusammenführung. Die sichtbaren Launcher- und Startmenünamen sind CouchSplit. Bestehende Steam-Verknüpfungen können noch den alten Namen zeigen; ihre Konfiguration wird nicht direkt bearbeitet.
+
+
+## GBA und experimenteller Feuerrot-Koop — Alpha 9
+
+Alpha 9 ergänzt den mitgelieferten mGBA-Worker, getrennten GBA-Splitscreen und
+einen aktivierbaren Koop-Modus für die exakte deutsche Feuerrot-Original-ROM.
+Über die bisherige Version installieren; Einstellungen und Saves bleiben erhalten.
+**Einstellungen → Feuerrot-Koop (experimentell)** gilt ab der nächsten Sitzung.
+Die ROM-Datei wird nicht gepatcht. Gemeinsame EP/EV, eigenes Lernen/Entwickeln,
+Kartenaktualisierung und Paar-Backups/Wiederherstellung sind enthalten;
+[Prüfumfang und Grenzen](firered.md). Andere GBA-Spiele behalten getrennte
+Abenteuer. Alpha-8-Dateien bleiben unverändert.

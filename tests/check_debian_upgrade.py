@@ -8,6 +8,8 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
+import urllib.error
 import urllib.request
 
 
@@ -21,10 +23,17 @@ def main(package):
     with tempfile.TemporaryDirectory(prefix='couchsplit-upgrade-', dir=os.environ['RUNNER_TEMP']) as folder:
         root = Path(folder)
         legacy = root / 'alpha7.deb'
-        url = ('https://github.com/Philmenting/pokemon-platinum-local-coop/releases/download/v0.2.0-alpha.7/'
+        url = ('https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.7/'
                'Pokemon-Platinum-Coop-ZorinOS18-amd64.deb')
-        with urllib.request.urlopen(url, timeout=120) as response:
-            legacy.write_bytes(response.read())
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(url, timeout=120) as response:
+                    legacy.write_bytes(response.read())
+                break
+            except (urllib.error.URLError, TimeoutError):
+                if attempt == 2:
+                    raise
+                time.sleep(3)
         assert hashlib.sha256(legacy.read_bytes()).hexdigest() == '1f1cee0a4a21b2748a5e244dd8b6d0d7f8ab3fed54696c4e391669a847af1a76'
         run('sudo', 'apt-get', 'install', '-y', str(legacy))
         profile = root / 'user-data'
@@ -36,7 +45,7 @@ def main(package):
         before = {p: p.read_bytes() for p in (save, settings)}
         run('sudo', 'apt-get', 'install', '-y', str(Path(package).resolve()))
         version = subprocess.check_output(['dpkg-query', '-W', '-f=${Version}', 'pokemon-platinum-local-coop'], text=True)
-        assert version == '0.2.0~alpha.8', version
+        assert version == '0.2.0~alpha.9', version
         desktop = Path('/usr/share/applications/pokemon-platinum-local-coop.desktop').read_text()
         assert '\nName=CouchSplit\n' in desktop
         binary = '/opt/pokemon-platinum-local-coop/project/build/bin/platinum-coop'

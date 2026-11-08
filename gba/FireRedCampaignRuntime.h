@@ -11,7 +11,9 @@ namespace coop::firered {
 // A campaign flag is not enough to update an already loaded native map: its
 // objects and metatiles were created before that flag changed. This module
 // preflights the map's *own* original bytecode, then asks its native script VM
-// to update those resources. It never runs arbitrary map-load native callbacks,
+// to update those resources. Reviewed layout variants stage only preflighted
+// complete grid entries inside the caller's whole-machine/Flash transaction.
+// It never runs arbitrary map-load native callbacks,
 // adopts another core, relocates the player, or copies graphics into our source.
 // Every entry point requires the caller to have verified the exact German ROM.
 inline constexpr uint32_t CampaignMapHeaderAddress = 0x02036DFCu;
@@ -47,8 +49,14 @@ struct CampaignObjectRefreshPlan {
     unsigned programOffset = 12;
     unsigned capacity() const { return programOffset <= 92 ? 92 - programOffset : 0; }
     std::vector<uint32_t> originalTileLeaves;
+    // Exact original-layout entry differences, preflighted against the loaded
+    // grid. They are committed inside the caller's two-machine/Flash snapshot
+    // before native SETMAPLAYOUTINDEX/DrawWholeMapView run. Never replace an
+    // entire grid: unchanged cells may contain this player's own puzzle state.
+    std::map<uint32_t,uint16_t> layoutEntries;
     unsigned removedObjects = 0, addedObjects = 0, movedObjects = 0, changedTiles = 0;
     bool changedWeather = false;
+    bool changedLayout = false;
 };
 
 namespace campaign_runtime_detail {
@@ -56,6 +64,15 @@ inline bool rom(uint32_t address, unsigned size = 1) {
     return size <= 0x01000000u && address >= 0x08000000u && address <= 0x09000000u - size;
 }
 inline int signedHalf(uint16_t v) { return v & 0x8000u ? int(v) - 65536 : int(v); }
+inline bool cableClub(unsigned group,unsigned map) {
+    // The nineteen original Pokemon Center upper floors share the reviewed
+    // CableClub_OnTransition. Link state and Wonder Cards stay personal.
+    constexpr std::pair<unsigned,unsigned> maps[]={{5,5},{6,6},{7,4},{8,1},{9,2},
+        {10,13},{11,6},{12,6},{13,1},{14,7},{16,1},{21,1},{31,4},{32,1},{33,3},
+        {34,2},{35,2},{36,1},{37,1}};
+    for(const auto& entry:maps)if(entry.first==group&&entry.second==map)return true;
+    return false;
+}
 inline void word(std::vector<uint8_t>& out, unsigned v) {
     out.push_back(uint8_t(v)); out.push_back(uint8_t(v >> 8));
 }
@@ -165,10 +182,18 @@ public:
             }
             case 0x26: {
                 const auto result = half(address), special = half(address + 2); address += 4;
+                if(special==384 && result==0x800D && cableClub(p.mapGroup,p.mapNum)) {
+                    // ValidateSavedWonderCard already ran on native entry.
+                    // No campaign receipt changes a card, RAM script or the
+                    // deliveryman receipt; retain that loaded native outcome
+                    // instead of revalidating/replacing this player's card.
+                    effects.retainedNativeInputs[special]={unsigned(p.flag(0x70)),p.var(0x406F)};
+                    assign(result,!p.flag(0x70));break;
+                }
                 // Exact native read-only predicate. Native SPECIAL 367 owns
                 // enabling all three National Dex fields; this evaluator only
                 // observes the recipient's existing magic, flags and variable.
-                requirePokemon(special == 403,"Map setup uses an unsupported native special getter");
+                requirePokemon(special == 403,("Map setup uses an unsupported native special getter ("+std::to_string(special)+")").c_str());
                 const auto memory = readSaveMemory(c);
                 assign(result,(nationalDexAfter || c->busRead8(c,memory.block2 + 0x1B) == 0xB9) &&
                        p.var(0x404E) == 0x6258 && p.flag(0x840));
@@ -251,9 +276,9 @@ public:
                 const auto layout=operand(address);address+=2;
                 requirePokemon(p.mapGroup==1 && (p.mapNum==86 || p.mapNum==87) && layout && layout<=1024,
                                "Map setup uses an unsupported native layout operation");
-                // A local, already solved Seafoam puzzle changes its map's
-                // layout on entry. Accept that exact existing variant; a new
-                // variant would need a separate grid/tileset transaction.
+                // A local solved Seafoam puzzle changes its layout on entry.
+                // The planner separately validates its exact original/current
+                // variant and any required live-grid entry transaction.
                 effects.layoutId=layout;break;
             }
             case 0xD0:
@@ -382,9 +407,11 @@ inline CampaignObjectRefreshPlan planCampaignObjectRefresh(mCore* core, const Pr
         const auto oldEffects = mapEffects(core, scripts, before), newEffects = mapEffects(core, scripts, after,nativeNationalDexAfter);
         requirePokemon(oldEffects.retainedNativeInputs==newEffects.retainedNativeInputs,
                        "Campaign refresh must preserve this player's native ice/personal room state");
-        requirePokemon(oldEffects.layoutId==newEffects.layoutId &&
-                       (!newEffects.layoutId || *newEffects.layoutId==inventoryRead16(core,memory.block1+0x32)),
-                       "Campaign refresh waits for native map re-entry after a layout variant change");
+        requirePokemon(oldEffects.layoutId==newEffects.layoutId,
+                       "Campaign refresh must preserve this player's native layout puzzle");
+        for(unsigned flag:{0x46u,0x47u,0x4Cu,0x4Du,0x2D2u,0x2D3u})
+            if(before.mapGroup==1 && (before.mapNum==86||before.mapNum==87))
+                requirePokemon(before.flag(flag)==after.flag(flag),"Campaign refresh cannot copy another player's Seafoam puzzle");
         requirePokemon((!oldEffects.weather || oldEffects.applyWeather) && (!newEffects.weather || newEffects.applyWeather),
                        "Campaign refresh requires the chamber's complete native lighting setup");
         std::map<unsigned,Object> objects;
@@ -414,7 +441,7 @@ inline CampaignObjectRefreshPlan planCampaignObjectRefresh(mCore* core, const Pr
             requirePokemon(!active.count(id), "Native map has duplicate active object IDs"); active[id] = i;
         }
         const int cameraX = signedHalf(inventoryRead16(core, memory.block1)), cameraY = signedHalf(inventoryRead16(core, memory.block1 + 2));
-        std::vector<uint8_t> derived, removals, placements, additions, tiles, weather;
+        std::vector<uint8_t> derived, removals, placements, additions, tiles, weather, layoutCode;
         if(oldEffects.weather!=newEffects.weather || oldEffects.applyWeather!=newEffects.applyWeather) {
             const auto originalWeather=core->busRead8(core,CampaignMapHeaderAddress+0x16);
             requirePokemon(before.mapGroup==2 && before.mapNum>=27 && before.mapNum<=33 && originalWeather==0,
@@ -444,6 +471,67 @@ inline CampaignObjectRefreshPlan planCampaignObjectRefresh(mCore* core, const Pr
         const auto playerObject = CampaignObjectsAddress + core->busRead8(core,CampaignAvatarAddress + 5) * 0x24;
         const int playerX = signedHalf(inventoryRead16(core,playerObject + 0x10)) - 7;
         const int playerY = signedHalf(inventoryRead16(core,playerObject + 0x12)) - 7;
+        uint32_t tileLayout=layout;
+        if(newEffects.layoutId && *newEffects.layoutId!=inventoryRead16(core,memory.block1+0x32)) {
+            // Only the two original Seafoam current-stopped variants are
+            // interchangeable without loading graphics, reallocating a grid,
+            // changing topology, or restarting this player's map scripts.
+            const bool third=before.mapNum==86;
+            const unsigned oldId=third?159:160,newId=third?278:279;
+            constexpr uint32_t layouts=0x0834EAB0;
+            requirePokemon(before.mapGroup==1 && (before.mapNum==86||before.mapNum==87) &&
+                inventoryRead16(core,memory.block1+0x32)==oldId && *newEffects.layoutId==newId &&
+                inventoryRead32(core,layouts+(oldId-1)*4)==layout,
+                "Campaign refresh requires a reviewed original Seafoam layout pair");
+            tileLayout=inventoryRead32(core,layouts+(newId-1)*4);
+            requirePokemon(rom(tileLayout,28),"Seafoam target layout is outside the verified ROM");
+            const auto width=inventoryRead32(core,layout),height=inventoryRead32(core,layout+4);
+            requirePokemon(width && height && width<=128 && height<=128 &&
+                inventoryRead32(core,tileLayout)==width && inventoryRead32(core,tileLayout+4)==height &&
+                inventoryRead32(core,tileLayout+16)==inventoryRead32(core,layout+16) &&
+                inventoryRead32(core,tileLayout+20)==inventoryRead32(core,layout+20) &&
+                inventoryRead32(core,tileLayout+24)==inventoryRead32(core,layout+24),
+                "Seafoam layout change requires identical dimensions, tilesets and border shape");
+            const auto border=inventoryRead32(core,layout+8),nextBorder=inventoryRead32(core,tileLayout+8);
+            const auto borderBytes=unsigned(core->busRead8(core,layout+24))*core->busRead8(core,layout+25)*2;
+            requirePokemon(borderBytes && borderBytes<=128 && rom(border,borderBytes) && rom(nextBorder,borderBytes),
+                           "Seafoam layout has an invalid native border");
+            for(unsigned i=0;i<borderBytes;++i)
+                requirePokemon(core->busRead8(core,border+i)==core->busRead8(core,nextBorder+i),
+                               "Seafoam layout change cannot replace connected/border geometry");
+            const auto source=inventoryRead32(core,layout+12),target=inventoryRead32(core,tileLayout+12);
+            requirePokemon(rom(source,width*height*2)&&rom(target,width*height*2),"Seafoam native tile grid is invalid");
+            const unsigned gridBytes=(width+15)*(height+14)*2;
+            uint32_t grid=0;
+            for(uint32_t a=0x03000000;a<0x03007FF4;a+=4)
+                if(inventoryRead32(core,a)==width+15 && inventoryRead32(core,a+4)==height+14) {
+                    const auto candidate=inventoryRead32(core,a+8);
+                    if(!validSaveBlock(candidate,gridBytes))continue;
+                    requirePokemon(!grid,"Seafoam loaded grid is ambiguous");grid=candidate;remember(a,12);
+                }
+            requirePokemon(grid && gridBytes<=0x5000,"Seafoam loaded native grid is unavailable");
+            for(unsigned y=0;y<height;++y)for(unsigned x=0;x<width;++x) {
+                const auto index=(y*width+x)*2;
+                const auto oldEntry=inventoryRead16(core,source+index),nextEntry=inventoryRead16(core,target+index);
+                if(oldEntry==nextEntry)continue;
+                const auto address=grid+((y+7)*(width+15)+x+7)*2;
+                const auto live=inventoryRead16(core,address);
+                requirePokemon(live==oldEntry || live==nextEntry,
+                    "Seafoam layout refresh waits for a conflicting own puzzle tile");
+                remember(address,2);
+                if(live==nextEntry)continue;
+                requirePokemon(int(x)!=playerX || int(y)!=playerY,
+                    "Seafoam layout refresh waits until the player leaves a changed tile");
+                for(const auto& object:active) {
+                    const auto a=CampaignObjectsAddress+object.second*0x24;
+                    requirePokemon(signedHalf(inventoryRead16(core,a+0x10))-7!=int(x) ||
+                        signedHalf(inventoryRead16(core,a+0x12))-7!=int(y),
+                        "Seafoam layout refresh waits for an object on a changed tile");
+                }
+                plan.layoutEntries[address]=nextEntry;
+            }
+            layoutCode.push_back(0xA7);word(layoutCode,newId);plan.changedLayout=true;
+        }
         for (const auto& entry : objects) {
             const auto& o = entry.second;
             auto position = [&](const Effects& effects) {
@@ -496,8 +584,8 @@ inline CampaignObjectRefreshPlan planCampaignObjectRefresh(mCore* core, const Pr
             }
         }
         requirePokemon(activeCount <= 16, "Native campaign object slots are full");
-        const auto width = inventoryRead32(core, layout), height = inventoryRead32(core, layout + 4);
-        const auto mapTiles = inventoryRead32(core, layout + 12);
+        const auto width = inventoryRead32(core, tileLayout), height = inventoryRead32(core, tileLayout + 4);
+        const auto mapTiles = inventoryRead32(core, tileLayout + 12);
         requirePokemon(width && height && width <= 2048 && height <= 2048 &&
                        uint64_t(width) * height <= 0x00800000u && rom(mapTiles, width * height * 2),
                        "Native campaign original map tiles are outside their verified ROM");
@@ -518,12 +606,12 @@ inline CampaignObjectRefreshPlan planCampaignObjectRefresh(mCore* core, const Pr
             tileChanges[pos] = b;
             ++plan.changedTiles;
         }
-        if (!derived.empty() || !removals.empty() || !placements.empty() || !additions.empty() || !tiles.empty() || !weather.empty()) {
+        if (!derived.empty() || !removals.empty() || !placements.empty() || !additions.empty() || !tiles.empty() || !weather.empty() || !layoutCode.empty()) {
             plan.code.push_back(0x69);
-            for (const auto* code : {&removals,&derived,&placements,&additions,&tiles,&weather}) plan.code.insert(plan.code.end(),code->begin(),code->end());
-            if (!tiles.empty()) plan.code.insert(plan.code.end(),{0x25,0x8E,0}); // native DrawWholeMapView
+            for (const auto* code : {&removals,&derived,&placements,&additions,&layoutCode,&tiles,&weather}) plan.code.insert(plan.code.end(),code->begin(),code->end());
+            if (!tiles.empty() || !layoutCode.empty()) plan.code.insert(plan.code.end(),{0x25,0x8E,0}); // native DrawWholeMapView
             plan.code.insert(plan.code.end(),{0x6B,0x02});
-            if (plan.code.size() > 80 && derived.empty() && removals.empty() && placements.empty() && additions.empty() && weather.empty()) {
+            if (plan.code.size() > 80 && derived.empty() && removals.empty() && placements.empty() && additions.empty() && weather.empty() && layoutCode.empty()) {
                 auto uncovered = tileChanges;
                 std::vector<uint8_t> calls;
                 for (const auto& leaf : newEffects.tileLeaves) {
@@ -557,7 +645,7 @@ inline CampaignObjectRefreshPlan planCampaignObjectRefresh(mCore* core, const Pr
             remember(GlobalScriptContextAddress + 0x5C,8);
         }
         plan.ready = true;
-    } catch (const std::runtime_error& failure) { plan.reason = failure.what(); plan.code.clear(); }
+    } catch (const std::runtime_error& failure) { plan.reason = failure.what(); plan.code.clear(); plan.layoutEntries.clear(); }
     return plan;
 }
 
@@ -568,8 +656,13 @@ inline bool startCampaignObjectRefresh(mCore* core, const CampaignObjectRefreshP
     if (!plan.ready || !campaignFieldQuiescent(core) || !(readProgress(core) == plan.expected)) return false;
     for (const auto& image : plan.preimages)
         if (core->busRead8(core,image.first) != image.second) return false;
-    if (plan.code.empty()) return true;
+    if (plan.code.empty()) return plan.layoutEntries.empty();
     if ((plan.programOffset != 12 && plan.programOffset != 32) || plan.code.size() > plan.capacity()) return false;
+    for(const auto& entry:plan.layoutEntries) {
+        if((entry.first&1u) || entry.first<0x02000000 || entry.first>0x0203FFFE ||
+           !plan.preimages.count(entry.first) || !plan.preimages.count(entry.first+1))return false;
+    }
+    for(const auto& entry:plan.layoutEntries)inventoryWrite16(core,entry.first,entry.second);
     const auto context = GlobalScriptContextAddress;
     for (unsigned i = 0; i < 80; ++i) core->busWrite8(core,context + 12 + i,0);
     for (unsigned i = 0; i < plan.code.size(); ++i) core->busWrite8(core,context + plan.programOffset + i,plan.code[i]);

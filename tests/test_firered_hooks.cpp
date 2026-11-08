@@ -34,7 +34,13 @@ struct Fixture {
         core.rawRead16=rawRead16;core.rawWrite16=rawWrite16;
         cpu.executionMode=MODE_THUMB;cpu.cpsr.t=1;cpu.irqh.bkpt16=previousBreakpoint;
         put(0x02022B4C,5);
-        const std::array<std::pair<uint32_t,std::array<uint16_t,4>>,27> prologues{{
+        const std::array<std::pair<uint32_t,std::array<uint16_t,4>>,33> prologues{{
+            {BattleHooks::EvolutionDexAddress,{{0xB500,0x480A,0x6800,0x7EC0}}},
+            {BattleHooks::ExperienceCommandAddress,{{0xB5F0,0x464F,0x4646,0xB4C0}}},
+            {BattleHooks::EvolutionGateAddress,{{0x4806,0x7800,0x2800,0xD003}}},
+            {BattleHooks::EvolutionQueueAddress,{{0xB530,0x4814,0x7801,0x1C03}}},
+            {BattleHooks::EvolutionQueueEndAddress,{{0x4904,0x4804,0x6008,0xBC30}}},
+            {BattleHooks::OpponentResetAddress,{{0xB5F0,0x4647,0xB480,0x0600}}},
             {BattleHooks::HasNoMonsAddress,{{0xB5F0,0x4657,0x464E,0x4645}}},
             {BattleHooks::IsOtherTrainerAddress,{{0xB530,0x1C0D,0x490F,0x680B}}},
             {BattleHooks::FlagGetAddress,{{0xB510,0x0400,0x0C04,0x1C20}}},
@@ -78,6 +84,28 @@ struct Fixture {
 int main() {
     try {
         auto empty=[](unsigned,unsigned,unsigned){return true;};
+        { Fixture f;unsigned calls=0;
+          BattleHooks hook(&f.core,empty,{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+            [&](unsigned slot)->std::optional<bool>{check(slot==5,"evolution dex checked a wrong party slot");++calls;return true;});
+          f.cpu.gprs[ARM_LR]=0x080CEAA9;f.cpu.gprs[9]=0x02024284+500;
+          f.invoke(BattleHooks::EvolutionDexAddress,0xDA);f.returned(true);check(calls==1,"owned evolution dex not checked");
+          f.cpu.gprs[ARM_LR]=0x080CF70D;f.invoke(BattleHooks::EvolutionDexAddress,0xDA);
+          check(calls==1&&f.cpu.prefetch[0]==0xB500,"trade evolution changed");hook.check(); }
+        { Fixture f;unsigned awards=0,gates=0,queues=0,resets=0;
+          BattleHooks hook(&f.core,empty,{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+            [&]{++awards;return true;},[&]{++gates;},[&](bool ending){++queues;return ending;},
+            [&](unsigned battler){check(battler==3,"reset received wrong native battler");++resets;});
+          f.invoke(BattleHooks::ExperienceCommandAddress,0xDF);check(awards==1&&f.cpu.prefetch[0]==0x4770,"award loop did not return at native entry");
+          f.invoke(BattleHooks::EvolutionGateAddress,0xDE);check(gates==1&&f.cpu.prefetch[0]==0x4806,"evolution gate skipped native cleanup");
+          f.invoke(BattleHooks::EvolutionQueueAddress,0xDD);check(queues==1&&f.cpu.prefetch[0]==0xB530,"evolution queue skipped native stack setup");
+          f.cpu.gprs[3]=0x03004F24;f.invoke(BattleHooks::EvolutionQueueEndAddress,0xDC);
+          check(queues==2&&f.cpu.prefetch[0]==0xE7C9,"next owner did not repeat the existing native loop");
+          f.cpu.gprs[0]=3;f.invoke(BattleHooks::OpponentResetAddress,0xDB);check(resets==1&&f.cpu.prefetch[0]==0xB5F0,"opponent reset did not continue native code");
+          f.put(0x02022B4C,0x43);f.invoke(BattleHooks::ExperienceCommandAddress,0xDF);
+          check(awards==1&&f.cpu.prefetch[0]==0xB5F0,"link battle was virtualized");hook.check();
+          f.put(0x02022B4C,5);f.cpu.gprs[3]=0;f.invoke(BattleHooks::EvolutionQueueEndAddress,0xDC);
+          bool failed=false;try{hook.check();}catch(const std::runtime_error&){failed=true;}
+          check(failed&&f.cpu.prefetch[0]==0x4904,"invalid evolution stack context was not contained"); }
         { Fixture f;bool single=true;
           BattleHooks hook(&f.core,empty,{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, [&]{return single;});
           constexpr uint32_t ghost=0x02023BE4+3*88;

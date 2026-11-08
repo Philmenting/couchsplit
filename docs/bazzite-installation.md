@@ -6,7 +6,7 @@ For normal installation use the [single-file guide](one-file-installer.md): preb
 
 ## Requirements
 
-Bazzite with its existing working NVIDIA drivers, Distrobox/Podman and two SDL-compatible USB/Bluetooth controllers. Supply your own Platinum ROM prepared with the Project PM patch matching the bridge. The project includes no games or Nintendo dumps and downloads none.
+Bazzite with working graphics drivers, Distrobox/Podman and two SDL-compatible USB/Bluetooth controllers. Supply your own compatible Project-PM-patched Platinum ROM or GBA game. The [FireRed experiment](firered.md) requires the exact supported unmodified German original. The project includes no games or Nintendo dumps and downloads none.
 
 A normal Platinum save or ROM header does not establish multiplayer compatibility. See the [verified PM 0.4.5 requirements](project-pm-045.md); a matching patch source/version is required.
 

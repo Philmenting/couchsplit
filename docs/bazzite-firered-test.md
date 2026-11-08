@@ -2,11 +2,14 @@
 
 **English** · [Deutsch](de/bazzite-firered-test.md) · [Documentation](README.md)
 
-This is a source-build test, not the published Alpha 8 installer: Alpha 8 does
-not include the experimental FireRed worker. Use desktop mode and your own
-unmodified German FireRed ROM. Consult [the FireRed guide](firered.md) for the
-experimental scope and remaining limitations. This procedure has not yet been
-tested on a Bazzite machine.
+Alpha 9 includes the experimental FireRed worker. For the normal route, install
+[the Bazzite package](one-file-installer.md), select your own unmodified German
+FireRed ROM and enable **Settings → FireRed co-op (experimental)**. Consult the
+[FireRed guide](firered.md) for scope and remaining limits. Actual Bazzite game
+and controller acceptance is still pending.
+
+The optional source-build procedure below uses a separate runtime and profile,
+so testing development builds does not reuse the installed launcher's saves.
 
 Run the following in a terminal. The new source directory must not already
 exist. This creates a dedicated Distrobox, clones the current GitHub source and

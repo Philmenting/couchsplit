@@ -2,13 +2,50 @@
 
 [English](../development-status.md) · **Deutsch** · [Anleitungen](README.md)
 
-Aktualisiert am 8. November 2026. Die öffentliche Ausgabe bleibt
-**[CouchSplit 0.2.0 Alpha 8](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.8)**
-für Project PM / Pokémon Platin. Der Entwicklungsquellcode ergänzt getrennte
-GBA-Sitzungen und ausdrücklich aktivierbaren deutschen Feuerrot-Koop. Ältere
-Ergebnisse gelten für die jeweils genannte Version und Umgebung.
+Aktualisiert am 8. November 2026. **[CouchSplit 0.2.0 Alpha 9](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.9)** enthält Project PM / Pokémon Platin, getrennten GBA-Splitscreen und den aktivierbaren deutschen Feuerrot-Testmodus. Ältere Ergebnisse gelten für die jeweils genannte Version und Umgebung, nicht als vollständige Kampagnen- oder Hardwarefreigabe.
+
+## Alpha 9 — eigene EP, Kartenaktualisierung und Dauertest
+
+Mehr EP-Teiler-Träger führen nicht mehr zur Sechs-Plätze-Ablehnung. Ein Journal
+hält alle zwölf ursprünglichen Identitäten, Teilnahme, Fortschritt und ausstehende
+Entwicklungen fest, während die originale Engine Belohnungen und Lernen ausführt.
+Das native Wechselmenü zeigt jeder Person ihre eigenen sechs Pokémon. Vorbereitete
+Original-ROM-Prüfungen decken exakte EP/EV für zwölf Träger, zwölf Entwicklungen,
+beide Initiatoren, störende Eingaben beim Lernen, Wechsel durch beide vollständigen
+Teams und unterschiedliche Nationaldex-Freischaltungen ab. Eine Regression beim
+Fangen mit kleinen Teams wurde behoben und nachgetestet. Aktive Pokémon, vorgemerkte
+Wechsel und Wunschtraum-Ziele schützen weiterhin ihre nativen Arbeitsplätze.
+
+Die Kartenaktualisierung behandelt die beiden geprüften Seeschaum-Varianten mit
+gestoppter Strömung ohne erneuten Eintritt, wartet bei belegten/abweichenden Feldern
+und erhält persönliche Rätselzustände. Linkclub-/Wunderkarten-Abfragen erhalten das
+eigene geladene Ergebnis. 32 gezielte native Kartenfälle, darunter alle 19 oberen
+Pokémon-Center-Etagen, bestehen Speichern und frisches Weiter. Trainerturm- und
+e-Reader-Helfer bleiben offen.
+
+Lokal bestehen **23 native Tests und alle 63 Python-Tests ohne Auslassungen**.
+Der Dauertest nutzt echte Session/PlayView und Paar-Worker, virtuelle Controller,
+natürliche Begegnungen durch Laufen, native Kartenwechsel und Ingame-Saves. Er
+prüft vollständige native Save-Generationen, eigene Teams/PC/Geld und Kampfzähler,
+anschließend frisches Weiter. Der [Alpha-9-Prüfbericht](../verification/firered-alpha9-2026-11-08.json)
+trennt abgeschlossene Läufe vom zuvor auf Nutzerwunsch unterbrochenen Lauf und
+nennt genaue Anzahlen und Dauer. Der abgeschlossene Lauf umfasst **19 Minuten
+17 Sekunden, zehn gemeinsame Kämpfe und 20 Kartenwechsel**; je Person wurden
+43 native Saves während der Sitzung und ein weiterer nach frischem Weiter geprüft.
+Starke Teams und Ausgangspositionen sind
+vorbereitet; dies belegt keinen natürlich durchgespielten Kampagnendurchlauf.
+
+Feuerrot bleibt experimentell. Enigmabeeren verwenden die bestätigte Fortsetzung
+mit Einzelkämpfen; Ninjatom-Teamergänzungen und eigene Pokérus-Verbreitung bleiben
+unvollständig. Partnerkollision/Geländeverdeckung, Spezialmodi, mehrstündiges Spielen,
+echte Controller, hörbarer Ton und tatsächliches Pokémon-Spiel unter Windows/Bazzite
+bleiben offen. Native Plattform-CI prüft Builds, Tests und Installation getrennt.
+[Release-Hinweise](../releases/v0.2.0-alpha.9.md) · [Einrichtung und Wiederholung](firered.md).
 
 ## Feuerrot: Moduswahl und behebbare Kampfpausen — 8. November 2026
+
+Historischer Stand vor Alpha 9: Die hier beschriebene Kapazitätsgrenze wird durch
+das EP-Journal oben ersetzt; die Enigmabeeren-Fortsetzung gilt weiterhin.
 
 **Einstellungen → Feuerrot-Koop (experimentell)** speichert jetzt die Moduswahl
 und zeigt, ob die ausgewählte ROM der unterstützten deutschen Original-ROM

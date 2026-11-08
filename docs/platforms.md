@@ -42,6 +42,16 @@ Change language immediately under **Settings → Language / Einstellungen → Sp
 
 The project is now CouchSplit. New downloads use `CouchSplit-…`; historical release assets retain their names. Install the new package over the existing installation. Legacy executable, profile and installer identifiers (`platinum-coop`, `pokemon-platinum-local-coop`, the Windows AppId/default folder and Bazzite runtime identity) remain for compatible upgrades. Existing settings, ROMs and saves stay in place; there is no automatic migration or merging. Launcher and application-menu names are CouchSplit. Existing Steam entries can retain the old name because their configuration is not directly rewritten.
 
+## GBA and experimental FireRed — Alpha 9
+
+Alpha 9 adds the bundled mGBA worker, independent GBA split screen and an opt-in
+co-op mode for the exact German FireRed original. Install over the previous
+version to retain settings and saves. Enable **Settings → FireRed co-op
+(experimental)** for the next session. No ROM patch is written. Shared EXP/EV,
+owned learning/evolutions, map refresh and paired backup/recovery are included;
+[the FireRed guide](firered.md) lists evidence and remaining limits. Ordinary GBA
+games remain independent adventures. Alpha 8 assets remain unchanged.
+
 ## Steam and verification
 
 Bazzite automatically requests a Steam entry. On Zorin OS and Windows, use Steam's **Add a Game → Add a Non-Steam Game** and select the launcher. Disable Steam Input for this entry if inputs are duplicated.

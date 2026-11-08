@@ -22,7 +22,7 @@ ROM_HASH = 'eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507'
 
 QUICK = {
     'pair': ('single', 'single-leader2', 'trainer', 'capture-leader2',
-             'party-menu-forced', 'exp-share', 'exp-share-overflow', 'exp-share-enigma'),
+             'party-menu-forced', 'exp-share', 'exp-share-twelve', 'exp-share-enigma'),
     'campaign': ('cut', 'shared-champion-rendezvous'),
     'gyms': ('misty', 'giovanni'),
     'progression': ('bill-full',),
@@ -33,18 +33,20 @@ FULL = {
              'trainer-single-leader2', 'payday', 'owners', 'leader2', 'escape',
              'escape-leader2', 'escape-player2', 'scripted', 'legendary',
              'grass-rendezvous', 'deferred-script', 'action-stats',
-             'capture', 'capture-leader2', 'capture-scripted', 'capture-legendary',
+             'capture', 'capture-leader2', 'capture-small', 'capture-scripted', 'capture-legendary',
              'capture-full-native', 'capture-party-space', 'capture-pc',
              'capture-denied', 'capture-both', 'capture-both-leader2',
              'capture-sequential', 'capture-unown', 'capture-spinda',
              'party-menu-single', 'party-menu-forced', 'party-menu-cancel',
-             'party-menu-summary', 'party-menu-exp-share', 'party-menu-rollback', 'bench', 'exhaust',
+             'party-menu-summary', 'party-menu-exp-share', 'party-menu-cycle', 'party-menu-rollback', 'bench', 'exhaust',
              'defeat', 'evolution', 'exp-share', 'exp-share-leader2',
              'exp-share-trainer', 'exp-share-trainer-leader2',
              'exp-share-evolution', 'exp-share-evolution-leader2',
              'exp-share-learn', 'exp-share-learn-leader2', 'exp-share-many',
              'exp-share-many-leader2', 'exp-share-overflow',
-             'exp-share-overflow-leader2', 'exp-share-overflow-both',
+             'exp-share-overflow-leader2', 'exp-share-twelve', 'exp-share-twelve-leader2',
+             'exp-share-twelve-evolution', 'exp-share-twelve-evolution-leader2',
+             'exp-share-dex', 'exp-share-dex-leader2',
              'exp-share-enigma', 'exp-share-enigma-leader2', 'exp-share-enigma-both'),
     'campaign': ('cut', 'surf', 'strength', 'marowak', 'national-dex',
                  'network-0', 'network-1', 'network-2', 'network-loaded',
@@ -75,7 +77,7 @@ def main():
     parser.add_argument('--profile', choices=('quick', 'full'), default='quick')
     parser.add_argument('--report', type=Path, help='write a compact JSON report; failure diagnostics may contain private game details')
     parser.add_argument('--timeout', type=int, default=180, help='seconds per scenario')
-    parser.add_argument('--jobs', type=int, default=1, help='independent native scenarios to run concurrently (1–8)')
+    parser.add_argument('--jobs', type=int, default=1, help='build, component-test and native-scenario concurrency (1–8; default: 1)')
     parser.add_argument('--case', action='append', default=[], help='run a named native scenario, e.g. pair/capture; repeat to select more')
     parser.add_argument('--skip-build', action='store_true', help='use already built test executables')
     args = parser.parse_args()
@@ -161,8 +163,9 @@ def main():
                   'private_save_sha256': before[2:], 'results': results,
                   'complete_natural_campaign': False, 'physical_controllers_verified': False,
                   'scenarios_use_authored_prerequisites': True,
-                  'known_limitations': ['More than six required battle slots including EXP Share holders are rejected.',
-                                        'A held Enigma Berry is rejected in shared battles.']}
+                  'known_limitations': ['Active, queued and Wish references still constrain the physical working party.',
+                                        'A held Enigma Berry requires explicit individual-battle recovery.',
+                                        'Shedinja party addition and per-owner Pokerus spreading are not supported.']}
         if args.report:
             try:
                 with args.report.open('x', encoding='utf-8') as file:
@@ -178,15 +181,15 @@ def main():
     targets = ['verify-firered-' + x for x in ('pair', 'campaign', 'gyms', 'progression',
                'connections', 'map-setup', 'public-pair', 'public-saves')]
     if not args.skip_build:
-        if not run('build/default', ['cmake', '--build', build, '--parallel', '4'], timeout=600):
+        if not run('build/default', ['cmake', '--build', build, '--parallel', str(args.jobs)], timeout=600):
             results.append({'name': 'scenarios', 'status': 'skipped', 'reason': 'Build failed'})
             return finish()
-        if not run('build/private-scenarios', ['cmake', '--build', build, '--parallel', '4', '--target',
+        if not run('build/private-scenarios', ['cmake', '--build', build, '--parallel', str(args.jobs), '--target',
                                                *targets, 'create-firered-checkpoint', 'verify-gba', 'gba-worker'], timeout=600):
             results.append({'name': 'scenarios', 'status': 'skipped', 'reason': 'Build failed'})
             return finish()
     run('native-component-and-launcher-tests', ['ctest', '--test-dir', build, '--no-tests=error', '--output-on-failure',
-                                              '--parallel', '4'], timeout=600)
+                                              '--parallel', str(args.jobs)], timeout=600)
     run('python-tests', [sys.executable, '-m', 'unittest', 'discover', '-s', 'tests',
                          '-p', 'test_*.py'], timeout=600)
     with tempfile.TemporaryDirectory(prefix='couchsplit-firered-matrix-') as temp:
