@@ -1,0 +1,44 @@
+name: Alpha 11 playtest / Testbericht
+description: Report success, setup trouble or a gameplay bug. English or Deutsch.
+title: "[Alpha 11 test] "
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for testing! Do not upload ROMs, saves or credentials. Remove personal information from log excerpts. / Danke! Keine ROMs, Saves oder Zugangsdaten hochladen."
+  - type: input
+    id: version
+    attributes:
+      label: Version and package / Version und Paket
+      placeholder: "Alpha 11, Windows installer / Bazzite .run / portable ZIP"
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Operating system and controllers / Betriebssystem und Controller
+      placeholder: "Bazzite version, desktop or gaming mode, controller models and USB/Bluetooth"
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result / Ergebnis
+      options:
+        - "Worked in the tested steps / Geprüfte Schritte funktionieren"
+        - "Installation or startup failed / Installation oder Start scheitert"
+        - "Input or gameplay problem / Eingabe- oder Spielfehler"
+        - "Performance or audio problem / Leistungs- oder Tonproblem"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Tested steps and result / Schritte und Ergebnis
+      description: "What did you try? What did you expect, and what happened? Mention whether both saves survived a restart. / Was wurde versucht, erwartet und beobachtet? Blieben beide Spielstände nach Neustart erhalten?"
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Optional details / Weitere Angaben
+      description: "Reproduction steps, approximate duration, relevant redacted log excerpt or screenshot. / Wiederholungsschritte, Dauer, bereinigter Logausschnitt oder Screenshot."

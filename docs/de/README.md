@@ -22,3 +22,5 @@ In Alpha 11 und im aktuellen Quellcode unterstützt: **Project PM / Pokémon Pla
 - [Architektur](architecture.md)
 - [Historische ROM-Startprüfung](rom-boot-check.md)
 - [Historische Machbarkeitsprüfung](technical-feasibility.md)
+
+- [Alpha 11 mittesten](testing.md)

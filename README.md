@@ -41,6 +41,10 @@ can reach all twelve owned Pokémon; a held Enigma Berry pauses both games with 
 explicit option to continue individual battles; [read the known limits](docs/firered.md) and
 save both games regularly. GBA link multiplayer is not implemented.
 
+## Help test Alpha 11
+
+We are looking for Windows and Bazzite testers. [Try the short playtest and report what works](docs/testing.md) — installation reports are welcome, and no full playthrough is required. [Deutsch](docs/de/testing.md).
+
 ## Download
 
 **[Get 0.2.0 Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)** — GBA split screen, experimental FireRed co-op, English/German language selection and independent saves.

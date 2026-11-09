@@ -33,3 +33,5 @@ Alpha 11 and current source: **Project PM / Pokémon Platinum**, **GBA games and
 [Release notes](releases/v0.2.0-alpha.11.md) · [Screenshot provenance](images/README.md)
 
 Historical reports retain their dates and test limits; use Development status for newer evidence.
+
+- [Help test Alpha 11](testing.md)
