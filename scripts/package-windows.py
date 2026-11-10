@@ -37,7 +37,14 @@ def stage(upstream,output,prefix):
         if path in seen:continue
         seen.add(path)
         result=subprocess.check_output(['objdump','-p',str(path)],text=True,errors='replace')
-        for name in re.findall(r'DLL Name:\s*(\S+)',result):
+        imports=re.findall(r'DLL Name:\s*(\S+)',result)
+        # MSYS2 can supply SDL2 through sdl2-compat. It loads SDL3 with
+        # LoadLibraryA, so PE imports alone cannot discover this required DLL.
+        # https://github.com/libsdl-org/sdl2-compat/blob/main/src/sdl2_compat.c
+        if path.name.lower()=='sdl2.dll' and b'sdl3.dll\0' in path.read_bytes().lower():
+            if 'sdl3.dll' not in available:raise ValueError('SDL2 compatibility runtime requires SDL3.dll')
+            imports.append('SDL3.dll')
+        for name in imports:
             source=available.get(name.lower())
             if source:
                 target=binary/source.name
