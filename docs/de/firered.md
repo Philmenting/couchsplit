@@ -4,6 +4,14 @@
 
 Alpha 11 und der aktuelle Quellcode können GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
 
+## Aktueller Quellcode — englische Originalausgaben
+
+Der Entwicklungsstand akzeptiert zusätzlich die exakten englischen Originale
+von Feuerrot 1.0 und 1.1 mit eigenen Koop-Profilen. Dazu Launcher und Worker
+gemeinsam bauen. Die bisherigen Alpha-11-Downloads unterstützen beim
+Feuerrot-Koop weiterhin nur die deutsche Ausgabe.
+[Fingerabdrücke, Einrichtung und Prüfstand](firered-english-profiles.md).
+
 ## Feuerrot-Koop — Alpha 11
 
 Alpha 11 enthält einen **experimentellen Feuerrot-Paarworker**:

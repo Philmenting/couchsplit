@@ -24,7 +24,7 @@ inline std::vector<uint8_t> nativeNetworkCompletionCommands(mCore* core, const P
     constexpr std::array<uint8_t,20> original{{0x25,0x9A,1,0x29,0x44,8,0x29,0x5C,0,
         0x29,0x8C,0,0x16,0x76,0x40,6,0,0x25,0x29,1}};
     for(unsigned i=0;i<original.size();++i)
-        requirePokemon(core->busRead8(core,0x08170F94+i)==original[i],
+        requirePokemon(core->busRead8(core,abiAddress(core, 0x08170F94)+i)==original[i],
                        "Native Sapphire completion preimage mismatch");
     // Flag844 is the final durable receipt, AFTER native own-starter roamer
     // creation and postgame flags. Sampling, saving and restart cannot replay
@@ -34,7 +34,7 @@ inline std::vector<uint8_t> nativeNetworkCompletionCommands(mCore* core, const P
             0x16,0x76,0x40,6,0, 0x29,0x44,8};
 }
 
-// The caller must fingerprint the exact German original AND authorize this
+// The caller must fingerprint and bind an exact supported original AND authorize this
 // operation from a committed, WON shared Champion battle. Persistent game-clear
 // flags are deliberately insufficient authorization: the game's first own Hall
 // of Fame entry must create its own record sectors, ribbons and debut time.
@@ -47,11 +47,12 @@ inline bool canStartNativeHallOfFameCompletion(mCore* core) {
     // Preimages for the original native Champion->Hall-of-Fame warp and the
     // Hall-of-Fame entry scene. Check both before touching either script VM.
     constexpr std::array<uint8_t, 11> warp{{0x39,1,80,0xFF,5,0,12,0,0x27,0x6B,2}};
-    constexpr std::array<uint8_t, 13> entry{{0x69,0xC7,0,0x4F,0xFF,0,0x33,0x2D,0x16,8,0x51,0,0}};
+    std::array<uint8_t, 13> entry{{0x69,0xC7,0,0x4F,0xFF,0,0x33,0x2D,0x16,8,0x51,0,0}};
+    monPut32(entry.data()+6,abiAddress(core,0x08162D33));
     for (unsigned i = 0; i < warp.size(); ++i)
-        if (core->busRead8(core, 0x08162BC3 + i) != warp[i]) return false;
+        if (core->busRead8(core, abiAddress(core, 0x08162BC3) + i) != warp[i]) return false;
     for (unsigned i = 0; i < entry.size(); ++i)
-        if (core->busRead8(core, 0x08162CD6 + i) != entry[i]) return false;
+        if (core->busRead8(core, abiAddress(core, 0x08162CD6) + i) != entry[i]) return false;
     const auto table = inventoryRead32(core, GlobalScriptContextAddress + 0x5C);
     const auto end = inventoryRead32(core, GlobalScriptContextAddress + 0x60);
     return table >= 0x08000000 && end > table && end <= 0x09000000 && end - table >= 0xA3 * 4;
@@ -64,7 +65,8 @@ inline bool startNativeHallOfFameCompletion(mCore* core) {
     // normally. Native map entry owns positions, Oak, healing, ribbons, the Hall
     // of Fame save sectors, credits and the continue warp. No commercial script
     // or graphics are copied, and no game-clear flag/save bytes are fabricated.
-    constexpr std::array<uint8_t, 6> program{{0x69,0x05,0xC3,0x2B,0x16,0x08}};
+    std::array<uint8_t, 6> program{{0x69,0x05,0xC3,0x2B,0x16,0x08}};
+    monPut32(program.data()+2,abiAddress(core,0x08162BC3));
     constexpr auto context = GlobalScriptContextAddress;
     for (unsigned i = 0; i < 80; ++i)
         core->busWrite8(core, context + 12 + i, i < program.size() ? program[i] : 0);

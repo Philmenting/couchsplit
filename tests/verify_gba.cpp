@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Explicit private acceptance tool: requires the user's own German FireRed ROM.
+// Explicit private acceptance tool: requires the user's own supported game ROM.
 // Uses the real worker, production Session/PlayView and virtual SDL controllers.
 #define PLATINUM_COOP_NO_MAIN
 #include "../launcher/main.cpp"
@@ -42,7 +42,7 @@ int main(int argc,char**argv) {
     QApplication app(argc,argv);
     if(argc!=6){fprintf(stderr,"verify-gba ROM WORKER PROFILE OUTPUT ACTIONS.json\n");return 2;}
     try {
-        i18n::setLanguage("de");
+        i18n::setLanguage(qEnvironmentVariable("COOP_VERIFY_LANGUAGE","de"));
         const QString root=QFileInfo(argv[3]).absoluteFilePath(),output=QFileInfo(argv[4]).absoluteFilePath();
         if(!QDir().mkpath(output))fail("Cannot create capture directory");
         const bool interactive=QString::fromLocal8Bit(argv[5])=="-";

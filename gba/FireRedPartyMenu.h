@@ -8,7 +8,8 @@ namespace coop::firered {
 // Reviewed source: pret/pokefirered ce6406d8c2eaf46d543c8a2606de0c3cb1951982,
 // src/{party_menu,battle_controller_player,battle_controllers}.c. Exact DE ROM
 // SHA-256 eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507.
-// These are read-only instruction metadata, not executable game code.
+// Canonical German metadata; verified English mappings/preimages are in
+// FireRedAddressData.h. These are ABI facts, not executable game code.
 inline constexpr uint32_t NativePartyMenuReshowAddress = 0x080309DC;
 inline constexpr std::array<uint16_t,4> NativePartyMenuReshowPreimage{{0xB500,0x4802,0xF7CF,0xFDB8}};
 inline constexpr uint32_t NativePartyMenuExitChosenAddress = 0x0203B0C0;

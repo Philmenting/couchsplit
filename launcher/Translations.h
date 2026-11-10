@@ -9,9 +9,11 @@ namespace coop::i18n {
 inline const QHash<QString,QString>& englishCatalog() {
     static const QHash<QString,QString> messages{
         {"Feuerrot-Koop (experimentell)","FireRed co-op (experimental)"},
-        {"Gemeinsame Welt und Teamkämpfe mit der unterstützten deutschen Original-ROM. Die Kampagne ist noch nicht vollständig abgesichert. Andere GBA-Spiele bleiben getrennte Abenteuer. Änderungen gelten ab der nächsten Sitzung.","Shared world and team battles with the supported German original ROM. The full campaign is not yet verified. Other GBA games remain independent adventures. Changes apply to the next session."},
+        {"Gemeinsame Welt und Teamkämpfe mit der deutschen Originalausgabe oder der englischen Version 1.0/1.1. Die Kampagne ist noch nicht vollständig abgesichert. Andere GBA-Spiele bleiben getrennte Abenteuer. Änderungen gelten ab der nächsten Sitzung.","Shared world and team battles with the German original or English version 1.0/1.1. The full campaign is not yet verified. Other GBA games remain independent adventures. Changes apply to the next session."},
         {"Ausgewählte ROM: deutsche Feuerrot-Original-ROM erkannt.","Selected ROM: German FireRed original detected."},
-        {"Ausgewählte ROM: für Feuerrot-Koop nicht geeignet. Bitte die unterstützte deutsche Original-ROM auswählen.","Selected ROM: not compatible with FireRed co-op. Select the supported German original ROM."},
+        {"Ausgewählte ROM: englische Feuerrot-Original-ROM erkannt.","Selected ROM: English FireRed original detected."},
+        {"Pokémon Feuerrot · Englisch · Getrennte Abenteuer","Pokémon FireRed · English · Independent adventures"},
+        {"Ausgewählte ROM: für Feuerrot-Koop nicht geeignet. Bitte eine unterstützte deutsche oder englische Original-ROM auswählen.","Selected ROM: not compatible with FireRed co-op. Select a supported German or English original ROM."},
         {"Feuerrot-Koop · Kampf pausiert: zu viele EP-Teiler","FireRed co-op · Battle paused: too many Exp. Shares"},
         {"Feuerrot-Koop · Kampf pausiert: Enigmabeere","FireRed co-op · Battle paused: Enigma Berry"},
         {"Feuerrot-Koop · Einzelkämpfe · Koop wird danach fortgesetzt","FireRed co-op · Individual battles · Co-op resumes afterwards"},

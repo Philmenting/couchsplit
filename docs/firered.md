@@ -4,6 +4,13 @@
 
 Alpha 11 and the current source can run GBA games and ROM hacks in the existing CouchSplit interface. Select a `.gba` file or ZIP containing exactly one game. The launcher checks the GBA fixed header byte, header checksum and a size between 512 bytes and 32 MiB for standard cartridges. Explicitly marked CouchSplit XROM v1 files can be up to 512 MiB. A valid header identifies the file format; it does not certify that every game or hack works. Oversized and malformed files are rejected. Existing Project PM / Platinum support and the DS worker are retained; other DS games are not enabled by this change.
 
+## Current source — English originals
+
+The development source also accepts the exact English FireRed 1.0 and 1.1
+originals through separate co-op profiles. Build the matching launcher and
+workers together. The existing Alpha 11 downloads remain German-only for
+FireRed co-op. [Supported fingerprints, setup and verification](firered-english-profiles.md).
+
 ## FireRed co-op — Alpha 11
 
 Alpha 11 includes an **experimental paired FireRed worker**: two real

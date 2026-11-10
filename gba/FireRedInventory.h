@@ -7,7 +7,7 @@
 
 namespace coop::firered {
 
-// Memory facts for the exact supported German FireRed original. These routines
+// Memory facts for the exact profiled FireRed originals. These routines
 // operate on paused emulator RAM, never on a battery save or native filesystem.
 inline constexpr uint32_t SaveBlock1PointerAddress = 0x03004F58;
 inline constexpr uint32_t SaveBlock2PointerAddress = 0x03004F5C;
@@ -121,8 +121,8 @@ inline bool validSaveBlock(uint32_t address, uint32_t length) {
 inline SaveMemory readSaveMemory(mCore* core) {
     requirePokemon(core && core->busRead8, "Cannot read FireRed inventory without an emulator core");
     SaveMemory result;
-    result.block1 = inventoryRead32(core, SaveBlock1PointerAddress);
-    result.block2 = inventoryRead32(core, SaveBlock2PointerAddress);
+    result.block1 = inventoryRead32(core, abiAddress(core, SaveBlock1PointerAddress));
+    result.block2 = inventoryRead32(core, abiAddress(core, SaveBlock2PointerAddress));
     requirePokemon(validSaveBlock(result.block1, SaveBlock1Size) && validSaveBlock(result.block2, SaveBlock2Size),
                    "FireRed save blocks are uninitialized or outside EWRAM");
     requirePokemon(result.block1 + SaveBlock1Size <= result.block2 || result.block2 + SaveBlock2Size <= result.block1,

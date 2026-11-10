@@ -23,6 +23,7 @@ namespace {
 struct PlayerCore {
     mCore* core = nullptr;
     bool initialized = false, configured = false;
+    std::unique_ptr<coop::firered::RomProfileScope> romProfile;
     QString profile, savePath;
     QByteArray lastSave;
     std::array<color_t, 240 * 160> video{};
@@ -30,6 +31,7 @@ struct PlayerCore {
     coop::Mapping mapping;
     ~PlayerCore() {
         if (!core) return;
+        romProfile.reset();
         if (configured) mCoreConfigDeinit(&core->config);
         if (initialized) core->deinit(core); else free(core);
     }
@@ -55,7 +57,7 @@ struct PlayerCore {
         }
         mapping.open(ipc.toUtf8().toStdString(), false);
     }
-    void initialize(const QString& rom) {
+    void initialize(const QString& rom,coop::firered::RomVersion version) {
         core = mCoreFind(rom.toUtf8().constData());
         if (!core || core->platform(core) != mPLATFORM_GBA || !core->init(core))
             coop::fail("mGBA FireRed pair initialization failed");
@@ -65,6 +67,7 @@ struct PlayerCore {
         options.sampleRate = 32768; options.audioBuffers = 1024; options.volume = 0x100;
         mCoreConfigLoadDefaults(&core->config, &options); mCoreLoadConfig(core);
         if (!mCoreLoadFile(core, rom.toUtf8().constData())) coop::fail("mGBA cannot load FireRed ROM");
+        romProfile=std::make_unique<coop::firered::RomProfileScope>(core,version);
         if (!lastSave.isEmpty()) {
             auto* file = VFileMemChunk(lastSave.constData(), size_t(lastSave.size()));
             if (!file) coop::fail("Cannot allocate FireRed save buffer");
@@ -132,8 +135,9 @@ int runFireRedPairWorker(const QString& rom, volatile std::sig_atomic_t& quitReq
         coop::fail("FireRed recovery requires a matching launcher; update launcher and worker together");
     // Fingerprint before creating cores or allowing any game-memory writes.
     const auto info = coop::inspectRom(rom);
-    if (info.system != coop::GameSystem::GameBoyAdvance || info.sha256 != coop::GermanFireRedSha256)
-        coop::fail("FireRed paired experiment requires the exact verified German original ROM");
+    const auto version=coop::firered::fireRedVersion(info.sha256.toStdString());
+    if (info.system != coop::GameSystem::GameBoyAdvance || !version)
+        coop::fail("FireRed paired experiment requires an exact verified German or English original ROM");
     std::array<PlayerCore, 2> players;
     const std::array<QString, 2> ipcs{{qEnvironmentVariable("PMCOOP_IPC"), qEnvironmentVariable("PMCOOP_IPC2")}};
     if (QFileInfo(ipcs[0]).canonicalFilePath().isEmpty() ||
@@ -142,7 +146,7 @@ int runFireRedPairWorker(const QString& rom, volatile std::sig_atomic_t& quitReq
     players[0].preflight(qEnvironmentVariable("PMCOOP_PROFILE"), ipcs[0]);
     players[1].preflight(qEnvironmentVariable("PMCOOP_PROFILE2"), ipcs[1]);
     if (players[0].profile == players[1].profile) coop::fail("FireRed pair requires two distinct save profiles");
-    for (auto& player : players) player.initialize(rom);
+    for (auto& player : players) player.initialize(rom,*version);
     coop::firered::TeamBattle battle({{players[0].core, players[1].core}});
     coop::firered::BattleRecovery recovery;
     std::array<bool,2> hallOfFamePending{};

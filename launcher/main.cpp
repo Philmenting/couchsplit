@@ -214,7 +214,7 @@ class Launcher : public QWidget {
     QString romFingerprint;
     bool selectedGba=false;
     bool gbaSelected() const {return selectedGba;}
-    bool fireRedExperimentSelected() const {return session.running()?session.isFireRedPair():selectedGba && romFingerprint==QLatin1String(GermanFireRedSha256) && settings.fireRedCoop;}
+    bool fireRedExperimentSelected() const {return session.running()?session.isFireRedPair():selectedGba && isSupportedFireRed(romFingerprint) && settings.fireRedCoop;}
     void rememberLanguage(const QString& value,bool fullSettings=false) {
         if(!i18n::supported(value))fail(i18n::text("Nicht unterstützte Sprache."));
         const auto before=stored;
@@ -283,8 +283,12 @@ class Launcher : public QWidget {
         QLabel languageHelp(i18n::text("Die Sprache gilt für den Launcher, nicht für die Spiel-ROM."));languageHelp.setWordWrap(true);form.addRow(&languageHelp);
         QCheckBox fireRedCoop(i18n::text("Feuerrot-Koop (experimentell)"));fireRedCoop.setObjectName("fireRedCoopCheck");fireRedCoop.setChecked(settings.fireRedCoop);
         form.addRow(&fireRedCoop);
-        QLabel coopHelp(i18n::text("Gemeinsame Welt und Teamkämpfe mit der unterstützten deutschen Original-ROM. Die Kampagne ist noch nicht vollständig abgesichert. Andere GBA-Spiele bleiben getrennte Abenteuer. Änderungen gelten ab der nächsten Sitzung."));coopHelp.setWordWrap(true);form.addRow(&coopHelp);
-        QLabel compatibility(i18n::text(romFingerprint==QLatin1String(GermanFireRedSha256)?"Ausgewählte ROM: deutsche Feuerrot-Original-ROM erkannt.":"Ausgewählte ROM: für Feuerrot-Koop nicht geeignet. Bitte die unterstützte deutsche Original-ROM auswählen."));compatibility.setObjectName("fireRedCompatibility");compatibility.setWordWrap(true);form.addRow(&compatibility);
+        QLabel coopHelp(i18n::text("Gemeinsame Welt und Teamkämpfe mit der deutschen Originalausgabe oder der englischen Version 1.0/1.1. Die Kampagne ist noch nicht vollständig abgesichert. Andere GBA-Spiele bleiben getrennte Abenteuer. Änderungen gelten ab der nächsten Sitzung."));coopHelp.setWordWrap(true);form.addRow(&coopHelp);
+        const char* compatibilityText=!isSupportedFireRed(romFingerprint) ?
+            "Ausgewählte ROM: für Feuerrot-Koop nicht geeignet. Bitte eine unterstützte deutsche oder englische Original-ROM auswählen." :
+            isEnglishFireRed(romFingerprint) ? "Ausgewählte ROM: englische Feuerrot-Original-ROM erkannt." :
+            "Ausgewählte ROM: deutsche Feuerrot-Original-ROM erkannt.";
+        QLabel compatibility(i18n::text(compatibilityText));compatibility.setObjectName("fireRedCompatibility");compatibility.setWordWrap(true);form.addRow(&compatibility);
         QComboBox fireRedAudio;fireRedAudio.setObjectName("fireRedAudioCombo");
         fireRedAudio.addItem(i18n::text("Spieler 1"),"player1");fireRedAudio.addItem(i18n::text("Spieler 2"),"player2");
         fireRedAudio.addItem(i18n::text("Beide Spieler"),"both");fireRedAudio.addItem(i18n::text("Stumm"),"mute");

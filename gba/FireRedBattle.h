@@ -37,8 +37,8 @@ inline bool recoverExhaustedTrainer(mCore* core) {
     // control resumes, a trainer without a usable Pokemon takes the game's
     // own blackout path; otherwise the next encounter could start an empty
     // party battle. Read only unencrypted HP/egg fields at this live boundary.
-    if (core->busRead32(core, MainCallbackAddress) != OverworldCallback ||
-        core->busRead8(core, 0x03000F9C) || (core->busRead8(core, 0x03003479) & 2u)) return false;
+    if (core->busRead32(core, abiAddress(core, MainCallbackAddress)) != abiAddress(core, OverworldCallback) ||
+        core->busRead8(core, 0x03000F9C) || (core->busRead8(core, abiAddress(core, 0x03003479)) & 2u)) return false;
     const auto count = core->busRead8(core, PlayerPartyCountAddress);
     requirePokemon(count <= 6, "Invalid FireRed field party count");
     if (!count) return false;
@@ -46,8 +46,8 @@ inline bool recoverExhaustedTrainer(mCore* core) {
         const auto mon = PlayerPartyAddress + slot * PartyMonSize;
         if (!(core->busRead8(core, mon + 19) & 4u) && core->busRead16(core, mon + 86)) return false;
     }
-    core->busWrite32(core, MainCallbackAddress, 0x080566C5);
-    core->busWrite8(core, 0x03003478, 0);
+    core->busWrite32(core, abiAddress(core, MainCallbackAddress), abiAddress(core, 0x080566C5));
+    core->busWrite8(core, abiAddress(core, 0x03003478), 0);
     return true;
 }
 
@@ -131,13 +131,17 @@ class TeamBattle {
         if(picked.accepted)return true;
         // Leave every party, selection flag and native reference untouched.
         // The native FALSE path shows this text and returns to the same menu,
-        // for voluntary and forced switches alike. Game language stays German.
-        constexpr char message[]="Platz vorerst reserviert.\nAnderes Teammitglied waehlen.";
+        // for voluntary and forced switches alike, in the cartridge's language.
+        const char* message=romVersion(c)==RomVersion::German ?
+            "Platz vorerst reserviert.\nAnderes Teammitglied waehlen." :
+            "Slot reserved for now.\nChoose another team member.";
         uint32_t address=0x02021D18; // gStringVar4, native rejection dialog buffer.
-        for(const char ch:message) {
+        for(unsigned i=0;;++i) {
+            const char ch=message[i];
             const uint8_t encoded=ch==0?0xFF:ch=='\n'?0xFE:ch==' '?0:ch=='.'?0xAD:
                 ch>='A'&&ch<='Z'?uint8_t(0xBB+ch-'A'):uint8_t(0xD5+ch-'a');
             c->busWrite8(c,address++,encoded);
+            if(!ch)break;
         }
         if(event)event("own reserve selection deferred",int(view.session.owner));
         return false;
@@ -398,8 +402,8 @@ class TeamBattle {
             // shared outcome, preserving its trainer variant/script stack.
             auto* peer = cores[1-leader];
             peer->busWrite8(peer, OutcomeAddress, outcome);
-            peer->busWrite32(peer, MainCallbackAddress, peerReturnCallback);
-            peer->busWrite8(peer, 0x03003478, 0);
+            peer->busWrite32(peer, abiAddress(peer, MainCallbackAddress), peerReturnCallback);
+            peer->busWrite8(peer, abiAddress(peer, 0x03003478), 0);
         } else if (firstLabRival) {
             // The first rival encounter continues its field script even on a
             // loss. Its own script heals the initiator; use the same native
@@ -411,9 +415,9 @@ class TeamBattle {
                 uint8_t(cores[peer]->busRead8(cores[peer], save.block1 + 5))),
                 "Cannot start the partner's native first-rival recovery");
         } else if (outcome == 2 || outcome == 3) {
-            cores[1 - leader]->busWrite32(cores[1 - leader], MainCallbackAddress, 0x080566C5);
+            cores[1 - leader]->busWrite32(cores[1 - leader], abiAddress(cores[1 - leader], MainCallbackAddress), abiAddress(cores[1 - leader], 0x080566C5));
             // Match native SetMainCallback2: its state byte must start at0.
-            cores[1 - leader]->busWrite8(cores[1 - leader], 0x03003478, 0);
+            cores[1 - leader]->busWrite8(cores[1 - leader], abiAddress(cores[1 - leader], 0x03003478), 0);
         }
         battling = false;
         hooks.reset();
@@ -448,17 +452,17 @@ public:
     bool waitingForPartner(unsigned initiator) const {
         requirePokemon(initiator < 2,"Invalid FireRed waiting player");
         auto* c = cores[initiator]; auto* peer = cores[1-initiator];
-        if (battling || inventoryRead32(c,MainCallbackAddress) != InitBattleCallback) return false;
+        if (battling || inventoryRead32(c,abiAddress(c, MainCallbackAddress)) != abiAddress(c, InitBattleCallback)) return false;
         const auto flags = inventoryRead32(c,BattleFlagsAddress);
         const bool lab = flags == 0x18 && inventoryRead16(c,0x020386AC) == 9 &&
             inventoryRead16(c,TrainerAddress) >= 326 && inventoryRead16(c,TrainerAddress) <= 328 &&
-            inventoryRead32(c,SavedCallbackAddress) == 0x08080409;
+            inventoryRead32(c,abiAddress(c, SavedCallbackAddress)) == abiAddress(c, 0x08080409);
         if (!sharedEncounterFlags(flags) && !lab) return false;
         if (!questLogWorldAvailable(c)) return false;
         // The partner's playback location is historical. Hold this real
         // encounter until their current map has actually loaded.
         if (!questLogWorldAvailable(peer)) return true;
-        const auto a = inventoryRead32(c,SaveBlock1PointerAddress), b = inventoryRead32(peer,SaveBlock1PointerAddress);
+        const auto a = inventoryRead32(c,abiAddress(c, SaveBlock1PointerAddress)), b = inventoryRead32(peer,abiAddress(peer, SaveBlock1PointerAddress));
         if (!validSaveBlock(a,SaveBlock1Size) || !validSaveBlock(b,SaveBlock1Size) ||
             c->busRead8(c,a+4) != peer->busRead8(peer,b+4) || c->busRead8(c,a+5) != peer->busRead8(peer,b+5)) return lab;
         auto viable=[](mCore* player) {
@@ -478,7 +482,7 @@ public:
         // Two DIFFERENT pending encounters cannot share a script result. Stop
         // with the validated batteries preserved, instead of silently turning
         // either fight into a solo battle or deadlocking both native scenes.
-        requirePokemon(inventoryRead32(peer,MainCallbackAddress) != InitBattleCallback,
+        requirePokemon(inventoryRead32(peer,abiAddress(peer, MainCallbackAddress)) != abiAddress(peer, InitBattleCallback),
                        "Both FireRed players reached different encounters; leave one encounter before retrying the session");
         return true;
     }
@@ -486,7 +490,7 @@ public:
         requirePokemon(initiator < 2, "Invalid FireRed battle initiator");
         if (battling) return false;
         auto* core = cores[initiator];
-        if (core->busRead32(core, MainCallbackAddress) != InitBattleCallback) return false;
+        if (core->busRead32(core, abiAddress(core, MainCallbackAddress)) != abiAddress(core, InitBattleCallback)) return false;
         if (!questLogWorldAvailable(core) || !questLogWorldAvailable(cores[1-initiator])) return false;
         const auto flags = core->busRead32(core, BattleFlagsAddress);
         // Oak's first-rival tutorial controllers only support a single human.
@@ -496,17 +500,17 @@ public:
             core->busRead16(core, 0x020386AC) == 9 &&
             core->busRead16(core, TrainerAddress) >= 326 &&
             core->busRead16(core, TrainerAddress) <= 328 &&
-            core->busRead32(core, SavedCallbackAddress) == 0x08080409u;
+            core->busRead32(core, abiAddress(core, SavedCallbackAddress)) == abiAddress(core, 0x08080409u);
         if (!sharedEncounterFlags(flags) && !labRival) return false;
         auto* peer = cores[1 - initiator];
-        const bool waiting = peer->busRead32(peer, MainCallbackAddress) == InitBattleCallback;
+        const bool waiting = peer->busRead32(peer, abiAddress(peer, MainCallbackAddress)) == abiAddress(peer, InitBattleCallback);
         bool matchingPeer = false;
         const auto& other = actors[1 - initiator];
         const auto save = readSaveMemory(core);
         if (waiting) {
             auto encounter = [](mCore* c) {
                 const auto m = readSaveMemory(c);
-                WaitingEncounter result{inventoryRead32(c,BattleFlagsAddress),inventoryRead32(c,SavedCallbackAddress),
+                WaitingEncounter result{inventoryRead32(c,BattleFlagsAddress),inventoryRead32(c,abiAddress(c, SavedCallbackAddress)),
                     inventoryRead16(c,TrainerAddress),inventoryRead16(c,0x020386AC),
                     uint8_t(c->busRead8(c,m.block1+4)),uint8_t(c->busRead8(c,m.block1+5)),
                     uint16_t(0)};
@@ -559,7 +563,7 @@ public:
             readTrainerPrizeMetadata(core,core->busRead16(core,TrainerAddress)).partySize==1;
         std::array<Inventory, 2> inventories{{readInventory(cores[0]), readInventory(cores[1])}};
         const std::array<uint32_t, 2> money{{readWallet(cores[0]), readWallet(cores[1])}};
-        const auto callback = core->busRead32(core, SavedCallbackAddress);
+        const auto callback = core->busRead32(core, abiAddress(core, SavedCallbackAddress));
         requirePokemon((callback & 1u) && callback >= 0x08000001u && callback < 0x09000000u,
                        "FireRed battle has no valid native return callback");
         std::array<std::vector<uint8_t>, 2> states{{saveState(cores[0]), saveState(cores[1])}};
@@ -577,7 +581,7 @@ public:
         activeBag = bags[leader]; returnCallback = callback; originalFlags = flags;
         trainer = uint16_t(core->busRead16(core, TrainerAddress)); firstLabRival = labRival;
         peerWaitingEncounter = matchingPeer;
-        peerReturnCallback = matchingPeer ? peer->busRead32(peer,SavedCallbackAddress) : 0;
+        peerReturnCallback = matchingPeer ? peer->busRead32(peer,abiAddress(peer, SavedCallbackAddress)) : 0;
         joiningStatistics = readBattleStatistics(cores[1-leader]);
         shareTrainerWin = (flags & 8u) && sharedTrainerProgressAllowed(core->busRead16(core, 0x020386AC), readTrainerPrizeMetadata(core, trainer).trainerClass);
         rewardState = {}; battleFrames = 0; sawNativeBattle = false; evolutionOwner = -1;
@@ -748,7 +752,7 @@ public:
                     if (cmd == 25) owner = ownerOfSlot(core->busRead8(core, ControllerBufferA + b * 0x200 + 1));
                 }
             }
-            if (evolutionOwner >= 0 && core->busRead32(core, MainCallbackAddress) != 0x08011085u) {
+            if (evolutionOwner >= 0 && core->busRead32(core, abiAddress(core, MainCallbackAddress)) != abiAddress(core, 0x08011085u)) {
                 requirePokemon(owner < 0 || owner == evolutionOwner, "Conflicting FireRed evolution input owners");
                 owner = evolutionOwner;
             }
@@ -761,7 +765,7 @@ public:
             // before the engine consumes a reply. A later mismatch is fatal to
             // this transaction: never rewind CPU state without its C++ journal.
             core->setKeys(core, keys[owner < 0 ? lastTextOwner : unsigned(owner)] & 0x3FFu);
-            if (core->busRead32(core, 0x03004ED4) == 0x08015ADDu) {
+            if (core->busRead32(core, abiAddress(core, 0x03004ED4)) == abiAddress(core, 0x08015ADDu)) {
                 // The return callback can execute and finish loading the field
                 // within ONE mGBA frame. Intercept its exact native boundary,
                 // then finish that same frame with the original parties back.
@@ -769,8 +773,8 @@ public:
                 unsigned instructions = 0;
                 while (core->frameCounter(core) == frame) {
                     core->step(core);
-                    if (battling && core->busRead32(core, MainCallbackAddress) == returnCallback &&
-                        !(core->busRead8(core, 0x03003479) & 2u)) finish();
+                    if (battling && core->busRead32(core, abiAddress(core, MainCallbackAddress)) == returnCallback &&
+                        !(core->busRead8(core, abiAddress(core, 0x03003479)) & 2u)) finish();
                     requirePokemon(++instructions < 1000000, "FireRed return callback did not complete a frame");
                 }
                 if (!battling) return;
@@ -781,8 +785,8 @@ public:
                 requirePokemon(selected>=PartyCapacity || ownerOfSlot(selected)==owner,
                                "Native FireRed party reply belongs to another trainer");
             }
-            sawNativeBattle |= (core->busRead8(core, 0x03003479) & 2u) != 0;
-            if (sawNativeBattle && core->busRead32(core, MainCallbackAddress) == 0x08011085u) {
+            sawNativeBattle |= (core->busRead8(core, abiAddress(core, 0x03003479)) & 2u) != 0;
+            if (sawNativeBattle && core->busRead32(core, abiAddress(core, MainCallbackAddress)) == abiAddress(core, 0x08011085u)) {
                 for (unsigned battler : {1u, 3u}) {
                     if (core->busRead8(core, 0x02023D70) & (1u << battler)) continue;
                     const auto slot = core->busRead16(core, 0x02023BCE + battler * 2);
@@ -804,8 +808,8 @@ public:
             ++battleFrames;
             // CB2's return address is the transaction boundary, before field
             // scripts, blackout healing or native save commands run again.
-            if (sawNativeBattle && core->busRead32(core, MainCallbackAddress) == returnCallback &&
-                !(core->busRead8(core, 0x03003479) & 2u)) finish();
+            if (sawNativeBattle && core->busRead32(core, abiAddress(core, MainCallbackAddress)) == returnCallback &&
+                !(core->busRead8(core, abiAddress(core, 0x03003479)) & 2u)) finish();
         } catch (const std::exception& error) {
             if (event) event(error.what(), int(battleFrames));
             rollback(); throw;

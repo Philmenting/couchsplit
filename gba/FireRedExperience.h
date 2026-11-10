@@ -43,11 +43,11 @@ class BattleExperience {
         transaction.originals=journal;transaction.combined=current;
     }
     void absorbLevels() {
-        const auto mask=core->busRead8(core,Levels);
+        const auto mask=core->busRead8(core,abiAddress(core, Levels));
         requirePokemon(!(mask&~0x3Fu),"Invalid FireRed pending evolution mask");
         for(unsigned slot=0;slot<transaction.combined.count;++slot)
             if(mask&(1u<<slot))leveled|=uint16_t(1u<<virtualSlot(slot));
-        core->busWrite8(core,Levels,0);
+        core->busWrite8(core,abiAddress(core, Levels),0);
     }
     void restoreWorking(const BattleParty& working) {
         transaction.owners=working.owners;transaction.originalSlots=working.originalSlots;
@@ -105,7 +105,7 @@ class BattleExperience {
             if(!mask)continue;
             evolving=owner;
             writeParty(core,evolutionParties[owner]);
-            core->busWrite8(core,Levels,uint8_t(mask));
+            core->busWrite8(core,abiAddress(core, Levels),uint8_t(mask));
             if(ownerChanged)ownerChanged(owner);
             if(evolutionBag) evolutionBag(owner);
             return true;
@@ -141,7 +141,7 @@ public:
             if(knockedOff&bit)knocked|=uint8_t(1u<<slot);
         }
         for(unsigned flank=0;flank<2;++flank)core->busWrite8(core,0x02023F4E + flank,masks[flank]);
-        core->busWrite8(core,0x02023F49,knocked);core->busWrite8(core,Levels,0);
+        core->busWrite8(core,0x02023F49,knocked);core->busWrite8(core,abiAddress(core, Levels),0);
     }
     void opponentReset(unsigned battler) {
         requirePokemon(battler<4 && !temporaryParty(),"Unexpected FireRed opponent reset during experience");
@@ -179,7 +179,7 @@ public:
             const auto enemy=0x02023BE4+fainted*88;
             const unsigned species=inventoryRead16(core,enemy),level=core->busRead8(core,enemy+0x2A);
             requirePokemon(species>0 && species<=411 && level>0 && level<=100,"Invalid FireRed experience opponent");
-            const auto base=core->busRead8(core,0x082546A8+species*28+9)*level/7;
+            const auto base=core->busRead8(core,abiAddress(core, 0x082546A8)+species*28+9)*level/7;
             const unsigned shared=holders?base/2:base;
             inventoryWrite16(core,battle+0x50,uint16_t(std::max(1u,participants?shared/participants:0u)));
             inventoryWrite16(core,0x02023F52,uint16_t(holders?std::max(1u,base/2/holders):0u));
@@ -201,11 +201,11 @@ public:
         // Capture can have appended a new party record. Its separate native
         // ownership transaction is finalized by TeamBattle::finish. As in the
         // original game, only a win runs the post-battle evolution queue.
-        if(core->busRead8(core,0x02023E8A)!=1) {core->busWrite8(core,Levels,0);return;}
+        if(core->busRead8(core,0x02023E8A)!=1) {core->busWrite8(core,abiAddress(core, Levels),0);return;}
         // FreeResetData has reached its fade-complete branch. The structure is
         // still live here, but is freed before TryEvolvePokemon is called.
         observeBattle();rebase();
-        core->busWrite8(core,Levels,leveled?1:0);
+        core->busWrite8(core,abiAddress(core, Levels),leveled?1:0);
     }
     // Called at TryEvolvePokemon entry and its final (zero-mask) branch.
     // Own complete parties give native summaries/evolution logic correct slots.
@@ -219,7 +219,7 @@ public:
             }
             return false;
         }
-        requirePokemon(evolutionWorking && evolving && !core->busRead8(core,Levels),"Invalid FireRed evolution completion");
+        requirePokemon(evolutionWorking && evolving && !core->busRead8(core,abiAddress(core, Levels)),"Invalid FireRed evolution completion");
         const auto owner=*evolving;const auto result=readParty(core);
         const auto& before=evolutionParties[owner];
         requirePokemon(result.count>=before.count,"FireRed evolution removed an owned Pokemon");

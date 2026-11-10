@@ -17,7 +17,7 @@
 
 namespace coop::firered {
 
-// Exact German FireRed only; callers verify the complete ROM fingerprint.
+// Exact profiled FireRed originals only; callers verify the complete ROM hash.
 // Install/detach while paused and keep this object alive through every CPU run.
 // Pinned mGBA's raw patch API creates an in-memory ROM copy; no ROM file writes.
 // CPU snapshots do not own these patches/callbacks: detach on rollback and before
@@ -105,10 +105,12 @@ public:
     static constexpr uint32_t ReshowCreateHealthboxAddress = 0x08077F48;
 private:
     struct Site {
+        // Canonical German identifier keeps hook dispatch independent of ABI.
         uint32_t address;
         uint16_t breakpoint;
         std::array<uint16_t,4> preimage;
         bool enabled;
+        uint32_t nativeAddress = 0;
     };
     mCore* core = nullptr;
     ARMCore* cpu = nullptr;
@@ -145,13 +147,13 @@ private:
     inline static std::unordered_map<ARMCore*, BattleHooks*> registry;
 
     void replaceInstruction(const Site& site, uint16_t expected, uint16_t replacement) noexcept {
-        core->rawWrite16(core, site.address, -1, replacement);
+        core->rawWrite16(core, site.nativeAddress, -1, replacement);
         // Refresh either paused Thumb prefetch slot, including detach before a
         // prefetched BKPT has executed. Do not replace an already queued fake BX.
         if (cpu->executionMode != MODE_THUMB) return;
         const uint32_t pc = uint32_t(cpu->gprs[ARM_PC]);
         for (unsigned i = 0; i < 2; ++i)
-            if (pc - 2 + i * 2 == site.address && (cpu->prefetch[i] & 0xFFFFu) == expected)
+            if (pc - 2 + i * 2 == site.nativeAddress && (cpu->prefetch[i] & 0xFFFFu) == expected)
                 cpu->prefetch[i] = replacement;
     }
     static void fallback(ARMCore* active, int immediate, BattleHooks* self) noexcept {
@@ -166,7 +168,7 @@ private:
         return (pointer - base) / 100;
     }
     std::optional<bool> otherTrainerResult() {
-        const uint32_t lr = uint32_t(cpu->gprs[ARM_LR]);
+        const uint32_t lr = canonicalCodeAddress(core,uint32_t(cpu->gprs[ARM_LR]));
         unsigned slot;
         if (lr == 0x0804417Bu) {
             // IsTradedMon retains its original Pokemon* in r4 while constructing
@@ -185,7 +187,7 @@ private:
         return otherTrainer(slot, uint32_t(cpu->gprs[0]), name);
     }
     std::optional<bool> badgeResult() {
-        const uint32_t lr = uint32_t(cpu->gprs[ARM_LR]);
+        const uint32_t lr = canonicalCodeAddress(core,uint32_t(cpu->gprs[ARM_LR]));
         unsigned battler = 4, expectedFlag = 0;
         switch (lr) {
         case 0x0801D411: expectedFlag = 0x827; break; // obedience: eighth badge
@@ -234,7 +236,7 @@ private:
         if (self && active->executionMode == MODE_THUMB)
             for (const auto& candidate : self->sites)
                 if (candidate.enabled && immediate == int(candidate.breakpoint & 255u) &&
-                    uint32_t(active->gprs[ARM_PC]) == candidate.address + 4) site = &candidate;
+                    uint32_t(active->gprs[ARM_PC]) == candidate.nativeAddress + 4) site = &candidate;
         if (!site) { fallback(active, immediate, self); return; }
         // Own-party switch menus temporarily use the single-layout flag. Their
         // return hook MUST run before ordinary double-battle flag filtering,
@@ -276,8 +278,8 @@ private:
                         self->wishCast(battler,slot);
                     }
                 } else if(!self->error && site->address==WishTextAddress &&
-                          uint32_t(active->gprs[9])==0x083FBE79u) {
-                    // Exact DE Wish-came-true string's B_BUFF1 placeholder.
+                          uint32_t(active->gprs[9])==abiAddress(self->core,0x083FBE79u)) {
+                    // Exact profiled Wish-came-true string's B_BUFF1 placeholder.
                     // Keep the structured-buffer path: raw Buff1 would treat
                     // status-looking nicknames as native status messages.
                     constexpr uint32_t buffer=0x02022AB8, destination=0x02021CD0;
@@ -314,7 +316,7 @@ private:
         if(site->address==EvolutionDexAddress) {
             std::optional<bool> enabled;
             try {
-                if(!self->error && uint32_t(active->gprs[ARM_LR])==0x080CEAA9u)
+                if(!self->error && canonicalCodeAddress(self->core,uint32_t(active->gprs[ARM_LR]))==0x080CEAA9u)
                     enabled=self->evolutionDex(self->partySlot(uint32_t(active->gprs[9])));
             } catch(...) {self->error=std::current_exception();}
             if(enabled)active->gprs[0]=*enabled?1:0;
@@ -333,7 +335,7 @@ private:
                     else {
                         const bool ending=site->address==EvolutionQueueEndAddress;
                         if(self->evolutionQueue(ending)) {
-                            if(!ending || uint32_t(active->gprs[3])!=0x03004F24u)
+                            if(!ending || uint32_t(active->gprs[3])!=abiAddress(self->core,0x03004F24u))
                                 throw std::runtime_error("Unexpected FireRed evolution loop context");
                             instruction=0xE7C9; // within the existing stack frame: B 0x08015A30
                         }
@@ -368,7 +370,7 @@ private:
                         // phantom's sprite and healthbox from the shared slot.
                         returnValue=site->address==ReshowLoadSpriteAddress ? 1u : 0u;
                     } else if ((trainer || wild) && absent && site->address == IsDoubleBattleAddress) {
-                        const auto lr=uint32_t(active->gprs[ARM_LR]);
+                        const auto lr=canonicalCodeAddress(self->core,uint32_t(active->gprs[ARM_LR]));
                         if (lr==0x0807794Bu) returnValue=0; // reshow's second shadow
                         // Only the opponent's native intro state machine sees a
                         // single layout; the human side remains a double.
@@ -412,16 +414,16 @@ private:
         if (site->address == PlayerNameTextAddress) {
             bool substituted = false;
             try {
-                // Limit this to the exact German "player used item" string,
+                // Limit this to the exact profiled "player used item" string,
                 // after a real ball action. The native 32-byte local text
                 // buffer is scratch space here; never alter the save identity.
-                if (!self->error && uint32_t(active->gprs[9]) == 0x083FD4D9u) {
+                if (!self->error && uint32_t(active->gprs[9]) == abiAddress(self->core,0x083FD4D9u)) {
                     const unsigned battler = self->core->busRead8(self->core, 0x02023D6B);
                     const unsigned item = self->core->busRead16(self->core, 0x02023D68);
                     if ((battler == 0 || battler == 2) && item >= 1 && item <= 12) {
                         if (const auto name = self->ballTextName(battler)) {
                             const uint32_t sp = uint32_t(active->gprs[ARM_SP]);
-                            if (uint32_t(active->gprs[0]) != 0x03004F5Cu ||
+                            if (uint32_t(active->gprs[0]) != abiAddress(self->core,0x03004F5Cu) ||
                                 sp < 0x03000000u || sp > 0x03007FE0u || (sp & 3u))
                                 throw std::runtime_error("Unexpected FireRed item text context");
                             for (unsigned i = 0; i < name->size(); ++i)
@@ -495,7 +497,7 @@ private:
             try {
                 // Only the native caught-mon command is relevant. Field gifts,
                 // trades and other callers retain their ordinary behavior.
-                if (!self->error && uint32_t(active->gprs[ARM_LR]) == 0x0802D7C1u)
+                if (!self->error && canonicalCodeAddress(self->core,uint32_t(active->gprs[ARM_LR])) == 0x0802D7C1u)
                     self->capturedMon(uint32_t(active->gprs[0]));
             } catch (...) { self->error=std::current_exception(); }
             ARMRunFake(active,site->preimage[0]);
@@ -505,7 +507,7 @@ private:
             try {
                 // Field stones, trades and other callers retain native control.
                 // This exact caller is TryEvolvePokemon after a won battle.
-                if (!self->error && uint32_t(active->gprs[ARM_LR]) == 0x08015A77u &&
+                if (!self->error && canonicalCodeAddress(self->core,uint32_t(active->gprs[ARM_LR])) == 0x08015A77u &&
                     self->core->busRead8(self->core, 0x02023E8A) == 1) {
                     const unsigned slot = unsigned(active->gprs[3]) & 255u;
                     if (slot >= 6 || uint32_t(active->gprs[0]) != 0x02024284u + slot * 100u ||
@@ -521,7 +523,7 @@ private:
             bool handled = false;
             try {
                 const unsigned statistic = unsigned(active->gprs[0]) & 255u;
-                const auto lr = uint32_t(active->gprs[ARM_LR]);
+                const auto lr = canonicalCodeAddress(self->core,uint32_t(active->gprs[ARM_LR]));
                 // Only the regular evolution task and battle-script action
                 // counter callsites have an unambiguous paired-player owner.
                 if (self->error) handled = true;
@@ -544,7 +546,7 @@ private:
             } else if (site->address == IsOtherTrainerAddress) result = self->otherTrainerResult();
             else if (site->address == CaptureFullAddress) {
                 // The Safari-action caller and all field callers stay native.
-                if (uint32_t(active->gprs[ARM_LR]) == 0x080A1F13u) result = self->captureFull();
+                if (canonicalCodeAddress(self->core,uint32_t(active->gprs[ARM_LR])) == 0x080A1F13u) result = self->captureFull();
             } else result = self->badgeResult();
         } catch (...) {
             // Rollback is the coordinator's responsibility after this CPU run.
@@ -622,9 +624,13 @@ public:
             !core->busRead16 || !core->busRead32 || ((ballTextName || singleWild || singleTrainer || wishName) && !core->busWrite8) || !predicate)
             throw std::runtime_error("Cannot install FireRed battle ownership hooks");
         cpu = static_cast<ARMCore*>(core->cpu);
+        for (auto& site : sites) {
+            site.nativeAddress=abiAddress(core,site.address);
+            site.preimage=hookPreimage(core,site.address,site.preimage);
+        }
         for (const auto& site : sites) if (site.enabled)
             for (unsigned i = 0; i < site.preimage.size(); ++i)
-                if (core->rawRead16(core, site.address + i * 2, -1) != site.preimage[i])
+                if (core->rawRead16(core, site.nativeAddress + i * 2, -1) != site.preimage[i])
                     throw std::runtime_error("FireRed battle hook has an unexpected native preimage");
         std::lock_guard<std::mutex> guard(registryMutex);
         if (registry.count(cpu) || cpu->irqh.bkpt16 == breakpoint)
@@ -633,7 +639,7 @@ public:
         registry.emplace(cpu, this);
         for (const auto& site : sites) if (site.enabled) {
             replaceInstruction(site, site.preimage[0], site.breakpoint);
-            if (core->rawRead16(core, site.address, -1) != site.breakpoint) {
+            if (core->rawRead16(core, site.nativeAddress, -1) != site.breakpoint) {
                 for (const auto& cleanup : sites) if (cleanup.enabled)
                     replaceInstruction(cleanup, cleanup.breakpoint, cleanup.preimage[0]);
                 registry.erase(cpu);

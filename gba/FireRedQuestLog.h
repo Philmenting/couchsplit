@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include <mgba/core/core.h>
+#include "FireRedProfile.h"
 #include <cstdint>
 
 namespace coop::firered {
-// Exact German FireRed original only, after the caller verifies its hash.
+// Exact profiled FireRed originals only, after the caller verifies the hash.
 // The native SPECIAL391 GetQuestLogState reads this byte. pret/pokefirered
 // include/constants/quest_log.h defines 0 = idle, 1 = recording, 2 = replay,
 // 3 = final replay transition. Playback temporarily loads older save data;

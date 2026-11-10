@@ -51,7 +51,7 @@ inline unsigned nativeNationalSpecies(mCore* core, unsigned species) {
                    !(species >= 252 && species <= 276), "Invalid FireRed captured species");
     // Read the exact supported ROM's native mapping. Hoenn internal IDs are
     // reordered; subtracting 25 gives wrong dex flags for many species.
-    const auto national = inventoryRead16(core, NationalSpeciesTableAddress + (species - 1) * 2);
+    const auto national = inventoryRead16(core, abiAddress(core, NationalSpeciesTableAddress) + (species - 1) * 2);
     requirePokemon(national >= 1 && national <= 386, "Invalid FireRed native national dex mapping");
     return national;
 }
@@ -122,7 +122,7 @@ struct StorageMemory {
 inline StorageMemory readStorageMemory(mCore* core) {
     StorageMemory result;
     result.save = readSaveMemory(core);
-    result.address = inventoryRead32(core, PokemonStoragePointerAddress);
+    result.address = inventoryRead32(core, abiAddress(core, PokemonStoragePointerAddress));
     requirePokemon(validSaveBlock(result.address, PokemonStorageSize), "FireRed PC storage is uninitialized or outside EWRAM");
     requirePokemon((result.address + PokemonStorageSize <= result.save.block1 || result.save.block1 + SaveBlock1Size <= result.address) &&
                    (result.address + PokemonStorageSize <= result.save.block2 || result.save.block2 + SaveBlock2Size <= result.address),

@@ -48,7 +48,7 @@ struct TrainerPrizeMetadata {
 };
 inline TrainerPrizeMetadata readTrainerPrizeMetadata(mCore* core, unsigned trainer) {
     requirePokemon(trainer < NativeTrainerCount, "Invalid FireRed trainer reward index");
-    const auto record = TrainerRecordsAddress + trainer * NativeTrainerRecordSize;
+    const auto record = abiAddress(core, TrainerRecordsAddress) + trainer * NativeTrainerRecordSize;
     requirePokemon(validRewardRomRange(record, NativeTrainerRecordSize), "Invalid FireRed trainer reward record");
     TrainerPrizeMetadata result;
     result.partyFlags = rewardRomByte(core, record);
@@ -70,7 +70,7 @@ inline TrainerPrizeMetadata readTrainerPrizeMetadata(mCore* core, unsigned train
     // search avoids following missing/corrupt sentinel data outside the table.
     bool found = false;
     for (unsigned index = 0; index < 128; ++index) {
-        const auto address = TrainerMoneyTableAddress + index * 4;
+        const auto address = abiAddress(core, TrainerMoneyTableAddress) + index * 4;
         const auto trainerClass = rewardRomByte(core, address);
         // Native code uses the sentinel entry's value as a default factor
         // for classes absent from the table (including two original records).

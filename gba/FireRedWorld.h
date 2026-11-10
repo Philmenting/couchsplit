@@ -11,7 +11,7 @@ namespace coop::firered {
 
 // A presentation snapshot, not an injected game object. Pixel rows have a fixed
 // 64-pixel pitch, including when width is smaller. No game graphics are bundled.
-// The caller MUST first fingerprint the exact unmodified German FireRed ROM.
+// The caller MUST first fingerprint and bind an exact unmodified supported FireRed ROM.
 struct WorldActor {
     bool valid = false;
     uint8_t mapGroup = 0, mapNum = 0, elevation = 0;
@@ -93,9 +93,9 @@ inline WorldActor readWorldActor(mCore* c) {
     WorldActor actor;
     if (!c || !c->busRead8 || !c->busRead16 || !c->busRead32) return actor;
     if (!questLogWorldAvailable(c)) return actor;
-    // German CB2_Overworld only: no title, battle, menu, transition or stale
+    // Profiled CB2_Overworld only: no title, battle, menu, transition or stale
     // overworld RAM presented as a live avatar. Call after a completed frame.
-    if (c->busRead32(c, 0x03003044) != 0x080565D5u) return actor;
+    if (c->busRead32(c, abiAddress(c, 0x03003044)) != abiAddress(c, 0x080565D5u)) return actor;
     // START-menu and script text can retain that callback while owning the
     // screen. Avoid painting a partner over their windows or a map transition.
     if (c->busRead8(c, 0x03000F9C) != 0) return actor;
@@ -111,7 +111,7 @@ inline WorldActor readWorldActor(mCore* c) {
         c->busRead16(c, sprite + 0x2E) != objectId) return actor;
     const unsigned spriteFlags = c->busRead8(c, sprite + 0x3E);
     if (!(spriteFlags & 1u) || (spriteFlags & 4u)) return actor;
-    const uint32_t save = c->busRead32(c, 0x03004F58);
+    const uint32_t save = c->busRead32(c, abiAddress(c, 0x03004F58));
     if (save < 0x02000000u || save > 0x0203FFF0u || (save & 3u)) return actor;
     actor.mapGroup = uint8_t(c->busRead8(c, save + 4));
     actor.mapNum = uint8_t(c->busRead8(c, save + 5));

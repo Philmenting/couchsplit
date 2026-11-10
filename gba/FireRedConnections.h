@@ -18,8 +18,8 @@ struct WorldTopology {
 inline WorldTopology readWorldTopology(mCore* core, const WorldActor& actor) {
     WorldTopology result;
     if (!core || !core->busRead8 || !core->busRead32 || !world_detail::bounded(actor) ||
-        core->busRead32(core,0x03003044) != 0x080565D5 || core->busRead8(core,0x03000F9C)) return result;
-    const auto save = core->busRead32(core,0x03004F58);
+        core->busRead32(core,abiAddress(core, 0x03003044)) != abiAddress(core,0x080565D5) || core->busRead8(core,0x03000F9C)) return result;
+    const auto save = core->busRead32(core,abiAddress(core, 0x03004F58));
     if (save < 0x02000000 || save > 0x0203FFF8 || (save & 3) ||
         core->busRead8(core,save+4) != actor.mapGroup || core->busRead8(core,save+5) != actor.mapNum) return result;
     const auto layout = core->busRead32(core,0x02036DFC);
