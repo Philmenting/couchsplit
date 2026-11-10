@@ -1,14 +1,14 @@
-# CouchSplit Alpha 11 mittesten
+# CouchSplit Alpha 12 mittesten
 
 [English](../testing.md) · **Deutsch** · [Projekt](../../README.md#deutsch)
 
-Wir suchen Tester für den experimentellen deutschen Feuerrot-Koop unter Windows und Bazzite: zwei Spieler, ein Rechner, ein gemeinsames Fenster. Schon eine kurze Rückmeldung zur Installation hilft. Niemand muss die Kampagne durchspielen.
+Wir suchen Tester für den experimentellen englischen/deutschen Feuerrot-Koop unter Windows und Bazzite: zwei Spieler, ein Rechner, ein gemeinsames Fenster. Schon eine kurze Rückmeldung zur Installation hilft. Niemand muss die Kampagne durchspielen.
 
 ## Einstieg
 
-[Alpha 11 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11). Es gibt einen Windows-Installer und eine portable ZIP, einen Bazzite-Installer sowie ein Paket für Zorin OS 18 / Ubuntu 24.04.
+[Alpha 12 herunterladen](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12). Es gibt einen Windows-Installer und eine portable ZIP, einen Bazzite-Installer sowie ein Paket für Zorin OS 18 / Ubuntu 24.04.
 
-Benötigt werden zwei Controller und deine eigene unterstützte, unveränderte deutsche Feuerrot-ROM. Der Launcher prüft die Kompatibilität. Andere Sprachversionen und beliebige ROM-Hacks erhalten dadurch keinen gemeinsamen Welt-Koop. [Kompatibilität und Grenzen](firered.md). ROMs oder Spielstände werden nicht bereitgestellt.
+Benötigt werden zwei Controller und deine eigene unterstützte, unveränderte englische Feuerrot-ROM 1.0/1.1 oder das deutsche Original. Der Launcher prüft den vollständigen Fingerabdruck. Andere Revisionen, Sprachen und beliebige ROM-Hacks erhalten dadurch keinen gemeinsamen Welt-Koop. [Kompatibilität und Grenzen](firered.md). ROMs oder Spielstände werden nicht bereitgestellt.
 
 Vor dem Update die Sitzung beenden. Für den experimentellen Test getrennte Testprofile verwenden oder beide Spielstände sichern. Sprache wählen, ROM auswählen, Controller zuordnen und **Einstellungen → Feuerrot-Koop (experimentell)** aktivieren.
 

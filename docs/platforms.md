@@ -42,6 +42,17 @@ Change language immediately under **Settings → Language / Einstellungen → Sp
 
 The project is now CouchSplit. New downloads use `CouchSplit-…`; historical release assets retain their names. Install the new package over the existing installation. Legacy executable, profile and installer identifiers (`platinum-coop`, `pokemon-platinum-local-coop`, the Windows AppId/default folder and Bazzite runtime identity) remain for compatible upgrades. Existing settings, ROMs and saves stay in place; there is no automatic migration or merging. Launcher and application-menu names are CouchSplit. Existing Steam entries can retain the old name because their configuration is not directly rewritten.
 
+## Alpha 12 — English FireRed
+
+[Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12)
+adds exact English FireRed 1.0/1.1 profiles to all packages. German co-op and
+independent GBA/DS modes remain available. Update after ending the current
+session. Different cartridge hashes retain separate profiles; saves are not
+merged automatically. [Setup and verification](firered-english-profiles.md).
+The Windows package includes the SDL3 runtime loaded by SDL2 compatibility.
+Native Windows/Linux package and upgrade gates passed before publication;
+actual Windows/Bazzite Pokémon gameplay remains a manual check.
+
 ## Alpha 11
 
 Alpha 11 packages the forced-switch, Wish and EXP corrections from the verified

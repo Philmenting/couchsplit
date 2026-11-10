@@ -2,27 +2,27 @@
 
 [English](../firered.md) · **Deutsch** · [Dokumentation](README.md)
 
-Alpha 11 und der aktuelle Quellcode können GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
+Alpha 12 und der aktuelle Quellcode können GBA-Spiele und ROM-Hacks in der bestehenden CouchSplit-Oberfläche starten. Eine `.gba`-Datei oder ZIP mit genau einem Spiel auswählen. Geprüft werden das feste GBA-Headerbyte, die Header-Prüfsumme und eine Größe zwischen 512 Byte und 32 MiB bei normalen Modulen. Ausdrücklich markierte CouchSplit-XROM-v1-Dateien dürfen bis zu 512 MiB groß sein. Ein gültiger Header erkennt das Format; er bestätigt nicht die Funktion jedes Spiels oder Hacks. Zu große oder beschädigte Dateien werden abgewiesen. Project PM / Platin und der DS-Worker bleiben erhalten; andere DS-Spiele werden durch diese Änderung nicht freigeschaltet.
 
-## Aktueller Quellcode — englische Originalausgaben
+## Alpha 12 — englische Originalausgaben
 
-Der Entwicklungsstand akzeptiert zusätzlich die exakten englischen Originale
-von Feuerrot 1.0 und 1.1 mit eigenen Koop-Profilen. Dazu Launcher und Worker
-gemeinsam bauen. Die bisherigen Alpha-11-Downloads unterstützen beim
-Feuerrot-Koop weiterhin nur die deutsche Ausgabe.
+[Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12)
+akzeptiert die exakten englischen Originale von Feuerrot 1.0 und 1.1 mit eigenen
+Koop-Profilen. Die deutsche Ausgabe bleibt unterstützt. Historische
+Alpha-11-Downloads unterstützen beim Feuerrot-Koop nur die deutsche Ausgabe.
 [Fingerabdrücke, Einrichtung und Prüfstand](firered-english-profiles.md).
 
-## Feuerrot-Koop — Alpha 11
+## Feuerrot-Koop — Alpha 12
 
-Alpha 11 enthält einen **experimentellen Feuerrot-Paarworker**:
+Alpha 12 enthält einen **experimentellen Feuerrot-Paarworker**:
 zwei echte mGBA-Kerne mit getrennten Saves, eine Partneransicht auf derselben
 oder direkt verbundenen Außenkarte und gemeinsame native Kämpfe, in denen jeder Mensch seine eigenen Aktionen wählt.
 Der vollständige Welt-Koop ist weiterhin nicht abgeschlossen. Die älteren
 Alpha-8-Pakete bleiben unverändert. Der Testmodus unterstützt ausschließlich die exakte
-unveränderte deutsche Original-ROM; andere GBA-Spiele, Sprachen und Hacks erhalten
+unveränderte englische Original-ROM 1.0/1.1 oder die deutsche Ausgabe; andere GBA-Spiele, Revisionen, Sprachen und Hacks erhalten
 dadurch keinen Koop.
 
-Alpha 11 installieren und den Modus unter **Einstellungen → Feuerrot-Koop
+Alpha 12 installieren und den Modus unter **Einstellungen → Feuerrot-Koop
 (experimentell)** einschalten. Für einen Quellcode-Build Launcher und beide
 Worker gemeinsam bauen; das Skript legt sie in `build/bin` ab:
 

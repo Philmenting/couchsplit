@@ -2,13 +2,11 @@
 
 [English](../firered-english-profiles.md) · **Deutsch** · [GBA-Unterstützung](firered.md)
 
-Der Entwicklungsstand ergänzt experimentellen Welt-Koop für die unveränderten
-englischen Originalversionen 1.0 und 1.1. Partneranzeige, gemeinsame native
-Kämpfe mit getrennten Eingaben sowie persönliche Teams, Taschen und Saves
-verwenden dieselben Koordinatoren wie die deutsche Ausgabe. Die veröffentlichten
-Alpha-11-Pakete unterstützen weiterhin nur die deutsche ROM. Englisch benötigt
-einen zusammen gebauten neuen Launcher und Worker. Vor neuen Binärpaketen
-stehen native Plattform- und Paketprüfungen an.
+[Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12)
+ergänzt experimentellen Welt-Koop für die unveränderten englischen Originale
+1.0 und 1.1. Die deutsche Ausgabe bleibt unterstützt. Partneranzeige, gemeinsame
+native Kämpfe mit getrennten Eingaben sowie persönliche Teams, Taschen und Saves
+sind in den Windows-, Bazzite- und Zorin-OS-/Ubuntu-Paketen enthalten.
 
 ## Unterstützte Originaldateien
 
@@ -25,7 +23,7 @@ den getrennten GBA-Modus. Jeder Spieler und vollständige ROM-Hash haben einen
 eigenen Save-Ordner; die englische Auswahl beginnt daher getrennt von einer
 vorhandenen deutschen Sitzung.
 
-Launcher und Worker gemeinsam bauen, die englische ROM auswählen und
+Alpha 12 installieren, die englische ROM auswählen und
 **Einstellungen → Feuerrot-Koop (experimentell)** aktivieren. Die Einstellungen
 erkennen unterstützte englische Originale. Launcher- und Spielsprache bleiben
 getrennte Einstellungen. Der neue Worker meldet `FIRERED_ENGLISH=1`; bei einem
@@ -62,17 +60,31 @@ Quell-, Test-, Installations- oder Werbepaket.
 
 ## Prüfstand und Grenzen
 
-Alle 24 normalen Komponenten-/Oberflächentests bestehen, einschließlich
-Profiltrennung, unbekannter Adressen/Aufrufer, falscher Prüfwerte und Entfernen
-der englischen Hooks. Erste echte ROM-Tests bestehen auf Englisch 1.0 und 1.1:
-gemeinsamer Wildkampf mit beiden Eingaben und persönliche native Saves mit
-anschließendem frischem Continue aus der Batterie. Die größere Szenariomatrix
-und Aufnahmen im Produktionslauncher werden gesondert abgeschlossen.
+Alle 24 normalen Komponenten-/Oberflächentests bestehen unter Linux und
+Windows, einschließlich Profiltrennung, unbekannter Adressen/Aufrufer, falscher
+Prüfwerte und Entfernen der englischen Hooks. Unter Linux bestehen außerdem alle
+64 Python-Tests. Native Plattform-/Paketprüfungen und ARM-Tests waren vor der
+[Veröffentlichung erfolgreich](https://github.com/Philmenting/couchsplit/actions/runs/42905256114).
 
-Diese ersten Ergebnisse ersetzen keinen vollständigen Kampagnentest. Die
-bisherigen Grenzen bei Partnerkollision/-überdeckung, Sonderkampfmodi,
-physischen Controllern und tatsächlichem Windows-/Bazzite-Gameplay gelten
-weiter. Native Build-Prüfungen bestätigen diese Spieleigenschaften nicht.
+[40 gezielte Original-ROM-Szenarien](../verification/firered-english-2026-11-10.json)
+bestehen: je 18 pro englischer Ausgabe und vier deutsche Regressionstests.
+Geprüft wurden gemeinsame Wild-/Trainerkämpfe, Fang, Aktionsbesitz, geschützte
+Wechsel, Brüller/Wirbelwind, Wunschtraum, zwölf EP-Teiler-Empfänger samt
+Attackenlernen und Entwicklung, Flucht und Niederlage. Jedes Szenario prüft
+getrennte native Saves und frisches Continue. Testteams und Begegnungen sind
+vorbereitet.
+
+Ein zusätzlicher [Produktionslauf](../verification/firered-english-capture-2026-11-10.json)
+mit englischem Feuerrot 1.1 nutzt den echten Session-/PlayView-Pfad und Paarworker,
+vorbereitete Demo-Saves und virtuelle Controller. Beide Spieler lösen natürliche
+Begegnungen aus und wählen ihre Aktionen. Nach getrenntem nativen Speichern,
+Worker-Neustart und frischem Continue bleiben Teams, Trainerdaten, Geld,
+Kampfzähler, PC-Speicher, Karten und Positionen erhalten. Sauberes Beenden gibt
+die Profilsperre frei. [Echte Screenshots](../../README.md#english-firered-play-together).
+
+Diese gezielten Tests ersetzen keinen vollständigen Kampagnentest. Grenzen bei
+Partnerkollision/-überdeckung, Sonderkampfmodi, physischen Controllern und
+tatsächlichem Windows-/Bazzite-Pokémon-Gameplay gelten weiter.
 
 Die [englische Anleitung](../firered-english-profiles.md#verification-and-limits)
 enthält reproduzierbare Befehle für private Eingaben. Die Werkzeuge sind vom

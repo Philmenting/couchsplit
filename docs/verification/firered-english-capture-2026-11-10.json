@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-10",
+  "rom_sha256": "729041b940afe031302d630fdbe57c0c145f3f7b6d9b8eca5e98678d0ca4d059",
+  "production_session_and_playview": true,
+  "production_paired_worker": true,
+  "virtual_controllers": true,
+  "prepared_demo_saves": true,
+  "shared_battle_initiators": [
+    2,
+    1
+  ],
+  "native_save_before_restart": 9,
+  "native_save_after_fresh_continue": 10,
+  "post_continue_owned_values_preserved": true,
+  "cases": [
+    {
+      "player": 1,
+      "party_count": 1,
+      "generation": 10,
+      "preserved": [
+        "party",
+        "trainer",
+        "wallet",
+        "battles",
+        "storage_sha256",
+        "map",
+        "position"
+      ]
+    },
+    {
+      "player": 2,
+      "party_count": 1,
+      "generation": 10,
+      "preserved": [
+        "party",
+        "trainer",
+        "wallet",
+        "battles",
+        "storage_sha256",
+        "map",
+        "position"
+      ]
+    }
+  ],
+  "continuous_campaign": false,
+  "physical_controllers": false,
+  "clean_stop_and_lock_release": true,
+  "rom_bytes_unchanged": true,
+  "world": {
+    "captured_frames": 124,
+    "elapsed_ms": 6569,
+    "native_input_roles": [
+      0
+    ],
+    "native_fps": 59.62
+  },
+  "battle": {
+    "captured_frames": 698,
+    "elapsed_ms": 36589,
+    "native_input_roles": [
+      0,
+      1,
+      2
+    ],
+    "native_fps": 59.61
+  }
+}

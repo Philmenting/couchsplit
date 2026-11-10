@@ -2,9 +2,9 @@
 
 **English** · [Deutsch](de/development-status.md) · [Documentation](README.md)
 
-Updated 10 November 2026. **[CouchSplit 0.2.0 Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
+Updated 10 November 2026. **[CouchSplit 0.2.0 Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in English/German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
 
-## Development source — English FireRed 1.0 and 1.1
+## Alpha 12 — English FireRed 1.0 and 1.1
 
 Exact English originals now have their own ABI profiles for the existing paired
 worker. Full-file fingerprints remain mandatory. All 38 battle hooks and 23
@@ -13,11 +13,17 @@ battle text and Hall-of-Fame pointers have explicit mappings. The reserve menu
 explanation follows the cartridge language. Older workers are rejected before
 an English session takes the save lock.
 
-All 24 standard suites pass, including new English isolation/guard/preimage
-checks. Actual shared wild battles and separate native SAVE/fresh Continue
-pass on both English revisions. The extended native matrix and production
-capture pass are in progress; native Windows/Linux packages are pending.
-Alpha 11 remains unchanged. [Profile evidence and reproduction](firered-english-profiles.md).
+All 24 standard suites and 64 Python tests pass. The extended matrix passes
+40 original-ROM cases: 18 per English revision and four German regressions,
+each with separate native SAVE/fresh Continue. A real production Session/PlayView
+capture on English 1.1 also checks both battle initiators, human input ownership,
+native saves, worker restart, preserved progress and clean shutdown. Test parties
+and saves are prepared; inputs are virtual.
+
+Fresh Windows/Linux build, standalone packaging, upgrade and ARM checks passed
+before [Alpha 12 was published](https://github.com/Philmenting/couchsplit/actions/runs/42905256114).
+Physical controllers, Windows/Bazzite Pokémon gameplay and a continuous campaign
+remain unverified. [Profile evidence and reproduction](firered-english-profiles.md).
 
 <a id="current-source--forced-switches-and-exp-boundaries"></a>
 

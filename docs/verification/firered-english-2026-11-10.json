@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-11-10",
-  "status": "Native English gameplay matrix passed; platform packaging follow-up and production capture evidence pending",
+  "status": "Passed: 40 original-ROM cases, production-session save/restart capture, Linux/Windows native package gates; Alpha 12 published",
   "runtime_source_commit": "f3b2110c0ec26f9a18e3c57ab12da735fa7f3c21",
   "base_commit": "6b08c7f3428eeeb4b1953283acb54cf42e16fcca",
   "environment": "Linux x86_64, Qt 6.4.2, pinned mGBA 0.10.5; sequential private original-ROM checks",
@@ -33,8 +33,11 @@
     "local_ctest_passed": 24,
     "linux_ci_ctest_passed": 24,
     "linux_ci_python_passed": 64,
-    "ci_runtime_commit": "f3b2110c0ec26f9a18e3c57ab12da735fa7f3c21",
-    "ci_url": "https://github.com/Philmenting/couchsplit/actions/runs/42895579256"
+    "ci_runtime_commit": "04d454e6b31716f12ff8a20071445b832c111f27",
+    "ci_url": "https://github.com/Philmenting/couchsplit/actions/runs/42905256114",
+    "windows_ci_ctest_passed": 24,
+    "standalone_windows_package_and_upgrade_passed": true,
+    "linux_package_and_upgrade_passed": true
   },
   "runtime_source_sha256": {
     "gba/FireRedVersion.h": "7d58eb7f4ee6e63b8408aa0d08c1efa11ecbe4da4ac0ee12032ff5f8f4043653",
@@ -299,5 +302,8 @@
   "private_fixture_provenance": {
     "source": "https://github.com/40Cakes/pokebot-gen3/tree/f14ab79db960315db02333928ba444f9d425b6fc/tests/states/firered",
     "method": "Exact English 1.1 source state and embedded Flash loaded privately; native SAVE and fresh Continue; other cartridge checkpoints created by native battery-only Continue. No state/ROM/save distributed."
-  }
+  },
+  "release_commit": "04d454e6b31716f12ff8a20071445b832c111f27",
+  "release_url": "https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12",
+  "production_capture": "firered-english-capture-2026-11-10.json"
 }

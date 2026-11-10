@@ -1,6 +1,6 @@
 # Screenshot provenance
 
-All images are actual application captures, not generated artwork or mockups. The main launcher shows CouchSplit Alpha 8. The unchanged language selector was captured in Alpha 7; older gameplay captures use Alpha 5 and the German ROM. Choosing an English launcher does not translate that ROM.
+All images are actual application captures, not generated artwork or mockups. The earlier main launcher shows CouchSplit Alpha 8. The unchanged language selector was captured in Alpha 7; older gameplay captures use Alpha 5 and the German ROM. Choosing an English launcher does not translate that ROM.
 
 | File | Context |
 |---|---|
@@ -13,3 +13,19 @@ All images are actual application captures, not generated artwork or mockups. Th
 Gameplay captures use the final corrected German PM 0.4.5 ROM (SHA256 e90a53f4dd7c24d45e74c1854cfd5cb17fb4dc636179350fea6df8b9bfbd4a7f), virtual SDL controllers and separate copied saves with a prepared level-25 team. Wallet, inventory, story, trainer flags and positions were not edited during fixture preparation. No game-RAM writes were used. These captures do not verify physical controllers, native Windows/Bazzite Pokemon gameplay or a full playthrough.
 
 No ROM, BIOS, proprietary firmware or saved game accompanies these screenshots. Images document behavior; rights in the depicted game content remain with their respective owners. The launcher itself uses authored geometry and the OFL-licensed Silkscreen font. See [machine-readable origins](provenance.json) for dates and original pixel-file fingerprints; embedded PNG metadata records the same origin.
+
+## English FireRed: Alpha 12
+
+`firered-english-battle.png` and `firered-english-world.png` were captured on
+10 November 2026 in the actual Linux Qt Session/PlayView with the production
+paired mGBA worker and the exact English FireRed 1.1 original. The launcher is
+English; the cartridge itself is English. Both 1280×720 PNGs retain the full app
+view. These images use separate prepared RED/LEAF demo batteries and virtual
+controllers. Natural encounters were initiated by both players, and separate
+native saves survived a worker restart and fresh Continue.
+
+[Capture record](../verification/firered-english-capture-2026-11-10.json) documents
+the scope. Runtime code matches Alpha 12; the private capture driver only records
+frames and supplies virtual controller input. This is targeted evidence, not a
+complete campaign or a physical-controller/Windows/Bazzite gameplay certificate.
+No cartridge, save or checkpoint is distributed with these images.

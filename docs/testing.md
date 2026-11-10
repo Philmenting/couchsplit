@@ -1,14 +1,14 @@
-# Help test CouchSplit Alpha 11
+# Help test CouchSplit Alpha 12
 
 **English** · [Deutsch](de/testing.md) · [Project](../README.md)
 
-Two players, one computer, one shared screen. We are looking for Windows and Bazzite testers for experimental German FireRed co-op. A short report is useful even if installation fails. No full playthrough is required.
+Two players, one computer, one shared screen. We are looking for Windows and Bazzite testers for experimental English/German FireRed co-op. A short report is useful even if installation fails. No full playthrough is required.
 
 ## Download and requirements
 
-[Download Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11): Windows installer or portable ZIP, Bazzite installer, and Zorin OS 18 / Ubuntu 24.04 package.
+[Download Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12): Windows installer or portable ZIP, Bazzite installer, and Zorin OS 18 / Ubuntu 24.04 package.
 
-Bring two controllers and your own supported unmodified German FireRed ROM. The launcher checks compatibility; English FireRed, other games and arbitrary ROM hacks do not gain shared-world co-op. No ROM or save downloads are provided. [Exact compatibility and limits](firered.md).
+Bring two controllers and your own supported unmodified English FireRed 1.0/1.1 or German original. The launcher checks the exact file fingerprint; other revisions, games and arbitrary ROM hacks do not gain shared-world co-op. No ROM or save downloads are provided. [Exact compatibility and limits](firered.md).
 
 Finish any running session before updating. Use separate test profiles or back up both saves before testing experimental gameplay. Choose English or German in the launcher, select the ROM, assign the controllers and enable **Settings → FireRed co-op (experimental)**.
 
@@ -34,4 +34,4 @@ We aim to collect five useful first reports, including Windows and Bazzite. This
 
 ## What is verified?
 
-Alpha 11 has automated Windows/Linux build and package checks and targeted Linux original-ROM scenarios. Those used prepared checkpoints and virtual controllers. Real Bazzite/controller gameplay, a complete natural campaign and multi-hour sessions remain unverified. Enigma Berries and other documented special cases have limitations. [Evidence and known limits](development-status.md).
+Alpha 12 has automated Windows/Linux build and package checks and targeted Linux original-ROM scenarios. Those used prepared checkpoints and virtual controllers. Real Bazzite/controller gameplay, a complete natural campaign and multi-hour sessions remain unverified. Enigma Berries and other documented special cases have limitations. [Evidence and known limits](development-status.md).

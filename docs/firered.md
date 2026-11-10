@@ -2,25 +2,26 @@
 
 **English** · [Deutsch](de/firered.md) · [Documentation](README.md)
 
-Alpha 11 and the current source can run GBA games and ROM hacks in the existing CouchSplit interface. Select a `.gba` file or ZIP containing exactly one game. The launcher checks the GBA fixed header byte, header checksum and a size between 512 bytes and 32 MiB for standard cartridges. Explicitly marked CouchSplit XROM v1 files can be up to 512 MiB. A valid header identifies the file format; it does not certify that every game or hack works. Oversized and malformed files are rejected. Existing Project PM / Platinum support and the DS worker are retained; other DS games are not enabled by this change.
+Alpha 12 and the current source can run GBA games and ROM hacks in the existing CouchSplit interface. Select a `.gba` file or ZIP containing exactly one game. The launcher checks the GBA fixed header byte, header checksum and a size between 512 bytes and 32 MiB for standard cartridges. Explicitly marked CouchSplit XROM v1 files can be up to 512 MiB. A valid header identifies the file format; it does not certify that every game or hack works. Oversized and malformed files are rejected. Existing Project PM / Platinum support and the DS worker are retained; other DS games are not enabled by this change.
 
-## Current source — English originals
+## Alpha 12 — English originals
 
-The development source also accepts the exact English FireRed 1.0 and 1.1
-originals through separate co-op profiles. Build the matching launcher and
-workers together. The existing Alpha 11 downloads remain German-only for
-FireRed co-op. [Supported fingerprints, setup and verification](firered-english-profiles.md).
+[Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12)
+accepts the exact English FireRed 1.0 and 1.1 originals through separate co-op
+profiles. The German original remains supported. Historical Alpha 11 packages
+support only the German original.
+[Supported fingerprints, setup and verification](firered-english-profiles.md).
 
-## FireRed co-op — Alpha 11
+## FireRed co-op — Alpha 12
 
-Alpha 11 includes an **experimental paired FireRed worker**: two real
+Alpha 12 includes an **experimental paired FireRed worker**: two real
 mGBA cores with separate saves, a partner overlay on the same or directly connected outdoor maps, and shared native
 battles with each human choosing their own actions. This remains an unfinished
 implementation of the requested shared-world co-op. Older Alpha 8 assets are unchanged.
-It is restricted to the exact unmodified German original; generic GBA games,
-other languages and ROM hacks do not acquire co-op through this option.
+It is restricted to the exact English 1.0/1.1 and German originals; generic GBA
+games, other revisions/languages and ROM hacks do not acquire co-op through this option.
 
-Install Alpha 11, then explicitly opt in through **Settings → FireRed co-op (experimental)**. For a source build, build the launcher and both workers together; the
+Install Alpha 12, then explicitly opt in through **Settings → FireRed co-op (experimental)**. For a source build, build the launcher and both workers together; the
 script places matching executables in `build/bin`:
 
 ```sh
@@ -29,7 +30,7 @@ build/bin/platinum-coop
 ```
 
 The choice is saved and applies on the next session start. Settings shows whether
-the selected ROM is the supported German original. Other GBA games keep their
+the selected ROM is a supported English or German original. Other GBA games keep their
 independent sessions. The old `COUCHSPLIT_FIRERED_EXPERIMENT=1` environment opt-in
 is only a default when no mode preference has been saved; an explicit saved choice wins.
 

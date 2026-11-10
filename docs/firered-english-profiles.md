@@ -2,12 +2,11 @@
 
 **English** · [Deutsch](de/firered-english-profiles.md) · [GBA support](firered.md)
 
-The development source adds experimental shared-world FireRed co-op for the
-unmodified English 1.0 and 1.1 cartridges. This includes the existing partner
-display, shared native battles with separate human input, and personal teams,
-bags and saves. The published Alpha 11 installers still support the German
-cartridge only. English requires a matching new launcher and worker built from
-this source; native platform/package verification precedes a new binary release.
+[Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12)
+adds experimental shared-world FireRed co-op for the unmodified English 1.0 and
+1.1 cartridges. The German original remains supported. Partner display, shared
+native battles with separate human input, and personal teams, bags and saves
+are included in the Windows, Bazzite and Zorin OS / Ubuntu packages.
 
 ## Exact supported cartridges
 
@@ -23,7 +22,7 @@ co-op. Modified files and other revisions keep the ordinary independent GBA
 mode. Each player and complete ROM hash has its own save directory, so selecting
 English starts a separate save profile from an existing German session.
 
-Build the launcher and workers together, select the English cartridge, and turn
+Install Alpha 12, select the English cartridge, and turn
 on **Settings → FireRed co-op (experimental)**. The settings screen recognizes
 supported English originals. Launcher language and cartridge language are
 independent choices. The new worker advertises `FIRERED_ENGLISH=1`; an English
@@ -61,12 +60,26 @@ installers or promotional downloads.
 
 ## Verification and limits
 
-The standard 24 component/UI suites pass, including English profile isolation,
-unknown-location rejection, caller guards, malformed preimages and hook removal.
-Initial actual-ROM checks pass a shared wild battle with both inputs and each
-player's own native SAVE followed by fresh battery-only Continue on English
-1.0 and 1.1. The extended native matrix and production-launcher captures are
-being completed separately; these initial results are not a campaign claim.
+All 24 standard component/UI suites pass on Linux and Windows, including
+English profile isolation, unknown-location rejection, caller guards, malformed
+preimages and hook removal. Linux also passes all 64 Python tests. Fresh native
+platform/package checks and ARM checks passed before the
+[Alpha 12 release](https://github.com/Philmenting/couchsplit/actions/runs/42905256114).
+
+[40 targeted original-ROM scenarios](verification/firered-english-2026-11-10.json)
+passed: 18 per English revision and four German regression checks. These cover
+shared wild/trainer battles, capture, action ownership, protected switching,
+Roar/Whirlwind, Wish, twelve EXP Share recipients, move learning and evolution,
+escape and defeat. Each verifies separate native SAVE and fresh battery-only
+Continue. The scenarios use authored test parties and encounters.
+
+A separate [production-session capture](verification/firered-english-capture-2026-11-10.json)
+uses the real launcher Session/PlayView and paired worker on English 1.1, prepared
+demo saves and virtual controllers. Both players initiated natural encounters;
+both input owners were observed. Both native saves survived a worker restart
+and fresh Continue with parties, trainer data, wallets, battle counters, PC
+storage, maps and positions preserved. The session stopped cleanly and released
+the profile lock. [Actual screenshots](../README.md#english-firered-play-together).
 
 The existing experimental limits still apply: partner collision/occlusion,
 special battle modes, full continuous campaigns, physical controllers and

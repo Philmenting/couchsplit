@@ -2,9 +2,9 @@
 
 [English](../development-status.md) · **Deutsch** · [Anleitungen](README.md)
 
-Aktualisiert am 10. November 2026. **[CouchSplit 0.2.0 Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)** enthält Project PM / Pokémon Platin, getrennten GBA-Splitscreen und den aktivierbaren deutschen Feuerrot-Testmodus. Ältere Ergebnisse gelten für die jeweils genannte Version und Umgebung, nicht als vollständige Kampagnen- oder Hardwarefreigabe.
+Aktualisiert am 10. November 2026. **[CouchSplit 0.2.0 Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12)** enthält Project PM / Pokémon Platin, getrennten GBA-Splitscreen und den aktivierbaren englischen/deutschen Feuerrot-Testmodus. Ältere Ergebnisse gelten für die jeweils genannte Version und Umgebung, nicht als vollständige Kampagnen- oder Hardwarefreigabe.
 
-## Entwicklungsstand — englisches Feuerrot 1.0 und 1.1
+## Alpha 12 — englisches Feuerrot 1.0 und 1.1
 
 Die exakten englischen Originale erhalten eigene ABI-Profile für den bestehenden
 Paarworker. Vollständige ROM-Fingerabdrücke bleiben Pflicht. Alle 38 Kampf-Hooks
@@ -13,11 +13,17 @@ sprachabhängige Kampftexte und Ruhmeshallen-Zeiger haben eigene Zuordnungen.
 Der Reservehinweis folgt der Spielsprache. Ein älterer Worker wird vor der
 Save-Sperre einer englischen Sitzung abgewiesen.
 
-Alle 24 normalen Testsuiten bestehen, einschließlich neuer englischer
-Profil-, Aufruf- und Prüfwerttests. Gemeinsame Wildkämpfe und getrennte native
-Saves mit frischem Continue bestehen auf beiden englischen Revisionen. Die
-größere native Matrix und der Aufnahmelauf werden abgeschlossen; native
-Windows-/Linux-Pakete stehen noch aus. Alpha 11 bleibt unverändert.
+Alle 24 normalen Testsuiten und 64 Python-Tests bestehen. Die erweiterte
+Matrix besteht 40 Original-ROM-Fälle: je 18 pro englischer Ausgabe und vier
+deutsche Regressionstests, jeweils mit getrennten nativen Saves und frischem
+Continue. Ein echter Session-/PlayView-Aufnahmelauf auf Englisch 1.1 prüft beide
+Kampfinitiatoren, eigene Eingaben, natives Speichern, Worker-Neustart, erhaltenen
+Fortschritt und sauberes Beenden. Testteams/Saves sind vorbereitet, Controller virtuell.
+
+Native Windows-/Linux-Builds, eigenständige Pakete, Upgrades und ARM-Prüfungen
+bestanden vor der [Alpha-12-Veröffentlichung](https://github.com/Philmenting/couchsplit/actions/runs/42905256114).
+Physische Controller, tatsächliches Windows-/Bazzite-Pokémon-Gameplay und ein
+durchgängiger Kampagnentest bleiben offen.
 [Profile, Nachweise und Reproduktion](firered-english-profiles.md).
 
 <a id="aktueller-quellcode--erzwungene-wechsel-und-ep-vergabe"></a>

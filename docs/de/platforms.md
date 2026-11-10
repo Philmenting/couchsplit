@@ -2,6 +2,17 @@
 
 [English](../platforms.md) · **Deutsch** · [Anleitungen](README.md)
 
+## Alpha 12 — englisches Feuerrot
+
+[Alpha 12](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.12)
+ergänzt in allen Paketen die exakten englischen Feuerrot-Profile 1.0/1.1.
+Deutscher Koop und getrennte GBA-/DS-Modi bleiben verfügbar. Vor dem Update die
+Sitzung beenden. Verschiedene ROM-Hashes verwenden getrennte Profile und werden
+nicht automatisch zusammengeführt. [Einrichtung und Prüfstand](firered-english-profiles.md).
+Windows enthält die von der SDL2-Kompatibilität geladene SDL3-Laufzeit.
+Native Paket-/Upgrade-Prüfungen bestanden; tatsächliches Pokémon-Gameplay unter
+Windows/Bazzite bleibt manuell zu prüfen.
+
 ## Bazzite
 
 .run im Desktop ausführen. Vorhandene Distrobox/Podman erforderlich. Die eigene Ubuntu-Laufzeit wird eingerichtet. Steam-Anfrage und Spielstände entsprechen der bisherigen Anleitung.
