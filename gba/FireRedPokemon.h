@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include <mgba/core/core.h>
+#include "FireRedProfile.h"
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -13,7 +13,7 @@
 
 namespace coop::firered {
 
-// German FireRed original only. The caller must independently verify the ROM
+// Exact profiled FireRed originals only. The caller must verify the ROM
 // fingerprint and stop emulation while reading or committing a party snapshot.
 inline constexpr uint32_t PlayerPartyAddress = 0x02024284;
 inline constexpr uint32_t PlayerPartyCountAddress = 0x02024029;

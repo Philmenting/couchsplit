@@ -16,18 +16,23 @@ import sys
 import tempfile
 import time
 
-ROM_HASH = 'eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507'
+SUPPORTED_ROMS = {
+    'eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507': 'German',
+    '3d0c79f1627022e18765766f6cb5ea067f6b5bf7dca115552189ad65a5c3a8ac': 'English 1.0',
+    '729041b940afe031302d630fdbe57c0c145f3f7b6d9b8eca5e98678d0ca4d059': 'English 1.1',
+}
 
 
 def smoke(driver, worker, rom, output=None):
     assert sys.platform.startswith('linux'), 'This test uses owned Linux /proc children'
     driver, worker, rom = (Path(value).resolve() for value in (driver, worker, rom))
-    assert hashlib.sha256(rom.read_bytes()).hexdigest() == ROM_HASH
+    rom_hash = hashlib.sha256(rom.read_bytes()).hexdigest()
+    assert rom_hash in SUPPORTED_ROMS
     with tempfile.TemporaryDirectory(prefix='couch-firered-session-ä-') as temporary:
         root = Path(temporary)
         profile, captures = root / 'profiles', root / 'captures'
         authored = [bytes([255]) * 131071 + bytes([marker]) for marker in (0xA5, 0x5A)]
-        save_paths = [profile / 'players' / str(player + 1) / ROM_HASH / 'saves/game.sav' for player in range(2)]
+        save_paths = [profile / 'players' / str(player + 1) / rom_hash / 'saves/game.sav' for player in range(2)]
         for path, data in zip(save_paths, authored):
             path.parent.mkdir(parents=True)
             path.write_bytes(data)
@@ -55,11 +60,11 @@ def smoke(driver, worker, rom, output=None):
             until(b'Ready for private acceptance actions')
             # At startup the launcher captures the two already saved battery
             # files together, without claiming they were saved at one frame.
-            pairs = list((profile / 'paired-backups' / ROM_HASH).glob('*/manifest.json'))
+            pairs = list((profile / 'paired-backups' / rom_hash).glob('*/manifest.json'))
             assert len(pairs) == 1, 'Launcher did not create a paired backup'
             snapshot = pairs[0].parent
             metadata = json.loads(pairs[0].read_text())
-            assert metadata['rom'] == ROM_HASH and metadata['format'] == 'couchsplit-firered-pair-1'
+            assert metadata['rom'] == rom_hash and metadata['format'] == 'couchsplit-firered-pair-1'
             for index, data in enumerate(authored, 1):
                 assert (snapshot / f'player{index}.sav').read_bytes() == data
                 assert metadata[f'player{index}'] == hashlib.sha256(data).hexdigest()
@@ -94,8 +99,8 @@ def smoke(driver, worker, rom, output=None):
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.communicate(timeout=5)
-    assert hashlib.sha256(rom.read_bytes()).hexdigest() == ROM_HASH
-    report = {'production_session': True, 'paired_worker': True, 'owned_child_failure_detected': True,
+    assert hashlib.sha256(rom.read_bytes()).hexdigest() == rom_hash
+    report = {'rom_sha256': rom_hash, 'rom_version': SUPPORTED_ROMS[rom_hash], 'production_session': True, 'paired_worker': True, 'owned_child_failure_detected': True,
               'lock_released_after_child_exit': True, 'both_prior_saves_preserved': True,
               'paired_startup_backup_verified': True,
               'audio_setting_reached_worker': expected_audio,

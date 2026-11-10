@@ -19,7 +19,6 @@
 
 using namespace coop::firered;
 namespace {
-constexpr auto RomHash = "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507";
 QByteArray hashFile(const QString& path) {
     QFile f(path); requirePokemon(f.open(QIODevice::ReadOnly), "Cannot read input");
     QCryptographicHash hash(QCryptographicHash::Sha256);
@@ -93,18 +92,20 @@ void trigger(mCore* core, const QString& scenario) {
     }
     core->busWrite32(core,BattleFlagsAddress,scenario=="trainer" || scenario.startsWith("trainer-single") || scenario.startsWith("exp-share-trainer") || scenario.startsWith("reserves-roar") || scenario=="rendezvous"?8:scenario=="marowak"?0xA000:scenario=="scripted" || scenario=="deferred-script" || scenario=="capture-scripted"?0x20000:scenario=="legendary" || scenario=="capture-legendary"?0x42000:0);
     if(scenario=="trainer" || scenario.startsWith("trainer-single") || scenario.startsWith("exp-share-trainer") || scenario.startsWith("reserves-roar") || scenario=="rendezvous")core->busWrite16(core,TrainerAddress,scenario.startsWith("trainer-single")?90:89);
-    core->busWrite32(core,SavedCallbackAddress,scenario=="defeat"?0x080566C5:0x080567FD);
-    core->busWrite32(core,MainCallbackAddress,InitBattleCallback);
+    core->busWrite32(core,abiAddress(core, SavedCallbackAddress),abiAddress(core,scenario=="defeat"?0x080566C5:0x080567FD));
+    core->busWrite32(core,abiAddress(core, MainCallbackAddress),abiAddress(core,InitBattleCallback));
 }
 }
 int main(int argc,char** argv) {
     QCoreApplication app(argc,argv);
-    if(argc!=4 && argc!=5){fprintf(stderr,"verify-firered-pair ORIGINAL_DE.gba PRIVATE_OVERWORLD_STATE NEW_OUTPUT_DIRECTORY [wild|single|single-leader2|single-multiturn|single-multiturn-leader2|trainer-single|trainer-single-leader2|trainer-single-multiturn|party-menu-single|escape|escape-leader2|escape-player2|marowak|scripted|legendary|rendezvous|grass-rendezvous|deferred-script|trainer|payday|capture|capture-leader2|capture-scripted|capture-legendary|capture-full-native|capture-party-space|capture-pc|capture-denied|capture-both|capture-both-leader2|capture-sequential|capture-unown|capture-spinda|capture-unown-first|owners|leader2|action-stats|evolution|bench|exhaust|defeat]\n");return 2;}
+    if(argc!=4 && argc!=5){fprintf(stderr,"verify-firered-pair SUPPORTED_ORIGINAL.gba PRIVATE_OVERWORLD_STATE NEW_OUTPUT_DIRECTORY [wild|single|single-leader2|single-multiturn|single-multiturn-leader2|trainer-single|trainer-single-leader2|trainer-single-multiturn|party-menu-single|escape|escape-leader2|escape-player2|marowak|scripted|legendary|rendezvous|grass-rendezvous|deferred-script|trainer|payday|capture|capture-leader2|capture-scripted|capture-legendary|capture-full-native|capture-party-space|capture-pc|capture-denied|capture-both|capture-both-leader2|capture-sequential|capture-unown|capture-spinda|capture-unown-first|owners|leader2|action-stats|evolution|bench|exhaust|defeat]\n");return 2;}
     try {
         const QString rom=QString::fromLocal8Bit(argv[1]),state=QString::fromLocal8Bit(argv[2]),out=QString::fromLocal8Bit(argv[3]);
         const auto scenario=argc==5?QString::fromLocal8Bit(argv[4]):QStringLiteral("wild");
         requirePokemon(scenario=="wild" || scenario.startsWith("reserves-roar") || scenario.startsWith("shedinja") || scenario.startsWith("pokerus") || scenario=="capture-small" || scenario=="soak-launcher" || scenario.startsWith("single") || scenario.startsWith("exp-share") || scenario=="escape" || scenario=="escape-leader2" || scenario=="escape-player2" || scenario=="grass-rendezvous" || scenario=="deferred-script" || scenario=="marowak" || scenario=="scripted" || scenario=="legendary" || scenario=="rendezvous" || scenario=="capture-scripted" || scenario=="capture-legendary" || scenario=="trainer" || scenario.startsWith("trainer-single") || scenario=="payday" || (scenario=="capture" || scenario=="capture-leader2" || scenario=="capture-full-native" || scenario=="capture-party-space" || scenario=="capture-pc" || scenario=="capture-denied" || scenario.startsWith("capture-both") || scenario=="capture-sequential" || scenario=="capture-unown" || scenario=="capture-spinda" || scenario=="capture-unown-first") || scenario=="owners" || scenario=="leader2" || scenario=="action-stats" || scenario=="evolution" || scenario=="bench" || scenario=="exhaust" || scenario=="defeat" || scenario.startsWith("party-menu"),"Unknown acceptance scenario");
-        requirePokemon(hashFile(rom)==RomHash,"Only the exact German FireRed original is supported");
+        const auto RomHash=QString::fromLatin1(hashFile(rom));
+        const auto version=fireRedVersion(RomHash.toStdString());
+        requirePokemon(bool(version),"An exact supported FireRed original is required");
         QFile checkpoint(state); requirePokemon(checkpoint.open(QIODevice::ReadOnly),"Cannot open private checkpoint");
         const auto bytes=checkpoint.readAll(); const auto stateHash=QCryptographicHash::hash(bytes,QCryptographicHash::Sha256).toHex();
         requirePokemon(QDir().mkdir(out),"Output directory must be new and have an existing parent");
@@ -112,6 +113,7 @@ int main(int argc,char** argv) {
         mLogger logger{};logger.filter=&filter;logger.log=[](mLogger*,int,mLogLevel,const char*,va_list){};mLogSetDefaultLogger(&logger);
         Core first,second;first.open(rom,bytes);second.open(rom,bytes);
         auto* a=first.c;auto* b=second.c;
+        RomProfileScope firstProfile(a,*version),secondProfile(b,*version);
         if(scenario.startsWith("reserves-roar") || scenario.contains("wish") || scenario.startsWith("shedinja") || scenario.startsWith("pokerus") || scenario.startsWith("capture") || scenario.startsWith("exp-share") || scenario=="party-menu-exp-share" || scenario=="owners" || scenario=="leader2") {
             const auto memory=readSaveMemory(b);
             for(unsigned byte=0;byte<4;++byte)b->busWrite8(b,memory.block2+0xA+byte,uint8_t(0xCAFEBABEu>>(byte*8)));
@@ -390,12 +392,12 @@ int main(int argc,char** argv) {
             if(QString::fromLatin1(text)=="full recipient capture rejected")++capacityDenials;
             if(QString::fromLatin1(text).contains("mismatch")) {
                 first.capture(out+"/before-error.png");
-                fprintf(stderr,"Capture error outcome=%u cb=%08X count=%u storage=%08X\n",a->busRead8(a,OutcomeAddress),a->busRead32(a,MainCallbackAddress),a->busRead8(a,PlayerPartyCountAddress),a->busRead32(a,0x03004F60));
+                fprintf(stderr,"Capture error outcome=%u cb=%08X count=%u storage=%08X\n",a->busRead8(a,OutcomeAddress),a->busRead32(a,abiAddress(a, MainCallbackAddress)),a->busRead8(a,PlayerPartyCountAddress),a->busRead32(a,abiAddress(a, 0x03004F60)));
                 for(unsigned slot=0;slot<6;++slot) {
                     PartyMon value;for(unsigned byte=0;byte<100;++byte)value.bytes[byte]=uint8_t(a->busRead8(a,PlayerPartyAddress+slot*100+byte));
                     fprintf(stderr,"slot%u pid=%08X ot=%08X checksum=%04X/%04X species=%u\n",slot,value.identity().personality,value.identity().trainer,monU16(value.bytes.data()+28),PartyMon::checksum(value.secure()),value.species());
                 }
-                const auto pc=a->busRead32(a,0x03004F60);PartyMon boxed;
+                const auto pc=a->busRead32(a,abiAddress(a, 0x03004F60));PartyMon boxed;
                 for(unsigned byte=0;byte<80;++byte)boxed.bytes[byte]=uint8_t(a->busRead8(a,pc+4+byte));
                 fprintf(stderr,"pc0 pid=%08X ot=%08X checksum=%04X/%04X species=%u\n",boxed.identity().personality,boxed.identity().trainer,monU16(boxed.bytes.data()+28),PartyMon::checksum(boxed.secure()),boxed.species());
             }
@@ -417,7 +419,7 @@ int main(int argc,char** argv) {
                 inventoryWrite16(c,memory.block1,scenario=="soak-launcher"?12:14);
                 inventoryWrite16(c,memory.block1+2,scenario=="soak-launcher"?38:26);
                 c->busWrite8(c,memory.block1+4,3);c->busWrite8(c,memory.block1+5,19);
-                c->busWrite8(c,0x03003478,0);c->busWrite32(c,MainCallbackAddress,0x0805673D);
+                c->busWrite8(c,abiAddress(c, 0x03003478),0);c->busWrite32(c,abiAddress(c, MainCallbackAddress),abiAddress(c,0x0805673D));
                 for(unsigned f=0;f<240;++f){c->setKeys(c,0);c->runFrame(c);}
                 requirePokemon(campaignFieldQuiescent(c),"Launcher fixture did not enter Route 1");
                 if(scenario=="soak-launcher" && owner==0) {
@@ -475,7 +477,7 @@ int main(int argc,char** argv) {
             for(;nativeFrames<12000 && recovery.individual();++nativeFrames) {
                 for(unsigned owner=0;owner<2;++owner) {
                     auto* c=owner?b:a;
-                    sawNative[owner]|=(c->busRead8(c,0x03003479)&2u)!=0;
+                    sawNative[owner]|=(c->busRead8(c,abiAddress(c, 0x03003479))&2u)!=0;
                     c->setKeys(c,campaignFieldQuiescent(c)?0u:(nativeFrames%12<4?1u:0u));
                     c->runFrame(c);
                 }
@@ -703,7 +705,7 @@ int main(int argc,char** argv) {
             if(scenario=="bench") {
                 const auto pending=a->busRead32(a,ControllerExecAddress);
                 for(unsigned battler:{0u,2u}) {
-                    if((a->busRead8(a,0x03003479)&2u) && a->busRead32(a,MainCallbackAddress)==0x08011085u) {
+                    if((a->busRead8(a,abiAddress(a, 0x03003479))&2u) && a->busRead32(a,abiAddress(a, MainCallbackAddress))==abiAddress(a,0x08011085u)) {
                         const auto nativeSlot=a->busRead16(a,0x02023BCE + battler*2);
                         if(nativeSlot<6) {
                             const auto pid=a->busRead32(a,PlayerPartyAddress+nativeSlot*100);
@@ -790,8 +792,11 @@ int main(int argc,char** argv) {
                     if(character==0xFF)break;
                     match &= leading->busRead8(leading,0x0202298C+index++)==character;
                 }
-                // German native string: "<name> setzte\n<item> ein!".
-                for(const uint8_t byte : {0x00,0xE7,0xD9,0xE8,0xEE,0xE8,0xFE})
+                // Observe the cartridge's actual "<name> used/setzte" prefix.
+                const std::vector<uint8_t> suffix=romVersion(leading)==RomVersion::German ?
+                    std::vector<uint8_t>{0x00,0xE7,0xD9,0xE8,0xEE,0xE8,0xFE} :
+                    std::vector<uint8_t>{0x00,0xE9,0xE7,0xD9,0xD8,0xFE};
+                for(const uint8_t byte : suffix)
                     match &= leading->busRead8(leading,0x0202298C+index++)==byte;
                 if(match && !nativeBallTextByOwner[owner])
                     (initiator?second:first).capture(out+"/ball-name-player"+QString::number(owner+1)+".png");
@@ -846,12 +851,12 @@ int main(int argc,char** argv) {
                 for(unsigned battler=0;battler<4;++battler)fprintf(stderr,"Battler%u hp=%u maxhp=%u move=%u pp=%u cursor=%u\n",battler,a->busRead16(a,0x02023BE4+battler*88+40),a->busRead16(a,0x02023BE4+battler*88+44),a->busRead16(a,0x02023BE4+battler*88+12),a->busRead8(a,0x02023BE4+battler*88+36),a->busRead8(a,0x02023FFC+battler));
             }
             fprintf(stderr,"Unfinished: cb=%08X main=%08X inbattle=%02X outcome=%u exec=%08X cmd0=%u cmd2=%u owners=%u/%u party=%u\n",
-                a->busRead32(a,MainCallbackAddress),a->busRead32(a,0x03004ED4),a->busRead8(a,0x03003479),
+                a->busRead32(a,abiAddress(a, MainCallbackAddress)),a->busRead32(a,abiAddress(a, 0x03004ED4)),a->busRead8(a,abiAddress(a, 0x03003479)),
                 a->busRead8(a,OutcomeAddress),a->busRead32(a,ControllerExecAddress),a->busRead8(a,ControllerBufferA),a->busRead8(a,ControllerBufferA+0x400),owner0,owner1,readParty(a).count);
         }
         requirePokemon(!pair.active(),"Native battle did not finish");
         if(scenario=="deferred-script") {
-            requirePokemon(!peerNativeCompleted && b->busRead32(b,MainCallbackAddress)==InitBattleCallback &&
+            requirePokemon(!peerNativeCompleted && b->busRead32(b,abiAddress(b, MainCallbackAddress))==abiAddress(b,InitBattleCallback) &&
                 b->busRead32(b,GlobalScriptContextAddress+8)==0x08123456 &&
                 b->busRead32(b,GlobalScriptContextAddress+12)==0x08125000,
                 "Different scripted object consumed the first encounter result");
@@ -1145,7 +1150,7 @@ int main(int argc,char** argv) {
                     std::vector<uint8_t> failed(c->stateSize(c));requirePokemon(c->saveState(c,failed.data()),"Cannot capture failed field state");
                     QFile file(out+"/failed-field.state");requirePokemon(file.open(QIODevice::WriteOnly|QIODevice::NewOnly),"Cannot create private failed field checkpoint");file.write(reinterpret_cast<const char*>(failed.data()),qint64(failed.size()));
                     (player?second:first).capture(out+"/field-not-ready-player"+QString::number(player)+".png");
-                    fprintf(stderr,"Field notready player%u cb=%08X state=%u lock=%u money=%u hp=%u\n",player,c->busRead32(c,MainCallbackAddress),c->busRead8(c,0x03003478),c->busRead8(c,0x03000F9C),readWallet(c),readParty(c).mons[0].hp());
+                    fprintf(stderr,"Field notready player%u cb=%08X state=%u lock=%u money=%u hp=%u\n",player,c->busRead32(c,abiAddress(c, MainCallbackAddress)),c->busRead8(c,abiAddress(c, 0x03003478)),c->busRead8(c,0x03000F9C),readWallet(c),readParty(c).mons[0].hp());
                 }
                 requirePokemon(acceptance::save_detail::fieldReady(c),"Committed battle did not return to a saveable field");
                 const auto proof=acceptance::verifyNativeSaveReload(c,rom.toUtf8().toStdString());

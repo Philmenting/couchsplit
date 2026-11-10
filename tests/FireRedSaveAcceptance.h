@@ -2,7 +2,7 @@
 #pragma once
 
 // ROM-dependent acceptance helper, never installed or called by the launcher.
-// The caller verifies the exact supported German original and pauses its core.
+// The caller verifies and binds an exact supported original and pauses its core.
 // Save requests below are native button presses. Only private in-memory Flash
 // clones are opened by the new core; no battery path or user save is accessed.
 #include "../gba/FireRedStorage.h"
@@ -123,17 +123,19 @@ inline std::optional<uint32_t> generation(const std::vector<uint8_t>& b) {
 }
 struct FreshCore {
     mCore* c=nullptr;bool initialized=false,configured=false;
+    std::unique_ptr<RomProfileScope> profile;
     std::array<color_t,240*160> video{};
     FreshCore()=default;
     FreshCore(const FreshCore&)=delete;
     FreshCore& operator=(const FreshCore&)=delete;
-    ~FreshCore(){if(c){if(configured)mCoreConfigDeinit(&c->config);if(initialized)c->deinit(c);else std::free(c);}}
-    void open(const std::string& rom,const std::vector<uint8_t>& battery) {
+    ~FreshCore(){profile.reset();if(c){if(configured)mCoreConfigDeinit(&c->config);if(initialized)c->deinit(c);else std::free(c);}}
+    void open(const std::string& rom,const std::vector<uint8_t>& battery,RomVersion version=RomVersion::German) {
         c=mCoreFind(rom.c_str());demand(c && c->init(c),"fresh core initialization failed");initialized=true;
         mCoreInitConfig(c,nullptr);configured=true;
         mCoreOptions options{};options.useBios=false;options.skipBios=true;
         mCoreConfigLoadDefaults(&c->config,&options);mCoreLoadConfig(c);
         demand(mCoreLoadFile(c,rom.c_str()),"fresh core cannot open verified ROM");
+        profile=std::make_unique<RomProfileScope>(c,version);
         c->setVideoBuffer(c,video.data(),240);
         auto* file=VFileMemChunk(battery.data(),battery.size());demand(file,"cannot create isolated Flash clone");
         if(!c->loadSave(c,file)){file->close(file);demand(false,"fresh core rejected Flash clone");}
@@ -152,8 +154,8 @@ inline NativeSaveProof verifyNativeSaveReload(mCore* live,const std::string& ver
     auto frame=[&](unsigned keys){live->setKeys(live,keys);live->runFrame(live);++proof.saveFrames;};
     auto pulse=[&](unsigned keys){for(unsigned n=0;n<3;++n)frame(keys);for(unsigned n=0;n<5;++n)frame(0);};
     pulse(8); // START
-    for(unsigned n=0;n<240 && inventoryRead32(live,0x020370F0)!=0x0806F1E5;++n)frame(0);
-    demand(inventoryRead32(live,0x020370F0)==0x0806F1E5 && live->busRead8(live,0x03000F9C)!=0,"START menu did not become ready");
+    for(unsigned n=0;n<240 && inventoryRead32(live,0x020370F0)!=abiAddress(live,0x0806F1E5);++n)frame(0);
+    demand(inventoryRead32(live,0x020370F0)==abiAddress(live,0x0806F1E5) && live->busRead8(live,0x03000F9C)!=0,"START menu did not become ready");
     const auto count=live->busRead8(live,0x020370F5);
     demand(count>0 && count<=9,"invalid native START menu length");
     unsigned save=count;for(unsigned n=0;n<count;++n)if(live->busRead8(live,0x020370F6+n)==4)save=n;
@@ -161,7 +163,7 @@ inline NativeSaveProof verifyNativeSaveReload(mCore* live,const std::string& ver
     for(unsigned n=0;n<count && live->busRead8(live,0x020370F4)!=save;++n)pulse(0x80); // DOWN
     demand(live->busRead8(live,0x020370F4)==save,"cannot move native cursor to SAVE");
     pulse(1); // A: native Save callback
-    demand(inventoryRead32(live,0x020370F0)==0x0806F509 || inventoryRead32(live,0x020370F0)==0x0806F52D,"SAVE callback was not selected");
+    demand(inventoryRead32(live,0x020370F0)==abiAddress(live,0x0806F509) || inventoryRead32(live,0x020370F0)==abiAddress(live,0x0806F52D),"SAVE callback was not selected");
     // Dialog uses nonwrapping Yes/No. UP ensures YES even for the native
     // different-trainer warning, whose default is NO. Stop on the first field
     // frame so no subsequent A press can trigger a field interaction.
@@ -186,15 +188,15 @@ inline NativeSaveProof verifyNativeSaveReload(mCore* live,const std::string& ver
     demand(bool(next),"Flash has no checksum-valid complete 14-sector save generation");
     demand(!previous || uint32_t(*next-*previous)==1,"native save did not create the next complete Flash generation");
     proof.generation=*next;
-    FreshCore fresh;fresh.open(verifiedRomPath,proof.battery);
+    FreshCore fresh;fresh.open(verifiedRomPath,proof.battery,romVersion(live));
     // Skip the intro, confirm title and CONTINUE. During quest-log playback
     // the field is locked: B requests native skip, never a save-RAM shortcut.
     bool enteredField=false;
     for(unsigned n=0;n<6000;++n) {
         unsigned keys=0;
-        const auto cb=inventoryRead32(fresh.c,0x03003044);
+        const auto cb=inventoryRead32(fresh.c,abiAddress(fresh.c,0x03003044));
         if(n<300)keys=(n%120)<3?8:0;
-        else if(cb==0x080565D5)keys=(n%60)<3?2:0;
+        else if(cb==abiAddress(fresh.c,0x080565D5))keys=(n%60)<3?2:0;
         else keys=(n%60)<3?1:0;
         fresh.c->setKeys(fresh.c,keys);fresh.c->runFrame(fresh.c);++proof.rebootFrames;
         if(n>300 && fieldReady(fresh.c)) {enteredField=true;break;}

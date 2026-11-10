@@ -92,7 +92,7 @@ inline std::optional<BenchRefill> planBenchRefill(const BattleParty& transaction
     return result;
 }
 
-// Exact verified German FireRed layout. Call only at the entry of native
+// Exact verified FireRed layouts, with profiled ABI locations. Call only at the entry of native
 // HasNoMonsToSwitch or Cmd_checkteamslost, before either accesses party data,
 // while the CPU is paused.
 // Generic frame boundaries can interrupt GetMonData while secure data is plain.
@@ -106,7 +106,7 @@ inline BenchReferences readBenchReferences(mCore* core, unsigned excludedOne, un
     result.active = {{core->busRead16(core, 0x02023BCE), core->busRead16(core, 0x02023BD2)}};
     result.queued = {{core->busRead8(core, battle + 0x5C), core->busRead8(core, battle + 0x5E)}};
     result.callerExcluded = {{excludedOne, excludedTwo}};
-    result.leveled = uint8_t(core->busRead8(core, 0x03004F24));
+    result.leveled = uint8_t(core->busRead8(core, abiAddress(core, 0x03004F24)));
     for (unsigned b = 0; b < 4; ++b) {
         result.wishCounters[b] = uint8_t(core->busRead8(core, 0x02023F40 + b));
         result.wishSlots[b] = core->busRead8(core, 0x02023F44 + b);

@@ -6,15 +6,19 @@
 
 A split-screen couch co-op launcher for Windows and Linux.
 
-**Project PM / Pokémon Platinum · GBA split screen · experimental German FireRed co-op**
+**Project PM / Pokémon Platinum · GBA split screen · experimental FireRed co-op**
 
 Alpha 11 includes GBA split screen and an opt-in FireRed experiment with a visible
 partner, shared human-controlled battles and reviewed story synchronization.
 The new packages correct owned Roar/Whirlwind selection, Wish source retention
 and EXP awards through move learning and evolution.
 [Verification details](docs/development-status.md#alpha-11--forced-switches-and-exp-boundaries).
-FireRed requires the exact unmodified German original ROM and remains experimental.
+Alpha 11 FireRed requires the exact unmodified German original ROM and remains experimental.
 [Setup, test evidence and limitations](docs/firered.md).
+
+**Current development source:** English FireRed 1.0 and 1.1 now have separate,
+fingerprint-checked co-op profiles. [English setup and verification](docs/firered-english-profiles.md).
+The Alpha 11 downloads below retain their German-only FireRed support.
 
 [![Release](https://img.shields.io/badge/Release-0.2.0%20Alpha%2011-b83f35?style=flat-square)](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)
 [![Native builds](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml/badge.svg?branch=main)](https://github.com/Philmenting/couchsplit/actions/workflows/platforms.yml)
@@ -33,6 +37,7 @@ FireRed requires the exact unmodified German original ROM and remains experiment
 | Project PM / Pokémon Platinum | Alpha 11 and current source | Local co-op with a compatible Project PM ROM. |
 | GBA games and ROM hacks | Alpha 11 and current source | Two independent games in split screen; compatibility varies. |
 | German Pokémon FireRed | Alpha 11 and current source, opt-in | Experimental partner display, shared battles and selected shared story progress. |
+| English Pokémon FireRed 1.0 / 1.1 | Development source, opt-in; new binary release pending | The same experimental co-op through separately verified cartridge profiles. |
 
 FireRed's partner display covers the same map and directly connected outdoor
 maps; a shared battle requires both players to be ready on the same map.
@@ -57,7 +62,7 @@ We are looking for Windows and Bazzite testers. [Try the short playtest and repo
 
 [Checksums](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.11/SHA256SUMS) · [ROM correction tools](https://github.com/Philmenting/couchsplit/releases/download/v0.2.0-alpha.11/Pokemon-PM-ROM-Korrekturen.zip) · [Release notes](docs/releases/v0.2.0-alpha.11.md) · [Platform guide](docs/platforms.md)
 
-You need **two controllers and your own compatible ROM**: a Project-PM-patched Platinum ROM for DS co-op, or a GBA game for GBA split screen. The FireRed experiment requires the exact supported German original. No games, Nintendo BIOS, proprietary firmware or user saves are included. The launcher does not add world co-op to an unmodified Platinum ROM. All packages are alpha releases. Choose **English or Deutsch** at first launch; change it later in **Settings / Einstellungen**. This does not change the language of your game ROM.
+You need **two controllers and your own compatible ROM**: a Project-PM-patched Platinum ROM for DS co-op, or a GBA game for GBA split screen. The Alpha 11 FireRed experiment requires the exact supported German original; the development source also accepts the exact English 1.0/1.1 originals. No games, Nintendo BIOS, proprietary firmware or user saves are included. The launcher does not add world co-op to an unmodified Platinum ROM. All packages are alpha releases. Choose **English or Deutsch** at first launch; change it later in **Settings / Einstellungen**. This does not change the language of your game ROM.
 
 ## Project PM: play together
 
@@ -146,6 +151,11 @@ For all ARM tests, also install `tests/requirements-romfix.txt`; decoder tests r
 [Architecture](docs/architecture.md) · [Platforms](docs/platforms.md) · [ROM preparation](docs/project-pm-045.md) · [Localization](docs/german-localization.md) · [Report a bug](https://github.com/Philmenting/couchsplit/issues/new)
 
 ## Deutsch
+
+**Aktueller Entwicklungsstand:** Englisches Feuerrot 1.0 und 1.1 erhalten eigene,
+über vollständige Fingerabdrücke geprüfte Koop-Profile. [Einrichtung und Prüfstand](docs/de/firered-english-profiles.md).
+Die nachfolgenden Alpha-11-Downloads unterstützen beim Feuerrot-Koop weiterhin
+die deutsche Ausgabe; neue Binärpakete werden gesondert geprüft.
 
 Alpha 11 bringt die Korrekturen für Brüller/Wirbelwind, Wunschtraum-Plätze und die EP-Vergabe samt Attackenlernen und Entwicklung in die Downloadpakete. [Prüfbericht und Stand](docs/de/development-status.md#alpha-11--erzwungene-wechsel-und-ep-vergabe).
 

@@ -1,0 +1,303 @@
+{
+  "schema": 1,
+  "date": "2026-11-10",
+  "status": "Native English gameplay matrix passed; platform packaging follow-up and production capture evidence pending",
+  "runtime_source_commit": "f3b2110c0ec26f9a18e3c57ab12da735fa7f3c21",
+  "base_commit": "6b08c7f3428eeeb4b1953283acb54cf42e16fcca",
+  "environment": "Linux x86_64, Qt 6.4.2, pinned mGBA 0.10.5; sequential private original-ROM checks",
+  "roms": {
+    "german": "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507",
+    "english10": "3d0c79f1627022e18765766f6cb5ea067f6b5bf7dca115552189ad65a5c3a8ac",
+    "english11": "729041b940afe031302d630fdbe57c0c145f3f7b6d9b8eca5e98678d0ca4d059"
+  },
+  "rom_bytes_unchanged": true,
+  "two_real_mgba_cores": true,
+  "authored_test_parties_and_encounters": true,
+  "virtual_input": true,
+  "continuous_campaign": false,
+  "physical_controllers": false,
+  "windows_bazzite_pokemon_gameplay": false,
+  "profile_audit": {
+    "hooks_per_cartridge": 38,
+    "instruction_halfwords_per_hook": 4,
+    "caller_guards_per_cartridge": 23,
+    "fixed_ewram_anchors": 42,
+    "native_campaign_preimages_per_cartridge": 3,
+    "german_decomp_commit": "e184c5cf898cd29efebd33bc1bfe5994277e21ab",
+    "agbcc_commit": "da598c1d918402c42c0c0d7128ba14567f3175e9",
+    "english_symbols_commit": "3b401eaf14f193946899eb7c056d5ac02a470126",
+    "german_reconstruction_matches_original_fingerprint": true,
+    "language_dependent_control_flow_and_placeholder_offsets_reviewed": true
+  },
+  "component_checks": {
+    "local_ctest_passed": 24,
+    "linux_ci_ctest_passed": 24,
+    "linux_ci_python_passed": 64,
+    "ci_runtime_commit": "f3b2110c0ec26f9a18e3c57ab12da735fa7f3c21",
+    "ci_url": "https://github.com/Philmenting/couchsplit/actions/runs/42895579256"
+  },
+  "runtime_source_sha256": {
+    "gba/FireRedVersion.h": "7d58eb7f4ee6e63b8408aa0d08c1efa11ecbe4da4ac0ee12032ff5f8f4043653",
+    "gba/FireRedAddressData.h": "0e117743d9804dd920fa281bc39948c2c29c5656b131ee8a1677a5aaf9866a82",
+    "gba/FireRedProfile.h": "b01571fca9c874eb344d284207f0d808388ebb419da9be6068b10ccf48d3b4f2",
+    "gba/FireRedPairWorker.cpp": "57f923cb20d2545cbc5b4c5c95721f33b19374662796960b70a9df05dd257c57",
+    "gba/FireRedBattle.h": "54f4ce5e8a769b1a727446a08c0fbb776ab212933b5f0dddd5d2173706efb5dc",
+    "gba/FireRedBattleHooks.h": "1005fa6c4757d43435a32f6f12710a2fd57778403a5a9745c1cc8c79d1e27b56",
+    "gba/FireRedExperience.h": "fb9efbf710d49d6237946af7780edf5ddb90c9e75e05ceb8d8310778e46d383f",
+    "launcher/Rom.h": "8b45d8200b13b1eca5c9ebbfaaec94f45e76d878e5caeee4276aa68b1dcb0811",
+    "launcher/Session.h": "d1ef25eb6018f1fa90c183ef4c07cd98227ed6049edc359d169c31670eab7c00"
+  },
+  "native_verifier_sha256": "f88c0d44e9e27b76d31013290c71ede96442e72571c6caf33d9e7cab061b915f",
+  "cases": [
+    {
+      "version": "english10",
+      "scenario": "single-leader2",
+      "frames": 1291,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "trainer-single",
+      "frames": 1998,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "trainer-single-leader2",
+      "frames": 1998,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "capture-both-leader2",
+      "frames": 3130,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "owners",
+      "frames": 1890,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "party-menu-summary",
+      "frames": 5880,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "party-menu-protected",
+      "frames": 5160,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "exp-share-twelve-learn-pinned",
+      "frames": 5971,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "exp-share-twelve-evolution-pinned",
+      "frames": 27807,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "party-menu-wish",
+      "frames": 10950,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "party-menu-wish-leader2",
+      "frames": 10950,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "reserves-roar",
+      "frames": 12438,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "reserves-roar-whirlwind-leader2",
+      "frames": 10278,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "action-stats",
+      "frames": 1800,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "legendary",
+      "frames": 1291,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "escape-player2",
+      "frames": 1216,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "defeat",
+      "frames": 3677,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "single-leader2",
+      "frames": 1291,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "trainer-single",
+      "frames": 2148,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "trainer-single-leader2",
+      "frames": 2148,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "capture-both-leader2",
+      "frames": 3130,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "owners",
+      "frames": 1890,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "party-menu-summary",
+      "frames": 6150,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "party-menu-protected",
+      "frames": 4770,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "exp-share-twelve-learn-pinned",
+      "frames": 6061,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "exp-share-twelve-evolution-pinned",
+      "frames": 27537,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "party-menu-wish",
+      "frames": 10740,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "party-menu-wish-leader2",
+      "frames": 10740,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "reserves-roar",
+      "frames": 12558,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "reserves-roar-whirlwind-leader2",
+      "frames": 14328,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "action-stats",
+      "frames": 1800,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "legendary",
+      "frames": 1500,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "escape-player2",
+      "frames": 1216,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "defeat",
+      "frames": 4697,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "german",
+      "scenario": "single-leader2",
+      "frames": 1351,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "german",
+      "scenario": "party-menu-wish",
+      "frames": 11430,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "german",
+      "scenario": "exp-share-twelve-learn-pinned",
+      "frames": 6391,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "german",
+      "scenario": "reserves-roar",
+      "frames": 25008,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english10",
+      "scenario": "single",
+      "frames": 1291,
+      "native_save_and_fresh_battery_reload_both_players": true
+    },
+    {
+      "version": "english11",
+      "scenario": "single",
+      "frames": 1291,
+      "native_save_and_fresh_battery_reload_both_players": true
+    }
+  ],
+  "limits": [
+    "Targeted authored native scenarios, not a natural full campaign.",
+    "Framebuffer partner overlay has no native collision or terrain occlusion.",
+    "Special modes retain the existing experimental limits.",
+    "Production Session captures and refreshed native Windows packaging are recorded separately."
+  ],
+  "private_fixture_provenance": {
+    "source": "https://github.com/40Cakes/pokebot-gen3/tree/f14ab79db960315db02333928ba444f9d425b6fc/tests/states/firered",
+    "method": "Exact English 1.1 source state and embedded Flash loaded privately; native SAVE and fresh Continue; other cartridge checkpoints created by native battery-only Continue. No state/ROM/save distributed."
+  }
+}

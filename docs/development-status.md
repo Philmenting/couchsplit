@@ -2,7 +2,22 @@
 
 **English** · [Deutsch](de/development-status.md) · [Documentation](README.md)
 
-Updated 8 November 2026. **[CouchSplit 0.2.0 Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
+Updated 10 November 2026. **[CouchSplit 0.2.0 Alpha 11](https://github.com/Philmenting/couchsplit/releases/tag/v0.2.0-alpha.11)** packages Project PM / Pokémon Platinum, independent GBA split screen and the opt-in German FireRed experiment. Historical results below apply to the named versions and environments, not to a complete campaign or target-hardware certification.
+
+## Development source — English FireRed 1.0 and 1.1
+
+Exact English originals now have their own ABI profiles for the existing paired
+worker. Full-file fingerprints remain mandatory. All 38 battle hooks and 23
+caller guards were checked against both English cartridges; language-specific
+battle text and Hall-of-Fame pointers have explicit mappings. The reserve menu
+explanation follows the cartridge language. Older workers are rejected before
+an English session takes the save lock.
+
+All 24 standard suites pass, including new English isolation/guard/preimage
+checks. Actual shared wild battles and separate native SAVE/fresh Continue
+pass on both English revisions. The extended native matrix and production
+capture pass are in progress; native Windows/Linux packages are pending.
+Alpha 11 remains unchanged. [Profile evidence and reproduction](firered-english-profiles.md).
 
 <a id="current-source--forced-switches-and-exp-boundaries"></a>
 

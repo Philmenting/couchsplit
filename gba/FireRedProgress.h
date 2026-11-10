@@ -70,9 +70,9 @@ inline bool scriptInProgress(mCore* core) {
            core->busRead8(core, ImmediateScriptContextAddress + 1) != 0;
 }
 inline bool progressFieldReady(mCore* core) {
-    return questLogWorldAvailable(core) && inventoryRead32(core, 0x03003044) == 0x080565D5 &&
+    return questLogWorldAvailable(core) && inventoryRead32(core, abiAddress(core, 0x03003044)) == abiAddress(core, 0x080565D5) &&
         !scriptInProgress(core) && core->busRead8(core, FieldControlsLockAddress) == 0 &&
-        !(core->busRead8(core, 0x03003479) & 2);
+        !(core->busRead8(core, abiAddress(core, 0x03003479)) & 2);
 }
 inline bool tryAddStoryItem(Inventory& inventory, unsigned item, unsigned quantity) {
     inventory.validate();

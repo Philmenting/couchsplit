@@ -15,7 +15,7 @@ namespace coop::firered {
 // complete grid entries inside the caller's whole-machine/Flash transaction.
 // It never runs arbitrary map-load native callbacks,
 // adopts another core, relocates the player, or copies graphics into our source.
-// Every entry point requires the caller to have verified the exact German ROM.
+// Every entry point requires the caller to have verified and bound an exact supported ROM.
 inline constexpr uint32_t CampaignMapHeaderAddress = 0x02036DFCu;
 inline constexpr uint32_t CampaignObjectsAddress = 0x02036E38u;
 inline constexpr uint32_t CampaignAvatarAddress = 0x02037078u;
@@ -478,7 +478,7 @@ inline CampaignObjectRefreshPlan planCampaignObjectRefresh(mCore* core, const Pr
             // changing topology, or restarting this player's map scripts.
             const bool third=before.mapNum==86;
             const unsigned oldId=third?159:160,newId=third?278:279;
-            constexpr uint32_t layouts=0x0834EAB0;
+            const auto layouts=abiAddress(core,0x0834EAB0);
             requirePokemon(before.mapGroup==1 && (before.mapNum==86||before.mapNum==87) &&
                 inventoryRead16(core,memory.block1+0x32)==oldId && *newEffects.layoutId==newId &&
                 inventoryRead32(core,layouts+(oldId-1)*4)==layout,

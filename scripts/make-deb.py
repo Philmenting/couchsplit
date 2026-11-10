@@ -52,5 +52,5 @@ def package(upstream,output,version):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--upstream',type=Path,required=True)
-    p.add_argument('--output',type=Path,required=True);p.add_argument('--version',default='0.2.0~alpha.11')
+    p.add_argument('--output',type=Path,required=True);p.add_argument('--version',default='0.2.0~alpha.12')
     a=p.parse_args();package(a.upstream,a.output,a.version)

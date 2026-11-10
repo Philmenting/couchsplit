@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Opt-in real-ROM pair worker boundary/boot/lifecycle checks.
 
-Requires the user's exact German original; never copies it, accepts saves or
+Requires an exact supported original; never copies it, accepts saves or
 checkpoints, or claims that booting the introduction verifies team gameplay.
 """
 import hashlib
@@ -17,18 +17,22 @@ import tempfile
 import time
 
 
-EXPECTED_ROM = 'eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507'
+SUPPORTED_ROMS = {
+    'eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507': 'German',
+    '3d0c79f1627022e18765766f6cb5ea067f6b5bf7dca115552189ad65a5c3a8ac': 'English 1.0',
+    '729041b940afe031302d630fdbe57c0c145f3f7b6d9b8eca5e98678d0ca4d059': 'English 1.1',
+}
 IPC_BYTES = struct.pack('<10I', 0x434F5031, 2, 0, 0xFFF, 0, 0, 0, 0, 0, 0) + bytes(256 * 192 * 8)
 
 
 def smoke(binary, rom, report_path=None):
     binary, rom = Path(binary).resolve(), Path(rom).resolve()
     original_hash = hashlib.sha256(rom.read_bytes()).hexdigest()
-    assert original_hash == EXPECTED_ROM, 'Requires exact verified German original'
+    assert original_hash in SUPPORTED_ROMS, 'Requires an exact verified original'
     assert b'FIRERED_PAIR_EXPERIMENT=1' in subprocess.check_output([str(binary), '--coop-capabilities'], timeout=5)
     base_env = {k: v for k, v in os.environ.items() if not k.startswith(('PMCOOP_', 'MELONDS_AP'))}
     base_env.update(PMCOOP_FIRERED_PAIR='1', PMCOOP_FIRERED_RECOVERY='1', SDL_AUDIODRIVER='dummy')
-    report = {'real_german_rom': True, 'experimental_pair_worker': True, 'team_gameplay_verified': False}
+    report = {'rom_sha256': original_hash, 'rom_version': SUPPORTED_ROMS[original_hash], 'experimental_pair_worker': True, 'team_gameplay_verified': False}
     with tempfile.TemporaryDirectory(prefix='couch-firered-pair-ä-') as temp:
         root = Path(temp)
         profiles = [root / ('player-' + str(i)) for i in range(2)]
@@ -58,7 +62,7 @@ def smoke(binary, rom, report_path=None):
             corrupt.unlink()
         from smoke_gba import homebrew
         wrong = root / 'authored.gba'; wrong.write_bytes(homebrew())
-        assert 'exact verified German' in rejected(env, wrong)
+        assert 'exact verified' in rejected(env, wrong)
         report['boundary_rejections'] = ['old_launcher_protocol', 'same_profile', 'same_ipc', 'corrupt_save', 'wrong_flash_size', 'wrong_rom']
 
         # Authored invalid/blank Flash images, never user saves. Distinct tail

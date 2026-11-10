@@ -53,6 +53,7 @@ inline void requireMultiplayerPatch(const QString& sha256) {
 }
 inline QString knownPreparedRom(const QString& sha256) {
     if(sha256==QLatin1String(GermanFireRedSha256))return i18n::text("Pokémon Feuerrot · Deutsch · Getrennte Abenteuer");
+    if(isEnglishFireRed(sha256))return i18n::text("Pokémon Feuerrot · Englisch · Getrennte Abenteuer");
     if(sha256=="800106962a6dd4eba0d090c4acca322d8e45f0eefbe3281aa2a843459a08629c") return i18n::text("Project PM 0.4.5 · Deutsch Alpha 2");
     if(sha256=="8b11f36e7bf4a15932eb364358fba183c2067ac8265cfbc97611ca53e3c90949") return i18n::text("Project PM 0.4.5 · Deutsch Alpha 1");
     if(sha256=="8ef9d4eeee81513f2d6e13c36125cdbfa4c6f498b039ef4b99faa7095d39cfa5") return i18n::text("Project PM 0.4.5 · Englisch");
@@ -165,7 +166,7 @@ public:
         if(active) fail(i18n::text("Sitzung läuft bereits."));
         const auto info=inspectRom(s.rom);gba=info.system==GameSystem::GameBoyAdvance;game=info.sha256;
         // The saved opt-in applies only to the exact supported FireRed ROM.
-        fireRedPair=gba && s.fireRedCoop && game==QLatin1String(GermanFireRedSha256);
+        fireRedPair=gba && s.fireRedCoop && isSupportedFireRed(game);
         if(!gba) {
             if(!s.patchedConfirmed) fail(i18n::text("Die vorbereitete Project-PM-ROM muss bestätigt werden. Eine normale Platin-ROM bietet keine gemeinsame Spielwelt."));
             requireMultiplayerPatch(game); validateFirmware(s);
@@ -177,7 +178,7 @@ public:
         QProcess capability; capability.start(executable,{"--coop-capabilities"});
         const bool ready=capability.waitForFinished(5000) && capability.exitCode()==0;
         const auto features=capability.readAllStandardOutput();
-        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1") || (gba&&!features.contains("GBA=1")) || (info.extendedGba&&!features.contains("GBA_XROM=1")) || (fireRedPair&&(!features.contains("FIRERED_PAIR_EXPERIMENT=1") || !features.contains("FIRERED_RECOVERY=1")))) {
+        if(!ready || !features.contains("PMCOOP_ABI=2") || !features.contains("STABLE_SAVE=1") || (gba&&!features.contains("GBA=1")) || (info.extendedGba&&!features.contains("GBA_XROM=1")) || (fireRedPair&&(!features.contains("FIRERED_PAIR_EXPERIMENT=1") || !features.contains("FIRERED_RECOVERY=1") || (isEnglishFireRed(game)&&!features.contains("FIRERED_ENGLISH=1"))))) {
             capability.kill(); capability.waitForFinished(1000); fail(i18n::text("Emulator unterstützt die benötigte Co-op-Spielstandschnittstelle nicht. Launcher und Emulator gemeinsam aktualisieren."));
         }
         saves.acquire();

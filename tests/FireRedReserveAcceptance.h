@@ -18,7 +18,7 @@ class ReserveProbe {
     inline static ReserveProbe* current=nullptr;
     static void breakpoint(ARMCore* cpu,int immediate) noexcept {
         auto& p=*current;
-        const auto address=uint32_t(cpu->gprs[ARM_PC])-4;
+        const auto address=coop::firered::canonicalCodeAddress(p.core,uint32_t(cpu->gprs[ARM_PC])-4);
         try {p.before(address);}catch(...){p.error=std::current_exception();}
         p.delegate(cpu,immediate);
         try {p.after(address);}catch(...){p.error=std::current_exception();}

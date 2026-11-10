@@ -202,9 +202,82 @@ void reserveHookBoundaries() {
 }
 }
 
+void englishProfileBoundaries() {
+    using namespace coop::firered;
+    check(fireRedVersion(GermanSha256)==RomVersion::German,"German fingerprint rejected");
+    check(fireRedVersion(English10Sha256)==RomVersion::English10,"English 1.0 fingerprint rejected");
+    check(fireRedVersion(English11Sha256)==RomVersion::English11,"English 1.1 fingerprint rejected");
+    check(!fireRedVersion("BPRE") && !fireRedVersion(std::string(64,'0')),
+          "Header or unknown fingerprint authorized a native ABI");
+    for(const auto version:{RomVersion::English10,RomVersion::English11}) {
+        Fixture f,german;
+        RomProfileScope profile(&f.core,version);
+        check(abiAddress(&f.core,0x03004F58)==0x03005008 &&
+              abiAddress(&german.core,0x03004F58)==0x03004F58,"ROM profile leaked between cores");
+        check(abiAddress(&f.core,0x0800FD21)==(version==RomVersion::English10?0x0800FD9Du:0x0800FDB1u),
+              "English revision selected the wrong battle entry");
+        bool refused=false;
+        try {RomProfileScope duplicate(&f.core,version);}catch(const std::runtime_error&){refused=true;}
+        check(refused,"A live core's profile could be rebound");
+        refused=false;
+        try {(void)abiAddress(&f.core,0x08001000);}catch(const std::runtime_error&){refused=true;}
+        check(refused && canonicalCodeAddress(&f.core,0x0804417B)==0,
+              "Unreviewed location or foreign caller matched an English ABI");
+        for(const auto& site:profile_data::hooks) {
+            const auto address=abiAddress(&f.core,site.german);
+            const auto words=hookPreimage(&f.core,site.german,{});
+            for(unsigned i=0;i<words.size();++i)f.put(address+i*2,words[i],2);
+        }
+        unsigned names=0;
+        {
+            auto hook=reserveHooks(f,{},[&](unsigned battler,unsigned slot)->std::optional<WishJournal::Name>{
+                check(battler==2 && slot==5,"English Wish lost its original owner");++names;
+                WishJournal::Name name;name.fill(0xFF);name[0]=0xCA;return name;
+            });
+            wishContext(f);
+            f.cpu.gprs[9]=int32_t(abiAddress(&f.core,0x083FBE79));
+            f.invoke(abiAddress(&f.core,BattleHooks::WishTextAddress),0xD7);
+            check(names==1 && f.cpu.prefetch[0]==0xE001,"English Wish placeholder was not intercepted");
+            wishContext(f); // The German text pointer must stay native here.
+            f.invoke(abiAddress(&f.core,BattleHooks::WishTextAddress),0xD7);
+            check(names==1 && f.cpu.prefetch[0]==0x1C21,"German Wish string matched an English core");
+            hook.check();
+        }
+        unsigned otCalls=0;
+        {
+            BattleHooks hook(&f.core,[](unsigned,unsigned,unsigned){return true;},
+                [&](unsigned slot,uint32_t ot,uint32_t name){
+                    ++otCalls;check(slot==1 && ot==0x08012345 && name==0x03007F00,
+                                   "ABI lookup altered native payload or dynamic pointer");return false;
+                });
+            f.cpu.gprs[ARM_LR]=int32_t(abiAddress(&f.core,0x0804417B));
+            f.cpu.gprs[4]=0x02024284+100;f.cpu.gprs[0]=0x08012345;f.cpu.gprs[1]=0x03007F00;
+            f.invoke(abiAddress(&f.core,BattleHooks::IsOtherTrainerAddress),0xF2);f.returned(false);
+            f.cpu.gprs[ARM_LR]=0x0804417B;
+            f.invoke(abiAddress(&f.core,BattleHooks::IsOtherTrainerAddress),0xF2);
+            check(otCalls==1 && f.cpu.prefetch[0]==0xB530,"Foreign caller reached English OT ownership");
+            hook.check();
+        }
+        for(const auto& site:profile_data::hooks) {
+            const auto address=abiAddress(&f.core,site.german);
+            const auto words=hookPreimage(&f.core,site.german,{});
+            for(unsigned i=0;i<words.size();++i)
+                check(Fixture::read16(&f.core,address+i*2)==words[i],"English hook did not restore native code");
+        }
+        f.put(abiAddress(&f.core,BattleHooks::HasNoMonsAddress)+2,0xFFFF,2);
+        const auto before=f.memory;refused=false;
+        try {BattleHooks bad(&f.core,[](unsigned,unsigned,unsigned){return true;});}
+        catch(const std::runtime_error&){refused=true;}
+        check(refused && f.memory==before && f.cpu.irqh.bkpt16==previousBreakpoint,
+              "Unexpected English preimage left a partial patch");
+    }
+    check(profile_detail::bindings.empty(),"English profile survived its core scope");
+}
+
 int main() {
     try {
         reserveHookBoundaries();
+        englishProfileBoundaries();
         auto empty=[](unsigned,unsigned,unsigned){return true;};
         { Fixture f;unsigned calls=0;bool allow=false;
           BattleHooks hook(&f.core,empty,{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},

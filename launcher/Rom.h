@@ -1,13 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include "SaveStore.h"
+#include "../gba/FireRedVersion.h"
 
 namespace coop {
 enum class GameSystem { NintendoDS, GameBoyAdvance };
 struct RomInfo { GameSystem system; QString sha256; bool extendedGba=false; };
 inline constexpr qint64 GbaNativeLimit = 32LL*1024*1024;
 inline constexpr qint64 GbaExtendedLimit = 512LL*1024*1024;
-inline constexpr const char* GermanFireRedSha256 = "eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507";
+inline constexpr const char* GermanFireRedSha256 = firered::GermanSha256.data();
+inline bool isSupportedFireRed(const QString& sha256) {
+    return firered::fireRedVersion(sha256.toStdString()).has_value();
+}
+inline bool isEnglishFireRed(const QString& sha256) {
+    const auto version=firered::fireRedVersion(sha256.toStdString());
+    return version && *version!=firered::RomVersion::German;
+}
 inline RomInfo inspectRom(const QString& path) {
     QFile f(path);
     if(!f.open(QIODevice::ReadOnly)) fail(i18n::text("ROM fehlt oder ist nicht lesbar."));

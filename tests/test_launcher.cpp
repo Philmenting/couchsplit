@@ -204,7 +204,7 @@ static void fireRedNoticeFits() {
 // The fixture only simulates a paired worker's exit, it does not emulate a battle.
 static void fireRedRealRomUi(const QString& fixture) {
     const auto rom=qEnvironmentVariable("COOP_VERIFY_FIRERED_ROM");if(rom.isEmpty())return;
-    assert(hashFile(rom)==QLatin1String(GermanFireRedSha256));
+    const auto originalHash=hashFile(rom);assert(isSupportedFireRed(originalHash));
     const bool present=qEnvironmentVariableIsSet("COUCHSPLIT_FIRERED_EXPERIMENT");
     const auto previous=qgetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
     qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
@@ -267,7 +267,7 @@ static void fireRedRealRomUi(const QString& fixture) {
         SDL_JoystickClose(ja);SDL_JoystickClose(jb);SDL_JoystickDetachVirtual(b);SDL_JoystickDetachVirtual(a);
     }
     if(present)qputenv("COUCHSPLIT_FIRERED_EXPERIMENT",previous);else qunsetenv("COUCHSPLIT_FIRERED_EXPERIMENT");
-    assert(hashFile(rom)==QLatin1String(GermanFireRedSha256));i18n::setLanguage("de");
+    assert(hashFile(rom)==originalHash);i18n::setLanguage("de");
 }
 // Exercise the actual Session -> child IPC -> PlayView acknowledgement path.
 // This child is a named TEST ONLY fixture, not a gameplay test.
@@ -284,6 +284,11 @@ static void fireRedRecoveryUi(const QString& fixture) {
         qputenv("COOP_FIXTURE_OLD_RECOVERY","1");bool oldRejected=false;
         try {session.start(settings);}catch(const std::exception&){oldRejected=true;}
         qunsetenv("COOP_FIXTURE_OLD_RECOVERY");assert(oldRejected && !session.running() && !saves.locked());
+        if(isEnglishFireRed(validateRom(rom))) {
+            qputenv("COOP_FIXTURE_OLD_ENGLISH","1");oldRejected=false;
+            try {session.start(settings);}catch(const std::exception&){oldRejected=true;}
+            qunsetenv("COOP_FIXTURE_OLD_ENGLISH");assert(oldRejected && !session.running() && !saves.locked());
+        }
         session.start(settings);
         PlayView view(session,controls,settings);view.resize(640,360);view.show();view.reset();spin(60);
         auto* action=view.findChild<QPushButton*>("fireRedContinueIndividual");assert(action);

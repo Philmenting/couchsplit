@@ -11,7 +11,7 @@ namespace coop::firered {
 // scripts below. Numeric metadata only; no original game scripts/assets.
 // Runtime ROM precondition SHA-256:
 // eed4fb0242bcbb6e0b0b80b197b47e3aec99ef4c5562cc45bae50ae86b970507
-// The caller fingerprints the exact German ROM before using Progress and holds
+// The caller fingerprints and binds an exact supported ROM before using Progress and holds
 // BOTH cores at an idle field boundary. This planner never touches emulator RAM.
 //
 // Exclusions are deliberate: temporary flags/vars, resettable boulder/trash-can/
